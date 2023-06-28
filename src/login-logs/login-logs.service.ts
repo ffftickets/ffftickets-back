@@ -1,8 +1,9 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { MoreThan, MoreThanOrEqual, Repository } from 'typeorm';
 import { LoginLog } from './entities/login-log.entity';
 import { CreateLoginLogDto } from './dto';
+import { handleDbError } from 'src/common/helpers/db-error-handler.helper';
 
 @Injectable()
 export class LoginLogsService {
@@ -14,27 +15,27 @@ export class LoginLogsService {
   ) {}
 
   async createLoginLog(createLoginLogDto: CreateLoginLogDto) {
-    this.logger.log('Creando registro de login');
-    return await this.loginLogRepository.save(createLoginLogDto);
+    try {
+      this.logger.log('Creando registro de login');
+      return await this.loginLogRepository.save(createLoginLogDto);
+    } catch (error) {
+      this.logger.error(error);
+      handleDbError(error);
+    }
   }
 
-  async countBadLoginLogs(email: string) {
+  async countBadLoginLogs(email: string, lastLogin: Date) {
+    try {
+      return await this.loginLogRepository
+        .createQueryBuilder('loginLog')
+        .where('loginLog.email = :email', { email })
+        .andWhere('loginLog.isCorrect = false')
+        .andWhere('loginLog.createdAt >= :lastLogin', { lastLogin })
+        .getCount();
+    } catch (error) {
+      this.logger.error(error);
+      handleDbError(error);
+    }
     this.logger.log('Contando registros de login fallidos');
-
-    const lastCorrectLogin = await this.loginLogRepository
-      .createQueryBuilder()
-      .where('email = :email', { email })
-      .andWhere('isCorrect = :isCorrect', { isCorrect: true })
-      .orderBy('createdAt', 'DESC')
-      .getOne();
-
-    if (!lastCorrectLogin) return 0;
-
-    return await this.loginLogRepository
-      .createQueryBuilder()
-      .where('email = :email', { email })
-      .andWhere('isCorrect = :isCorrect', { isCorrect: false })
-      .andWhere('createdAt >= :createdAt', { createdAt: lastCorrectLogin.createdAt })
-      .getCount();
   }
 }

@@ -1,33 +1,70 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { CreateEventDto } from './dto/create-event.dto';
 import { UpdateEventDto } from './dto/update-event.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Event } from './entities/event.entity';
 import { Repository } from 'typeorm';
+import { EventTypeService } from 'src/event-type/event-type.service';
+import { handleDbError } from 'src/common/helpers/db-error-handler.helper';
 
 @Injectable()
 export class EventService {
   constructor(
     @InjectRepository(Event)
-    private readonly licenseRepository: Repository<Event>
+    private readonly eventRepository: Repository<Event>,
+    private readonly eventTypeService: EventTypeService,
   ) {}
-  create(createEventDto: CreateEventDto) {
-    return 'This action adds a new event';
+  logger = new Logger(EventService.name);
+  async create(createEventDto: CreateEventDto) {
+    try {
+      const eventType = await this.eventTypeService.findOne(
+        createEventDto.event_type,
+      );
+      createEventDto.event_type = eventType;
+      const event = await this.eventRepository.create(createEventDto);
+      return await this.eventRepository.save(event);
+    } catch (error) {
+      this.logger.error(error);
+      handleDbError(error);
+    }
   }
 
   findAll() {
-    return `This action returns all event`;
+    try {
+    } catch (error) {
+      this.logger.error(error);
+      handleDbError(error);
+    }
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} event`;
+  async findOne(id: number) {
+    try {
+
+      const event = await this.eventRepository.findOne({ where: { id } });
+      if (!event) throw new NotFoundException('No se encontró el evento');
+
+      return event;
+    } catch (error) {
+      this.logger.error(error);
+      handleDbError(error);
+    }
   }
 
-  update(id: number, updateEventDto: UpdateEventDto) {
-    return `This action updates a #${id} event`;
+  async update(id: number, updateEventDto: UpdateEventDto) {
+    try {
+      await  this.eventRepository.update(id,{...updateEventDto});
+      return await this.findOne(id);
+    } catch (error) {
+      this.logger.error(error);
+      handleDbError(error);
+    }
   }
 
   remove(id: number) {
-    return `This action removes a #${id} event`;
+    try {
+    } catch (error) {
+      this.logger.error(error);
+      handleDbError(error);
+    }
   }
 }

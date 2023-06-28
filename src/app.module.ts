@@ -21,6 +21,7 @@ import { DistributionModule } from './distribution/distribution.module';
 import { AuthModule } from './auth/auth.module';
 import { LoginLogsModule } from './login-logs/login-logs.module';
 import { RoleModule } from './role/role.module';
+import { FirebaseModule } from './firebase/firebase.module';
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true, load: [configuration] }),
@@ -59,6 +60,8 @@ import { RoleModule } from './role/role.module';
     LoginLogsModule,
 
     RoleModule,
+
+    FirebaseModule,
 
   ],
   controllers: [AppController],

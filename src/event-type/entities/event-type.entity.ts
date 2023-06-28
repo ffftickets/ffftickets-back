@@ -20,7 +20,7 @@ import {
   export class EventType extends BaseEntity {
      
     @PrimaryGeneratedColumn()
-    id: string; 
+    id: number; 
   
     @Column({ type: 'varchar', default: '', nullable: false })
     name:string;
@@ -29,7 +29,7 @@ import {
     isActive:boolean;
   
 
-    @OneToMany((_) => Event, (event) => event.eventType)
+    @OneToMany((_) => Event, (event) => event.event_type)
     event: Event;
 
     @CreateDateColumn({ name: 'created_at', type: 'timestamp' })

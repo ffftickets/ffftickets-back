@@ -1,11 +1,14 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import {
+  IsBoolean,
   IsDateString,
+  IsEnum,
   IsNotEmpty,
   IsNumberString,
   IsOptional,
   IsString,
 } from 'class-validator';
+import { EventStatus } from '../emun/status-event.enum';
 
 export class CreateEventDto {
   @ApiPropertyOptional({
@@ -29,7 +32,7 @@ export class CreateEventDto {
   })
   @IsNotEmpty()
   @IsString()
-  eventDate: Date;
+  event_date: Date;
 
   @ApiProperty({
     example: '12:00',
@@ -61,7 +64,7 @@ export class CreateEventDto {
   })
   @IsNotEmpty()
   @IsString()
-  geoLocation: string;
+  geo_location: string;
 
   @ApiProperty({
     example: 'http:url',
@@ -77,7 +80,24 @@ export class CreateEventDto {
   })
   @IsOptional()
   @IsString()
-  imgTicket?: string;
+  ticket?: string;
+
+  @ApiProperty({
+    example: 'http:url',
+    description: 'Url de la imagen del ticket ',
+  })
+  @IsOptional()
+  @IsString()
+  courtesy_ticket?: string;
+
+  @ApiPropertyOptional({
+    type: [],
+    description: 'Galería informativa del evento',
+  })
+  informative_gallery: any[];
+
+  @ApiPropertyOptional({ type: [], description: 'Galeria del evento' })
+  event_gallery: any[];
 
   @ApiPropertyOptional({
     example: '2300687510',
@@ -93,7 +113,7 @@ export class CreateEventDto {
   })
   @IsOptional()
   @IsNumberString()
-  municipalAuthorization?: string;
+  municipal_authorization?: string;
 
   @ApiPropertyOptional({
     example: '563231523332',
@@ -101,7 +121,7 @@ export class CreateEventDto {
   })
   @IsOptional()
   @IsNumberString()
-  issuanceAuthorization?: string;
+  issuance_authorization?: string;
 
   @ApiPropertyOptional({
     example: '31234124312',
@@ -109,14 +129,28 @@ export class CreateEventDto {
   })
   @IsOptional()
   @IsNumberString()
-  capacityAuthorization?: string;
+  capacity_authorization?: string;
+
+  @ApiPropertyOptional({
+    example: true,
+    description: 'Estado del evento',
+  })
+  @ApiPropertyOptional({
+    example: EventStatus.ACTIVE,
+    description: 'Estado del evento',
+    enum: EventStatus,
+  })
+  @IsOptional()
+  @IsString()
+  @IsEnum(EventStatus)
+  status: string;
 
   @ApiPropertyOptional({
     example: true,
     description: 'Estado del evento',
   })
   @IsOptional()
-  @IsNumberString()
+  @IsBoolean()
   isActive?: boolean;
 
   @ApiPropertyOptional({
@@ -124,5 +158,11 @@ export class CreateEventDto {
     description: 'Tipo de evento',
   })
   @IsOptional()
-  eventType: any;
+  event_type: any;
+  @ApiPropertyOptional({
+    type: [],
+    description: 'Eventos pasados',
+  })
+  @IsOptional()
+  past_events?: any[];
 }

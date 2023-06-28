@@ -96,7 +96,7 @@ export class AuthController {
         userAgent: req['ua'],
       });
 
-      const incorrectLogins = await this.loginLogsService.countBadLoginLogs(user.email);
+      const incorrectLogins = await this.loginLogsService.countBadLoginLogs(user.email,user.lastLogin);
 
       console.log(incorrectLogins)
       this.logger.debug('Incorrect logins: ' + incorrectLogins);

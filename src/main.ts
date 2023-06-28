@@ -4,11 +4,15 @@ import { Logger, ValidationPipe } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { PORT } from './config/config.env';
 import { initSwagger } from './app.swagger';
-
+import { MulterModule } from '@nestjs/platform-express';
+import { urlencoded, json } from 'express';
 async function bootstrap() {
   const logger = new Logger();
 
   const app = await NestFactory.create(AppModule);
+  //tamaño de json
+  app.use(json({ limit: '150mb' }));
+  app.use(urlencoded({ extended: true, limit: '150mb' }));
   //Cors
   app.enableCors();
   //Prefijo Global de la api

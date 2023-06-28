@@ -16,7 +16,7 @@ export class License extends BaseEntity {
   id: number;
 
   @Column({ type: 'varchar', length: 75, nullable: false })
-  startDate: string;
+  start_date: string;
 
   @Column({ type: 'varchar', length: 75, nullable: false })
   endDate: string;
@@ -25,10 +25,10 @@ export class License extends BaseEntity {
   institution: string;
 
   @Column({ type: 'varchar', length: 30, nullable: false })
-  accountType: string;
+  account_type: string;
 
   @Column({ type: 'varchar', length: 20, nullable: false })
-  accountNumber: string;
+  account_number: string;
 
   @Column({ type: 'varchar', length: 500, nullable: false })
   document: string;
@@ -38,7 +38,7 @@ export class License extends BaseEntity {
 
   @ManyToOne(() => User, (user) => user.licenseAdmin)
   
-  userAdmin: User;
+  user_admin: User;
 
   @Column({ type: 'bool', default: true })
   isActive: boolean;
@@ -49,32 +49,4 @@ export class License extends BaseEntity {
   @UpdateDateColumn({ name: 'updated_at', type: 'timestamp' })
   updatedAt: Date;
 
-  /*     @BeforeInsert()
-    @BeforeUpdate()
-    async hashPassword() {
-      if (!this.password) {
-        return;
-      }
-      this.password = await hash(this.password, 10);
-    }
-  
-    @BeforeInsert()
-    async validatePlate() {
-      const emailExist = await User.findOne({
-        where: { email: this.email },
-      });
-  
-      if (emailExist) {
-        throw new ConflictException('El correo ya se encuentra registrado');
-      }
-      const identificationExist = await User.findOne({
-        where: { identification: this.identification },
-      });
-  
-      if (identificationExist) {
-        throw new ConflictException(
-          'El numero de identificación ya se encuentra registrado',
-        );
-      }
-    } */
 }

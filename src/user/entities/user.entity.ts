@@ -21,7 +21,7 @@ import { Event } from 'src/event/entities/event.entity';
 export class User extends BaseEntity {
    
   @PrimaryGeneratedColumn()
-  id: string; 
+  id: number; 
 
   @Column({ type: 'varchar', length: 100, default: '', nullable: false })
   email;
@@ -59,7 +59,7 @@ export class User extends BaseEntity {
   @OneToMany((_) => Event, (event) => event.user)
   event: Event;
 
-  @OneToMany((_) => License, (license) => license.userAdmin)
+  @OneToMany((_) => License, (license) => license.user_admin)
   licenseAdmin: License;
 
   @Column({ type: 'simple-array' })
@@ -71,11 +71,35 @@ export class User extends BaseEntity {
   @Column({ type: 'bool', default: true })
   isActive: boolean;
 
+  @CreateDateColumn({ name: 'last_login', type: 'timestamp' })
+  lastLogin: Date;
+
   @CreateDateColumn({ name: 'created_at', type: 'timestamp' })
   createdAt: Date;
 
   @UpdateDateColumn({ name: 'updated_at', type: 'timestamp' })
   updatedAt: Date;
+
+
+  @BeforeUpdate()
+  @BeforeInsert()
+  updateTimeCreated() {
+    // Establecer la zona horaria de Ecuador en la fecha updatedAt
+    const currentTimestamp = new Date().toLocaleString('en-US', {
+      timeZone: 'America/Guayaquil',
+    });
+    this.createdAt = new Date(currentTimestamp);
+  }
+
+  @BeforeUpdate()
+  @BeforeInsert()
+  updateTimestamp() {
+    // Establecer la zona horaria de Ecuador en la fecha updatedAt
+    const currentTimestamp = new Date().toLocaleString('en-US', {
+      timeZone: 'America/Guayaquil',
+    });
+    this.updatedAt = new Date(currentTimestamp);
+  }
 
   @BeforeInsert()
   @BeforeUpdate()
@@ -84,6 +108,13 @@ export class User extends BaseEntity {
       return;
     }
     this.password = await hash(this.password, 10);
+  }
+
+  @BeforeInsert()
+  convertEmailToLowerCase() {
+    if (this.email) {
+      this.email = this.email.toLowerCase();
+    }
   }
 
   @BeforeInsert()

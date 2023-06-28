@@ -8,6 +8,7 @@ import {
   Delete,
   Logger,
   Res,
+  HttpStatus,
 } from '@nestjs/common';
 import { LicenseService } from './license.service';
 import { CreateLicenseDto } from './dto/create-license.dto';
@@ -18,6 +19,7 @@ import { AppResource } from 'src/app.roles';
 import { User } from 'src/user/entities/user.entity';
 import axios from 'axios';
 import { Response } from 'express';
+import { handleError } from 'src/common/helpers/error-handler.helper';
 @ApiTags('License')
 @Controller('license')
 export class LicenseController {
@@ -32,34 +34,19 @@ export class LicenseController {
   async create(
     @Body() createLicenseDto: CreateLicenseDto,
     @GetUser() user: User,
+    @Res() res: Response,
   ) {
-    createLicenseDto.userAdmin = user.id;
-    this.logger.log('Creando licencia');
-    return await this.licenseService.create(createLicenseDto);
-  }
-
- 
-  @Get('download')
-  async downloadFile(@Res() res: Response) {
     try {
-      const fileUrl = 'https://firebasestorage.googleapis.com/v0/b/barbados1569-47458.appspot.com/o/PPX-GIB%20Guia%20de%20implementaci%C3%B3n%20de%20Bot%C3%B3n%20de%20pagos%204.2.pdf?alt=media&token=358adecf-1254-4d2d-9f65-1107771472cc'; // Reemplaza con la URL del archivo que deseas descargar
-
-      const response = await axios.get(fileUrl, {
-        responseType: 'stream',
-      });
-
-      res.set({
-        'Content-Type':' application/pdf',
-        'Content-Disposition': response.headers['content-disposition'],
-      });
-console.log(response)
-      response.data.pipe(res);
+      createLicenseDto.user_admin = user.id;
+      this.logger.log('Creando licencia');
+      const data = await this.licenseService.create(createLicenseDto);
+      return res.status(HttpStatus.OK).json(data);
     } catch (error) {
-      console.error('Error al descargar el archivo:', error);
-      res.status(500).send('Error al descargar el archivo');
+      this.logger.error(error);
+      const errorData = handleError(error);
+      return res.status(errorData.statusCode).json(errorData);
     }
   }
-
 
   @Auth({
     possession: 'any',
@@ -67,9 +54,16 @@ console.log(response)
     resource: AppResource.LICENSE,
   })
   @Get()
-  async findAll() {
-    this.logger.log('Obteniendo todas las licencias');
-    return await this.licenseService.findAll();
+  async findAll(@Res() res: Response) {
+    try {
+      this.logger.log('Obteniendo todas las licencias');
+      const data = await this.licenseService.findAll();
+      return res.status(HttpStatus.OK).json(data);
+    } catch (error) {
+      this.logger.error(error);
+      const errorData = handleError(error);
+      return res.status(errorData.statusCode).json(errorData);
+    }
   }
   @Auth({
     possession: 'any',
@@ -77,9 +71,16 @@ console.log(response)
     resource: AppResource.LICENSE,
   })
   @Get(':id')
-  async findOne(@Param('id') id: string) {
-    this.logger.log('Buscando licencia con id: ', id);
-    return await this.licenseService.findOne(+id);
+  async findOne(@Param('id') id: string, @Res() res: Response) {
+    try {
+      this.logger.log('Buscando licencia con id: ', id);
+      const data = await this.licenseService.findOne(+id);
+      return res.status(HttpStatus.OK).json(data);
+    } catch (error) {
+      this.logger.error(error);
+      const errorData = handleError(error);
+      return res.status(errorData.statusCode).json(errorData);
+    }
   }
 
   @Auth({
@@ -88,9 +89,20 @@ console.log(response)
     resource: AppResource.LICENSE,
   })
   @Patch(':id')
-  update(@Param('id') id: string, @Body() updateLicenseDto: UpdateLicenseDto) {
-    this.logger.log('Actualizando licencia: ', id);
-    return this.licenseService.update(+id, updateLicenseDto);
+  update(
+    @Param('id') id: string,
+    @Body() updateLicenseDto: UpdateLicenseDto,
+    @Res() res: Response,
+  ) {
+    try {
+      this.logger.log('Actualizando licencia: ', id);
+      const data = this.licenseService.update(+id, updateLicenseDto);
+      return res.status(HttpStatus.OK).json(data);
+    } catch (error) {
+      this.logger.error(error);
+      const errorData = handleError(error);
+      return res.status(errorData.statusCode).json(errorData);
+    }
   }
   @Auth({
     possession: 'any',
@@ -98,8 +110,15 @@ console.log(response)
     resource: AppResource.LICENSE,
   })
   @Delete(':id')
-  remove(@Param('id') id: string) {
-    this.logger.log('Eliminando licencia: ', id);
-    return this.licenseService.remove(+id);
+  remove(@Param('id') id: string, @Res() res: Response) {
+    try {
+      this.logger.log('Eliminando licencia: ', id);
+      const data = this.licenseService.remove(+id);
+      return res.status(HttpStatus.OK).json(data);
+    } catch (error) {
+      this.logger.error(error);
+      const errorData = handleError(error);
+      return res.status(errorData.statusCode).json(errorData);
+    }
   }
 }

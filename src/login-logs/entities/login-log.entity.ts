@@ -1,4 +1,4 @@
-import { Entity, Column, PrimaryGeneratedColumn } from 'typeorm';
+import { Entity, Column, PrimaryGeneratedColumn, BeforeUpdate, BeforeInsert } from 'typeorm';
 
 @Entity({ name: 'loginLogs' })
 export class LoginLog {
@@ -29,7 +29,12 @@ export class LoginLog {
     onUpdate: 'CURRENT_TIMESTAMP',
   })
   updatedAt: Date;
+
+
+  
+
 }
+
 
 export interface Browser {
   name: string;

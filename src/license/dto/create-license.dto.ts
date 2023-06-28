@@ -16,7 +16,7 @@ export class CreateLicenseDto {
   })
   @IsNotEmpty()
   @IsDateString()
-  startDate: string;
+  start_date: string;
 
   @ApiProperty({
     example: '2023-05-28T02:31:07.313Z',
@@ -24,7 +24,7 @@ export class CreateLicenseDto {
   })
   @IsNotEmpty()
   @IsDateString()
-  endDate: string;
+  end_date: string;
 
   @ApiProperty({
     example: 'B. PICHINCHA',
@@ -40,7 +40,7 @@ export class CreateLicenseDto {
   })
   @IsNotEmpty()
   @IsString()
-  accountType: string;
+  account_type: string;
 
   @ApiProperty({
     example: '4244323',
@@ -48,7 +48,7 @@ export class CreateLicenseDto {
   })
   @IsNotEmpty()
   @IsNumberString()
-  accountNumber: string;
+  account_number: string;
 
   @ApiProperty({
     example: 'hhtp://url',
@@ -65,7 +65,7 @@ export class CreateLicenseDto {
   @IsNotEmpty()
   user: any;
 
-  userAdmin:any;
+  user_admin:any;
 
   @ApiPropertyOptional({
     example: true,

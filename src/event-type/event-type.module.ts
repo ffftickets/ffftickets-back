@@ -11,6 +11,7 @@ import { EventType } from './entities/event-type.entity';
     PassportModule.register({ defaultStrategy: 'jwt' }),
   ],
   controllers: [EventTypeController],
-  providers: [EventTypeService]
+  providers: [EventTypeService],
+  exports:[EventTypeService]
 })
 export class EventTypeModule {}
