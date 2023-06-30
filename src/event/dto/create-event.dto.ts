@@ -4,6 +4,7 @@ import {
   IsDateString,
   IsEnum,
   IsNotEmpty,
+  IsNumber,
   IsNumberString,
   IsOptional,
   IsString,
@@ -27,7 +28,7 @@ export class CreateEventDto {
   name: string;
 
   @ApiProperty({
-    example: '12/01/2022',
+    example: '2023-06-29 05:13:55',
     description: 'Fecha del evento',
   })
   @IsNotEmpty()
@@ -51,12 +52,20 @@ export class CreateEventDto {
   city: string;
 
   @ApiProperty({
+    example: 'Tungurahua',
+    description: 'Provincia del evento',
+  })
+  @IsNotEmpty()
+  @IsString()
+  province: string;
+
+  @ApiProperty({
     example: '9 de octubre',
     description: 'Dirección del evento',
   })
   @IsNotEmpty()
   @IsString()
-  location: string;
+  address: string;
 
   @ApiProperty({
     example: '-12.12,13.2',
@@ -80,24 +89,18 @@ export class CreateEventDto {
   })
   @IsOptional()
   @IsString()
-  ticket?: string;
-
-  @ApiProperty({
-    example: 'http:url',
-    description: 'Url de la imagen del ticket ',
-  })
-  @IsOptional()
-  @IsString()
   courtesy_ticket?: string;
 
   @ApiPropertyOptional({
     type: [],
     description: 'Galería informativa del evento',
   })
-  informative_gallery: any[];
+  @IsOptional()
+  informative_gallery?: any[];
 
   @ApiPropertyOptional({ type: [], description: 'Galeria del evento' })
-  event_gallery: any[];
+  @IsOptional()
+  event_gallery?: any[];
 
   @ApiPropertyOptional({
     example: '2300687510',
@@ -131,12 +134,9 @@ export class CreateEventDto {
   @IsNumberString()
   capacity_authorization?: string;
 
+ 
   @ApiPropertyOptional({
-    example: true,
-    description: 'Estado del evento',
-  })
-  @ApiPropertyOptional({
-    example: EventStatus.ACTIVE,
+    example: 'ACTIVE',
     description: 'Estado del evento',
     enum: EventStatus,
   })
@@ -153,12 +153,14 @@ export class CreateEventDto {
   @IsBoolean()
   isActive?: boolean;
 
-  @ApiPropertyOptional({
-    example: 'Publico',
-    description: 'Tipo de evento',
+  @ApiProperty({
+    example: 1,
+    description: 'Id tipo de evento',
   })
-  @IsOptional()
+  @IsNumber()
   event_type: any;
+
+
   @ApiPropertyOptional({
     type: [],
     description: 'Eventos pasados',

@@ -50,14 +50,47 @@ export class EventController {
   }
 
   @Get()
-  findAll() {
-    return this.eventService.findAll();
+  async findAll(@Res() res: Response) {
+    try {
+      this.logger.log('Buscando todos los eventos');
+      const data = await this.eventService.findAll();
+      return res.status(HttpStatus.OK).json(data);
+    } catch (error) {
+      this.logger.error(error);
+      const errorData = handleError(error);
+      return res.status(errorData.statusCode).json(errorData);
+    }
   }
 
+
   @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.eventService.findOne(+id);
+  async findOne(@Param('id') id: string, @Res() res: Response) {
+    try {
+      this.logger.log(`Buscando evento: ${id} `);
+      const data = await this.eventService.findOne(+id);
+      return res.status(HttpStatus.OK).json(data);
+    } catch (error) {
+      this.logger.error(error);
+      const errorData = handleError(error);
+      return res.status(errorData.statusCode).json(errorData);
+    }
   }
+
+  @Get('organizer/:organizer')
+  async findEventsByUser(@Param('organizer') organizer: string, @Res() res: Response) {
+    try {
+      this.logger.log(`Buscando eventos de usuario: ${organizer} `);
+      const data = await this.eventService.findEventsByUser(+organizer);
+      return res.status(HttpStatus.OK).json(data);
+    } catch (error) {
+      this.logger.error(error);
+      const errorData = handleError(error);
+      return res.status(errorData.statusCode).json(errorData);
+    }
+  }
+
+
+
   @Auth()
   @Patch(':id')
   async update(
@@ -69,52 +102,57 @@ export class EventController {
     try {
       this.logger.log(`Actualizando evento: `, updateEventDto.name);
       const event = await this.eventService.findOne(+id);
-      if (
-        updateEventDto.ticket 
-      ) {
-        let img = await this.firebaseService.uploadBase64({
-          route: `${user.id} - ${user.name}/${event.name}`,
-          image: updateEventDto.ticket,
-        });
-        updateEventDto.ticket = img.imageUrl;
-      }
+      this.logger.log('Verificando tickets.');
+
+      this.logger.log('Verificando pases de cortesía.');
       if (updateEventDto.courtesy_ticket) {
         let img = await this.firebaseService.uploadBase64({
           route: `${user.id} - ${user.name}/${event.name}`,
           image: updateEventDto.courtesy_ticket,
         });
+        if (event.courtesy_ticket)
+          this.firebaseService.deleteImageByUrl(event.courtesy_ticket);
         updateEventDto.courtesy_ticket = img.imageUrl;
       }
+      this.logger.log('Verificando poster.');
       if (updateEventDto.poster) {
         let img = await this.firebaseService.uploadBase64({
           route: `${user.id} - ${user.name}/${event.name}`,
           image: updateEventDto.poster,
         });
+        if (event.poster) this.firebaseService.deleteImageByUrl(event.poster);
         updateEventDto.poster = img.imageUrl;
       }
+      this.logger.log('Verificando galería de eventos.');
       if (updateEventDto.event_gallery) {
         const updatedImages = [];
         for (const image of updateEventDto.event_gallery) {
           const img = await this.firebaseService.uploadBase64({
-            route: `${user.id} - ${user.name}/${event.name}`,
+            route: `${user.id} - ${user.name}/${event.name}/event-gallery`,
             image: image,
           });
           updatedImages.push(img.imageUrl);
         }
-        updateEventDto.event_gallery = updatedImages;
+        updateEventDto.event_gallery = [
+          ...updatedImages,
+          ...event.event_gallery,
+        ];
       }
+      this.logger.log('Verificando galería informativa.');
       if (updateEventDto.informative_gallery) {
         const updatedImages = [];
         for (const image of updateEventDto.informative_gallery) {
           const img = await this.firebaseService.uploadBase64({
-            route: `${user.id} - ${user.name}/${event.name}`,
+            route: `${user.id} - ${user.name}/${event.name}/informative-gallery`,
             image: image,
           });
           updatedImages.push(img.imageUrl);
         }
-        updateEventDto.informative_gallery = updatedImages;
+        updateEventDto.informative_gallery = [
+          ...updatedImages,
+          ...event.informative_gallery,
+        ];
       }
-      console.log('eventDto', updateEventDto);
       const data = await this.eventService.update(+id, updateEventDto);
       return res.status(HttpStatus.OK).json(data);
     } catch (error) {
@@ -124,8 +162,33 @@ export class EventController {
     }
   }
 
+  @Delete('/img/:id/:url')
+  async deleteImgEvent(
+    @Param('id') id: string,
+    @Param('url') url: string,
+    @Res() res: Response,
+  ) {
+    try {
+      this.logger.log(`Eliminando imagen: ${url}`);
+      const data = await this.eventService.deleteImgEvent(+id, url);
+      return res.status(HttpStatus.OK).json(data);
+    } catch (error) {
+      this.logger.error(error);
+      const errorData = handleError(error);
+      return res.status(errorData.statusCode).json(errorData);
+    }
+  }
+
   @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.eventService.remove(+id);
+  async remove(@Param('id') id: string, @Res() res: Response) {
+    try {
+      this.logger.log(`Eliminando evento: ${id}`);
+      const data = await this.eventService.remove(+id);
+      return res.status(HttpStatus.OK).json(data);
+    } catch (error) {
+      this.logger.error(error);
+      const errorData = handleError(error);
+      return res.status(errorData.statusCode).json(errorData);
+    }
   }
 }

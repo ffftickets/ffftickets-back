@@ -12,6 +12,7 @@ import { Repository } from 'typeorm';
 import { FindUserDto } from './dto';
 import { UserStatus } from 'src/core/enums';
 import { handleDbError } from 'src/common/helpers/db-error-handler.helper';
+import { IdentificationType } from './emun/identification-type.enum';
 
 @Injectable()
 export class UserService {
@@ -49,6 +50,8 @@ export class UserService {
           isActive: true,
           birthdate: '2023-05-28T02:31:07.313Z',
           gender: 'MASCULINO',
+          terms: true,
+          IdentificationType: IdentificationType.CEDULA,
         },
       ];
       const newUsers = this.userRepository.create(users);
@@ -63,7 +66,12 @@ export class UserService {
 
   async findAll() {
     try {
-      return await this.userRepository.find();
+      const data = await this.userRepository.find();
+      const dataWithoutPasswords = data.map((user) => {
+        const { password, ...userWithoutPassword } = user;
+        return userWithoutPassword;
+      });
+      return dataWithoutPasswords;
     } catch (error) {
       this.logger.error(error);
       handleDbError(error);
@@ -74,13 +82,12 @@ export class UserService {
     try {
       const user = await this.userRepository
         .createQueryBuilder('user')
-        .where('user.isActive = :isActive', { isActive: true })
-        .andWhere(data)
+        .where(data)
         .addSelect('user.password')
         .getOne();
 
       if (!user) throw new NotFoundException('No se encontró al usuario');
-
+      delete user.password;
       return user;
     } catch (error) {
       this.logger.error(error);
@@ -99,6 +106,7 @@ export class UserService {
       user.password = updateUserDto.password;
       user.status = updateUserDto.status;
       await this.userRepository.save(user);
+      delete user.password;
       return user;
     } catch (error) {
       this.logger.error(error);
@@ -108,7 +116,8 @@ export class UserService {
 
   async remove(id: number) {
     try {
-      const user = await this.userRepository.update(id, { isActive: false });
+      await this.userRepository.update(id, { isActive: false });
+      const user = await this.findOne({ id });
       return user;
     } catch (error) {
       this.logger.error(error);

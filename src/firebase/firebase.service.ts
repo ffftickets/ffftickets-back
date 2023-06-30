@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { initializeApp } from 'firebase/app';
 import {
@@ -10,9 +10,10 @@ import {
   FIREBASE_PROJECT_ID,
   FIREBASE_STORAGE_BUCKET,
 } from 'src/config/config.env';
-import { getStorage, ref, uploadString } from 'firebase/storage';
+import { deleteObject, getStorage, ref, uploadString } from 'firebase/storage';
 import { v4 as uuidv4 } from 'uuid';
 import { UploadBase64ImageDto } from './dto';
+import { handleDbError } from 'src/common/helpers/db-error-handler.helper';
 @Injectable()
 export class FirebaseService {
   /**
@@ -31,19 +32,17 @@ export class FirebaseService {
   firebaseApp = null;
 
   storageBucket = `gs://${this.firebaseConfig.storageBucket}`;
-
+  logger = new Logger(FirebaseService.name);
   constructor(private readonly configService: ConfigService) {
     this.firebaseApp = initializeApp(this.firebaseConfig);
   }
- async  uploadBase64(body: UploadBase64ImageDto){
-    const imageName = uuidv4();
+  async uploadBase64(body: UploadBase64ImageDto) {
+    try {
+      const imageName = uuidv4();
       const imageData = body.image.includes('data:')
         ? body.image.split(',')[1]
         : body.image;
-      const storage = getStorage(
-        this.firebaseApp,
-        this.storageBucket,
-      );
+      const storage = getStorage(this.firebaseApp, this.storageBucket);
 
       const storageRef = ref(storage, `${body.route}/${imageName}`);
 
@@ -59,5 +58,33 @@ export class FirebaseService {
       )}?alt=media`;
 
       return { imageUrl };
+    } catch (error) {
+      this.logger.error('Error al eliminar la imagen:', error);
+      handleDbError(error);
+    }
+  }
+  async deleteImageByUrl(imageUrl: string) {
+    const decodedUrl = decodeURIComponent(imageUrl);
+    const startIndex = decodedUrl.indexOf('/o/');
+
+    if (startIndex === -1) {
+      throw new BadRequestException('El enlace proporcionado no es válido.');
+    }
+
+    const imagePath = decodedUrl.substring(
+      startIndex + 3,
+      decodedUrl.indexOf('?'),
+    );
+    const storage = getStorage();
+    const imageRef = ref(storage, imagePath);
+
+    try {
+      const data = await deleteObject(imageRef);
+      this.logger.log('Imagen eliminada correctamente.');
+      return true;
+    } catch (error) {
+      this.logger.error('Error al eliminar la imagen:', error);
+      return;
+    }
   }
 }

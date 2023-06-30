@@ -17,11 +17,13 @@ import { LicenseModule } from './license/license.module';
 import { EventModule } from './event/event.module';
 import { EventTypeModule } from './event-type/event-type.module';
 import { LocalitiesModule } from './localities/localities.module';
-import { DistributionModule } from './distribution/distribution.module';
 import { AuthModule } from './auth/auth.module';
 import { LoginLogsModule } from './login-logs/login-logs.module';
 import { RoleModule } from './role/role.module';
 import { FirebaseModule } from './firebase/firebase.module';
+import { InvitationModule } from './invitation/invitation.module';
+import { SalesModule } from './sales/sales.module';
+import { TicketsModule } from './tickets/tickets.module';
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true, load: [configuration] }),
@@ -53,8 +55,6 @@ import { FirebaseModule } from './firebase/firebase.module';
 
     LocalitiesModule,
 
-    DistributionModule,
-
     AuthModule,
 
     LoginLogsModule,
@@ -62,6 +62,12 @@ import { FirebaseModule } from './firebase/firebase.module';
     RoleModule,
 
     FirebaseModule,
+
+    InvitationModule,
+
+    SalesModule,
+
+    TicketsModule,
 
   ],
   controllers: [AppController],

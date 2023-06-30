@@ -65,7 +65,7 @@ export class CreateLicenseDto {
   @IsNotEmpty()
   user: any;
 
-  user_admin:any;
+  userAdmin:any;
 
   @ApiPropertyOptional({
     example: true,

@@ -1,9 +1,17 @@
-import { Controller, Post, Body, Res, Logger } from '@nestjs/common';
+import {
+  Controller,
+  Post,
+  Body,
+  Res,
+  Logger,
+  Delete,
+  HttpStatus,
+} from '@nestjs/common';
 import { FirebaseService } from './firebase.service';
 import { ApiTags } from '@nestjs/swagger';
-import { getStorage, ref, uploadString } from 'firebase/storage';
-import { UploadBase64ImageDto } from './dto';
-import { v4 as uuidv4 } from 'uuid';
+
+import { DeleteImg, UploadBase64ImageDto } from './dto';
+
 import { Response } from 'express';
 import { handleError } from 'src/common/helpers/error-handler.helper';
 @ApiTags('Firebase')
@@ -14,29 +22,19 @@ export class FirebaseController {
   @Post('upload')
   async uploadBase64(@Body() body: UploadBase64ImageDto, @Res() res: Response) {
     try {
-      const imageName = uuidv4();
-      const imageData = body.image.includes('data:')
-        ? body.image.split(',')[1]
-        : body.image;
-      const storage = getStorage(
-        this.firebaseService.firebaseApp,
-        this.firebaseService.storageBucket,
-      );
-
-      const storageRef = ref(storage, `${body.route}/${imageName}`);
-
-      const result = await uploadString(storageRef, imageData, 'base64', {
-        contentType: 'image/jpeg',
-      });
-
-      const bucket = result.metadata.bucket;
-      const imagePath = result.metadata.fullPath;
-
-      const imageUrl = `https://firebasestorage.googleapis.com/v0/b/${bucket}/o/${encodeURIComponent(
-        imagePath,
-      )}?alt=media`;
-
-      return { imageUrl };
+      const data = await this.firebaseService.uploadBase64(body);
+      return data;
+    } catch (error) {
+      this.logger.error(error);
+      const errorData = handleError(error);
+      return res.status(errorData.statusCode).json(errorData);
+    }
+  }
+  @Delete('img')
+  async deleteImg(@Body() body: DeleteImg, @Res() res: Response) {
+    try {
+      await this.firebaseService.deleteImageByUrl(body.image);
+      return res.status(HttpStatus.OK).json('Imagen eliminada correctamente.');
     } catch (error) {
       this.logger.error(error);
       const errorData = handleError(error);

@@ -20,7 +20,7 @@ roles
   // USER ROLES
   .grant(AppRoles.CUSTOMER)
   .updateAny([AppResource.USER])
-  .readAny([AppResource.EVENT_TYPE])
+  .readAny([AppResource.EVENT])
 
   //ORGANIZER ROLES
   .grant(AppRoles.ORGANIZER)

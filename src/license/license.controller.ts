@@ -37,7 +37,7 @@ export class LicenseController {
     @Res() res: Response,
   ) {
     try {
-      createLicenseDto.user_admin = user.id;
+      createLicenseDto.userAdmin = user.id;
       this.logger.log('Creando licencia');
       const data = await this.licenseService.create(createLicenseDto);
       return res.status(HttpStatus.OK).json(data);

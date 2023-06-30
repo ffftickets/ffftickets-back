@@ -51,9 +51,11 @@ export class EventTypeService {
 
   async update(id: number, updateEventTypeDto: UpdateEventTypeDto) {
     try {
-      return await this.eventTypeRepository.update(id, {
+ 
+       await this.eventTypeRepository.update(id, {
         ...updateEventTypeDto
       });
+      return await this.findOne(id);
     } catch (error) {
       this.logger.error(error);
       handleDbError(error);
@@ -62,9 +64,10 @@ export class EventTypeService {
 
   async delete(id: number) {
     try {
-      return await this.eventTypeRepository.update(id, {
+       await this.eventTypeRepository.update(id, {
         isActive: false,
       });
+      return await this.findOne(id);
     } catch (error) {
       this.logger.error(error);
       handleDbError(error);

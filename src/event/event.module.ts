@@ -15,6 +15,7 @@ import { FirebaseModule } from 'src/firebase/firebase.module';
   ],
   controllers: [EventController],
   providers: [EventService],
+  exports:[EventService]
   
 })
 export class EventModule {}

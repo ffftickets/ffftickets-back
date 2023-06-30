@@ -15,11 +15,11 @@ export class License extends BaseEntity {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column({ type: 'varchar', length: 75, nullable: false })
-  start_date: string;
+  @Column({ type: 'timestamp',  nullable: false })
+  start_date: Date;
 
-  @Column({ type: 'varchar', length: 75, nullable: false })
-  endDate: string;
+  @Column({ type: 'timestamp', nullable: false })
+  end_date: Date;
 
   @Column({ type: 'varchar', length: 75, nullable: false })
   institution: string;
@@ -38,7 +38,7 @@ export class License extends BaseEntity {
 
   @ManyToOne(() => User, (user) => user.licenseAdmin)
   
-  user_admin: User;
+  userAdmin: User;
 
   @Column({ type: 'bool', default: true })
   isActive: boolean;

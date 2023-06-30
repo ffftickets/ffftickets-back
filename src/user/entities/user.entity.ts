@@ -19,14 +19,13 @@ import { Event } from 'src/event/entities/event.entity';
 
 @Entity('user')
 export class User extends BaseEntity {
-   
   @PrimaryGeneratedColumn()
-  id: number; 
+  id: number;
 
   @Column({ type: 'varchar', length: 100, default: '', nullable: false })
   email;
 
-  @Column({ type: 'varchar',length: 500, nullable: false })
+  @Column({ type: 'varchar', length: 500, nullable: false })
   password: string;
 
   @Column({ type: 'varchar', length: 75, nullable: false })
@@ -48,18 +47,18 @@ export class User extends BaseEntity {
   address: string;
 
   @Column({ type: 'varchar', length: 25, nullable: false })
-  birthdate:string;
+  birthdate: string;
 
-  @Column({ type: 'enum', enum: Gender})
-  gender:string;
-  
+  @Column({ type: 'enum', enum: Gender })
+  gender: string;
+
   @OneToMany((_) => License, (license) => license.user)
   licenseUser: License;
 
   @OneToMany((_) => Event, (event) => event.user)
   event: Event;
 
-  @OneToMany((_) => License, (license) => license.user_admin)
+  @OneToMany((_) => License, (license) => license.userAdmin)
   licenseAdmin: License;
 
   @Column({ type: 'simple-array' })
@@ -71,6 +70,9 @@ export class User extends BaseEntity {
   @Column({ type: 'bool', default: true })
   isActive: boolean;
 
+  @Column({ type: 'bool', default: false })
+  terms: boolean;
+
   @CreateDateColumn({ name: 'last_login', type: 'timestamp' })
   lastLogin: Date;
 
@@ -79,7 +81,6 @@ export class User extends BaseEntity {
 
   @UpdateDateColumn({ name: 'updated_at', type: 'timestamp' })
   updatedAt: Date;
-
 
   @BeforeUpdate()
   @BeforeInsert()

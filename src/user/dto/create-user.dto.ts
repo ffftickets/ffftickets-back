@@ -1,5 +1,3 @@
-
-
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import {
   IsString,
@@ -12,18 +10,15 @@ import {
   IsEmail,
   IsNumberString,
   IsDateString,
-  IsArray
+  IsArray,
 } from 'class-validator';
 import { AppRoles } from 'src/app.roles';
 import { EnumToString } from 'src/common/helpers/emuns/enumToString';
 import { Gender } from 'src/core/enums';
 import { UserStatus } from 'src/core/enums/user-status.emun';
-
+import { IdentificationType } from '../emun/identification-type.enum';
 
 export class CreateUserDto {
-
-
-
   @ApiProperty({
     example: 'user123@gmail.com',
     description: 'Email del usuario',
@@ -31,7 +26,7 @@ export class CreateUserDto {
   @IsNotEmpty()
   @IsEmail()
   @MaxLength(100)
-  email:string;
+  email: string;
 
   @ApiProperty({
     example: '12345678',
@@ -103,12 +98,26 @@ export class CreateUserDto {
     description: 'Rol del usuario',
     enum: AppRoles,
   })
-  @ApiPropertyOptional({type:  [], description: 'Roles del usuario',enum:AppRoles,example:AppRoles.CUSTOMER })
+  @ApiPropertyOptional({
+    type: [],
+    description: 'Roles del usuario',
+    enum: AppRoles,
+    example: AppRoles.CUSTOMER,
+  })
   @IsEnum(AppRoles, {
     each: true,
     message: `must be a valid role value, ${EnumToString(AppRoles)}`,
   })
   roles: string[];
+
+  @ApiProperty({
+    example: IdentificationType.CEDULA,
+    description: 'Tipo de identificación',
+    enum: IdentificationType,
+  })
+  @IsString()
+  @IsEnum(IdentificationType)
+  IdentificationType: string;
 
   @ApiPropertyOptional({
     example: UserStatus.ACTIVE,
@@ -128,13 +137,21 @@ export class CreateUserDto {
   @IsBoolean()
   isActive: boolean;
 
+  @ApiPropertyOptional({
+    example: true,
+    description: 'Aceptación de términos y condiciones',
+  })
+  @IsOptional()
+  @IsBoolean()
+  terms?: boolean;
+
   @ApiProperty({
     example: '2023-05-28T02:31:07.313Z',
     description: 'Fecha del cumpleaños del usuario',
   })
   @IsNotEmpty()
   @IsDateString()
-  birthdate:string;
+  birthdate: string;
 
   @ApiProperty({
     example: Gender.MASCULINO,
@@ -144,8 +161,5 @@ export class CreateUserDto {
   @IsNotEmpty()
   @IsString()
   @IsEnum(Gender)
-  gender:string;
-  
-
- 
+  gender: string;
 }

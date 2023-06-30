@@ -102,7 +102,7 @@ export class UserController {
   async findOne(@Param('id') id: number, @Res() res: Response) {
     try {
       this.logger.log('Buscando usuario por ID: ', id);
-      const data = this.userService.findOne({ id });
+      const data = await this.userService.findOne({ id });
       return res.status(HttpStatus.OK).json(data);
     } catch (error) {
       this.logger.error(error);

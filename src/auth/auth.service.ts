@@ -24,7 +24,6 @@ export class AuthService {
       const { id, ...rest } = user;
       const payload = { sub: id };
       this.userService.updateLastLogin(+id);
-      delete user.password;
       return {
         user,
         accessToken: this.jwtService.sign(payload),
