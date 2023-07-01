@@ -9,5 +9,16 @@ export const initSwagger = (app: INestApplication, title?: string, description?:
     .addBearerAuth()
     .build();
   const document = SwaggerModule.createDocument(app, swaggerConfig);
-  SwaggerModule.setup('/docs', app, document);
+
+  const sortedPaths = Object.keys(document.paths).sort(); 
+
+  const sortedDocument = {
+    ...document,
+    paths: sortedPaths.reduce((acc, key) => {
+      acc[key] = document.paths[key];
+      return acc;
+    }, {}),
+  };
+
+  SwaggerModule.setup('/docs', app, sortedDocument);
 };

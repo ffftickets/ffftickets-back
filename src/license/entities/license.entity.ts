@@ -37,7 +37,6 @@ export class License extends BaseEntity {
   user: User;
 
   @ManyToOne(() => User, (user) => user.licenseAdmin)
-  
   userAdmin: User;
 
   @Column({ type: 'bool', default: true })

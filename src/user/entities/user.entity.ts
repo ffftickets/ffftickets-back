@@ -16,6 +16,7 @@ import { ConflictException } from '@nestjs/common';
 import { Gender, UserStatus } from 'src/core/enums';
 import { License } from 'src/license/entities/license.entity';
 import { Event } from 'src/event/entities/event.entity';
+import { Sale } from 'src/sales/entities/sale.entity';
 
 @Entity('user')
 export class User extends BaseEntity {
@@ -60,6 +61,15 @@ export class User extends BaseEntity {
 
   @OneToMany((_) => License, (license) => license.userAdmin)
   licenseAdmin: License;
+
+  @OneToMany((_) => Sale, (sale) => sale.organizer)
+  saleOrganizer: Sale;
+
+  @OneToMany((_) => Sale, (sale) => sale.promoter)
+  salePromoter: Sale;
+  
+  @OneToMany((_) => Sale, (sale) => sale.customer)
+  saleCustomer: Sale;
 
   @Column({ type: 'simple-array' })
   roles: string[];

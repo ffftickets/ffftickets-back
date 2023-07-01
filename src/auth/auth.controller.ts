@@ -21,7 +21,7 @@ import { UserService } from 'src/user/user.service';
 import { UserStatus } from 'src/core/enums';
 import { Request } from 'express';
 import { LoginLogsService } from 'src/login-logs/login-logs.service';
-@ApiTags('Auth routes')
+@ApiTags('Auth')
 @Controller('auth')
 export class AuthController {
   constructor(
@@ -37,7 +37,7 @@ export class AuthController {
     this.logger.log('Logeando usuario: ', loginDto.email);
     //TODO: GUARDAR LOG DE LOGUEO Y MEJORAR EL CONTROL DE ERRORES DE INICIO DE SESIÓN
    
-    const user = await this.userService.findOne({ email: loginDto.email });
+    const user = await this.userService.findUserByLogin( loginDto.email);
 
     if (!user) {
       await this.loginLogsService.createLoginLog({
@@ -96,7 +96,7 @@ export class AuthController {
         userAgent: req['ua'],
       });
 
-      const incorrectLogins = await this.loginLogsService.countBadLoginLogs(user.email,user.lastLogin);
+      const incorrectLogins = await this.loginLogsService.countBadLoginLogs(user.email,user.lastLogin>=user.updatedAt ? user.lastLogin : user.updatedAt  );
 
       console.log(incorrectLogins)
       this.logger.debug('Incorrect logins: ' + incorrectLogins);

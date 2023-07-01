@@ -94,6 +94,17 @@ export class UserService {
       handleDbError(error);
     }
   }
+  async findUserByLogin(email: string) {
+    try {
+      const user = await this.userRepository.findOne({ where: { email } });
+
+      if (!user) throw new NotFoundException('No se encontró al usuario');
+      return user;
+    } catch (error) {
+      this.logger.error(error);
+      handleDbError(error);
+    }
+  }
 
   async update(id: number, updateUserDto: UpdateUserDto) {
     try {
@@ -136,10 +147,15 @@ export class UserService {
   }
   async unblockUser(id: number) {
     try {
-      await this.updateLastLogin(id);
-      return await this.userRepository.update(id, {
+      /* await this.updateLastLogin(id); */
+      const user = await this.findOne({ id });
+
+      const data = await this.userRepository.update(id, {
         status: UserStatus.ACTIVE,
       });
+
+      user.status = UserStatus.ACTIVE;
+      return user;
     } catch (error) {
       this.logger.error(error);
       handleDbError(error);

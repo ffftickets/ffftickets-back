@@ -4,6 +4,7 @@ import { MoreThan, MoreThanOrEqual, Repository } from 'typeorm';
 import { LoginLog } from './entities/login-log.entity';
 import { CreateLoginLogDto } from './dto';
 import { handleDbError } from 'src/common/helpers/db-error-handler.helper';
+import { UserService } from 'src/user/user.service';
 
 @Injectable()
 export class LoginLogsService {
@@ -12,6 +13,7 @@ export class LoginLogsService {
   constructor(
     @InjectRepository(LoginLog)
     private readonly loginLogRepository: Repository<LoginLog>,
+    private readonly userService: UserService,
   ) {}
 
   async createLoginLog(createLoginLogDto: CreateLoginLogDto) {
@@ -26,6 +28,8 @@ export class LoginLogsService {
 
   async countBadLoginLogs(email: string, lastLogin: Date) {
     try {
+      const updatedAt = (await this.userService.findOne({ email })).updatedAt;
+
       return await this.loginLogRepository
         .createQueryBuilder('loginLog')
         .where('loginLog.email = :email', { email })
@@ -36,6 +40,5 @@ export class LoginLogsService {
       this.logger.error(error);
       handleDbError(error);
     }
-    this.logger.log('Contando registros de login fallidos');
   }
 }

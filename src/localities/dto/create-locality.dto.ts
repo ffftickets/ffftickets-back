@@ -1,6 +1,6 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { IsBoolean, IsEnum, IsNotEmpty, IsNumber, IsOptional, IsString } from 'class-validator';
-import { LocaliteStatus } from '../emun/localite-status.enum';
+import { LocaliteStatus } from '../enum/localite-status.enum';
 
 export class CreateLocalityDto {
   @ApiPropertyOptional({
@@ -48,7 +48,7 @@ export class CreateLocalityDto {
   })
   @IsString()
   @IsNotEmpty()
-  ticket: string;
+  photo: string;
 
   @ApiProperty({
     example: LocaliteStatus.ACTIVE,

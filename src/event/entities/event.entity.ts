@@ -15,6 +15,7 @@ import { EventType } from 'src/event-type/entities/event-type.entity';
 import { User } from 'src/user/entities/user.entity';
 import { EventStatus } from '../emun/status-event.enum';
 import { Localities } from 'src/localities/entities/localities.entity';
+import { Sale } from 'src/sales/entities/sale.entity';
 
 @Entity('event')
 export class Event extends BaseEntity {
@@ -87,4 +88,13 @@ export class Event extends BaseEntity {
 
   @UpdateDateColumn({ name: 'updated_at', type: 'timestamp' })
   updatedAt: Date;
+
+  @OneToMany((_) => Sale, (sale) => sale.event)
+  sale: Sale;
+
+
+  
+
+
+
 }

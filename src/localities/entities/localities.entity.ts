@@ -4,10 +4,12 @@ import {
   CreateDateColumn,
   Entity,
   ManyToOne,
+  OneToMany,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
-import { LocaliteStatus } from '../emun/localite-status.enum';
+import { LocaliteStatus } from '../enum/localite-status.enum';
+import { Ticket } from 'src/tickets/entities/ticket.entity';
 
 @Entity('localities')
 export class Localities {
@@ -30,7 +32,7 @@ export class Localities {
   sold: number;
 
   @Column({ type: 'varchar', nullable: false })
-  ticket: string;
+  photo: string;
 
   @Column({ type: 'enum',enum: LocaliteStatus, default: LocaliteStatus.ACTIVE })
   status: string;
@@ -43,4 +45,7 @@ export class Localities {
 
   @UpdateDateColumn({ name: 'updated_at', type: 'timestamp' })
   updatedAt: Date;
+  
+  @OneToMany((_) => Ticket, (ticket) => ticket.locality)
+  ticket: Ticket;
 }

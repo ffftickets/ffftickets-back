@@ -1,4 +1,9 @@
-import { ConflictException, Injectable, Logger, NotFoundException } from '@nestjs/common';
+import {
+  ConflictException,
+  Injectable,
+  Logger,
+  NotFoundException,
+} from '@nestjs/common';
 import { CreateLocalityDto } from './dto/create-locality.dto';
 import { UpdateLocalityDto } from './dto/update-locality.dto';
 import { handleDbError } from 'src/common/helpers/db-error-handler.helper';
@@ -36,7 +41,8 @@ export class LocalitiesService {
         .innerJoin('locality.event', 'event')
         .select(['locality', 'event'])
         .getMany();
-        if (!localities || localities.length===0) throw new NotFoundException('No se encontraron localidades');
+      if (!localities || localities.length === 0)
+        throw new NotFoundException('No se encontraron localidades');
       return localities;
     } catch (error) {
       this.logger.error(error);
@@ -52,7 +58,7 @@ export class LocalitiesService {
         .select(['locality', 'event'])
         .where('locality.id=:id', { id })
         .getOne();
-        if (locality) throw new NotFoundException('No se encontró la localidad');
+      if (locality) throw new NotFoundException('No se encontró la localidad');
       return locality;
     } catch (error) {
       this.logger.error(error);
@@ -67,7 +73,8 @@ export class LocalitiesService {
         .select(['locality', 'event'])
         .where('locality.event=:id', { id })
         .getMany();
-        if (!localities || localities.length===0) throw new NotFoundException('No se encontraron localidades');
+      if (!localities || localities.length === 0)
+        throw new NotFoundException('No se encontraron localidades');
       return localities;
     } catch (error) {
       this.logger.error(error);
@@ -91,7 +98,7 @@ export class LocalitiesService {
   async remove(id: number) {
     try {
       await this.localitiesRepository.update(id, { isActive: false });
-      const data =  await this.findOne(id);
+      const data = await this.findOne(id);
       return data;
     } catch (error) {
       this.logger.error(error);

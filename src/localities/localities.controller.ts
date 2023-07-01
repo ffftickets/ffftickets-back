@@ -39,10 +39,10 @@ export class LocalitiesController {
        await this.localitiesService.verifyExist(event.id,createLocalityDto.name) 
       createLocalityDto.event = event;
       const uploadImg: UploadBase64ImageDto = {
-        image: createLocalityDto.ticket,
+        image: createLocalityDto.photo,
         route: `${event.user.id} - ${event.user.name}/${event.name}/localities/${createLocalityDto.name}`,
       };
-      createLocalityDto.ticket = (
+      createLocalityDto.photo = (
         await this.firebaseService.uploadBase64(uploadImg)
       ).imageUrl;
       const data = await this.localitiesService.create(createLocalityDto);
@@ -105,17 +105,17 @@ export class LocalitiesController {
       const locality = await this.localitiesService.findOne(+id);
 
       const event = await this.eventService.findOne(+locality.event.id);
-      if (updateLocalityDto.ticket) {
+      if (updateLocalityDto.photo) {
         const uploadImg: UploadBase64ImageDto = {
-          image: updateLocalityDto.ticket,
+          image: updateLocalityDto.photo,
           route: `${event.user.id} - ${event.user.name}/${event.name}/localities/${locality.name}`,
         };
-        updateLocalityDto.ticket = (
+        updateLocalityDto.photo = (
           await this.firebaseService.uploadBase64(uploadImg)
         ).imageUrl;
       }
-      if (locality.ticket) console.log(locality.ticket);
-      await this.firebaseService.deleteImageByUrl(locality.ticket);
+      if (locality.photo) console.log(locality.photo);
+      await this.firebaseService.deleteImageByUrl(locality.photo);
       const data = await this.localitiesService.update(+id, updateLocalityDto);
       return res.status(HttpStatus.OK).json(data);
     } catch (error) {

@@ -63,6 +63,20 @@ export class UserController {
       return res.status(errorData.statusCode).json(errorData);
     }
   }
+  @Patch(':id/unblock')
+  async UnblockUser( @Param('id') id: number,
+    @Res() res: Response,
+  ) {
+    try {
+      this.logger.log('Desbloqueando usuario', id);
+      const data = await this.userService.unblockUser(id);
+      return res.status(HttpStatus.OK).json(data);
+    } catch (error) {
+      this.logger.error(error);
+      const errorData = handleError(error);
+      return res.status(errorData.statusCode).json(errorData);
+    }
+  }
 
   @Get('/userSeed')
   async UserSeed(@Res() res: Response) {
