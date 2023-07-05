@@ -17,6 +17,7 @@ import { Gender, UserStatus } from 'src/core/enums';
 import { License } from 'src/license/entities/license.entity';
 import { Event } from 'src/event/entities/event.entity';
 import { Sale } from 'src/sales/entities/sale.entity';
+import { EventPromoter } from 'src/event-promoter/entities/event-promoter.entity';
 
 @Entity('user')
 export class User extends BaseEntity {
@@ -64,6 +65,7 @@ export class User extends BaseEntity {
 
   @OneToMany((_) => Sale, (sale) => sale.organizer)
   saleOrganizer: Sale;
+  
 
   @OneToMany((_) => Sale, (sale) => sale.promoter)
   salePromoter: Sale;
@@ -82,6 +84,9 @@ export class User extends BaseEntity {
 
   @Column({ type: 'bool', default: false })
   terms: boolean;
+
+  @OneToMany((_) => EventPromoter, (eventPromoter) => eventPromoter.promoter)
+  eventPromoter: EventPromoter;
 
   @CreateDateColumn({ name: 'last_login', type: 'timestamp' })
   lastLogin: Date;

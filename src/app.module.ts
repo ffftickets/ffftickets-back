@@ -24,6 +24,8 @@ import { FirebaseModule } from './firebase/firebase.module';
 import { InvitationModule } from './invitation/invitation.module';
 import { SalesModule } from './sales/sales.module';
 import { TicketsModule } from './tickets/tickets.module';
+import { CouponModule } from './coupon/coupon.module';
+import { EventPromoterModule } from './event-promoter/event-promoter.module';
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true, load: [configuration] }),
@@ -68,6 +70,10 @@ import { TicketsModule } from './tickets/tickets.module';
     SalesModule,
 
     TicketsModule,
+
+    CouponModule,
+
+    EventPromoterModule,
 
   ],
   controllers: [AppController],

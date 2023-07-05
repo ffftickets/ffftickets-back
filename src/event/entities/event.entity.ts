@@ -16,6 +16,7 @@ import { User } from 'src/user/entities/user.entity';
 import { EventStatus } from '../emun/status-event.enum';
 import { Localities } from 'src/localities/entities/localities.entity';
 import { Sale } from 'src/sales/entities/sale.entity';
+import { EventPromoter } from 'src/event-promoter/entities/event-promoter.entity';
 
 @Entity('event')
 export class Event extends BaseEntity {
@@ -91,6 +92,9 @@ export class Event extends BaseEntity {
 
   @OneToMany((_) => Sale, (sale) => sale.event)
   sale: Sale;
+
+  @OneToMany((_) => EventPromoter, (eventPromoter) => eventPromoter.event)
+  promoter: EventPromoter;
 
 
   

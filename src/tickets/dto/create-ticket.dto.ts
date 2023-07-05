@@ -8,6 +8,11 @@ import {
 } from 'class-validator';
 import { TicketStatus } from '../enum/ticket-status.enum';
 
+export class DetailTicket {
+  quantity: number;
+  locality: number;
+}
+
 export class CreateTicketDto {
   @ApiProperty({
     example: 1,
@@ -17,45 +22,12 @@ export class CreateTicketDto {
   sale: any;
 
   @ApiProperty({
-    example: 1,
+    example: {
+      quantity: 1,
+      locality: 1,
+    },
     description: 'Id de la localidad',
   })
   @IsNotEmpty()
-  locality: any;
-
-  @ApiProperty({
-    example: 'VIP',
-    description: 'Nombre de la localidad',
-  })
-  @IsNotEmpty()
-  @IsString()
-  localityName: string;
-
-  @ApiProperty({
-    example: 'NF FEST',
-    description: 'Nombre del evento',
-  })
-  @IsNotEmpty()
-  @IsString()
-  eventName: string;
-
-  @ApiProperty({
-    example: 20,
-    description: 'Precio del ticket',
-  })
-  @IsNumber()
-  @IsNotEmpty()
-  price: number;
-
-  @ApiProperty({
-    example: TicketStatus.ACTIVE,
-    description: 'Nombre de la localidad',
-    enum: TicketStatus,
-  })
-  @IsEnum(TicketStatus)
-  status: string;
-
-  
-
-  qr?: string;
+  detail: DetailTicket[];
 }

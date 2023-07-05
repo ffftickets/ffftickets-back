@@ -21,12 +21,6 @@ export class Ticket {
   @ManyToOne((_) => Localities, (locality) => locality.ticket)
   locality: any;
 
-  @Column({ type: 'varchar', nullable: false })
-  localityName: string;
-
-  @Column({ type: 'double', nullable: false })
-  price: number;
-
   @Column({
     type: 'enum',
     enum: TicketStatus,

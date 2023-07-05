@@ -58,9 +58,10 @@ export class LocalitiesService {
         .select(['locality', 'event'])
         .where('locality.id=:id', { id })
         .getOne();
-      if (locality) throw new NotFoundException('No se encontró la localidad');
+      if (!locality) throw new NotFoundException('No se encontró la localidad');
       return locality;
     } catch (error) {
+      console.log(error);
       this.logger.error(error);
       handleDbError(error);
     }
@@ -95,6 +96,18 @@ export class LocalitiesService {
     }
   }
 
+  async updateSold(id: number, sold: number) {
+    try {
+      await this.localitiesRepository.update(id, {
+        sold: sold,
+      });
+      return null;
+    } catch (error) {
+      this.logger.error(error);
+      handleDbError(error);
+    }
+  }
+
   async remove(id: number) {
     try {
       await this.localitiesRepository.update(id, { isActive: false });
@@ -105,6 +118,7 @@ export class LocalitiesService {
       handleDbError(error);
     }
   }
+
   async verifyExist(id: number, name: string) {
     try {
       const locality = await this.localitiesRepository

@@ -1,19 +1,158 @@
-import { Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  Delete,
+  Injectable,
+  Logger,
+  NotFoundException,
+} from '@nestjs/common';
 import { CreateTicketDto } from './dto/create-ticket.dto';
 import { UpdateTicketDto } from './dto/update-ticket.dto';
-
+import { InjectRepository } from '@nestjs/typeorm';
+import { Ticket } from './entities/ticket.entity';
+import { Repository } from 'typeorm';
+import { LocalitiesService } from 'src/localities/localities.service';
+import { v4 as uuidv4 } from 'uuid';
+import { TicketStatus } from './enum/ticket-status.enum';
+import { handleDbError } from 'src/common/helpers/db-error-handler.helper';
+import { SaleStatus } from 'src/sales/enum/sale-status.emun';
 @Injectable()
 export class TicketsService {
-  create(createTicketDto: CreateTicketDto) {
-    return 'This action adds a new ticket';
+  logger = new Logger(TicketsService.name);
+  constructor(
+    @InjectRepository(Ticket)
+    private readonly ticketRepository: Repository<Ticket>,
+    private readonly localitiesService: LocalitiesService,
+  ) {}
+  async create(createTicketDto: CreateTicketDto) {
+    try {
+      const tickets = [];
+
+      for (const element of createTicketDto.detail) {
+        const locality = await this.localitiesService.findOne(element.locality);
+        for (let i = 0; i < element.quantity; i++) {
+          const ticket = {
+            sale: createTicketDto.sale,
+            qr: await uuidv4(),
+            locality,
+            status: TicketStatus.ACTIVE,
+          };
+          const data = await this.ticketRepository.create(ticket);
+          const newTicket = await this.ticketRepository.save(data);
+          delete newTicket.locality.event;
+          newTicket.sale = createTicketDto.sale.id;
+          tickets.push(newTicket);
+        }
+        this.localitiesService.updateSold(
+          element.locality,
+          locality.sold + element.quantity,
+        );
+      }
+
+      return tickets;
+    } catch (error) {
+      this.logger.error(error);
+      handleDbError(error);
+    }
   }
 
-  findAll() {
-    return `This action returns all tickets`;
+  async findAll() {
+    try {
+      const tickets = await this.ticketRepository
+        .createQueryBuilder('ticket')
+        .innerJoin('ticket.locality', 'localities')
+        .innerJoin('ticket.sale', 'sale')
+        .innerJoin('sale.event', 'event')
+        .select(['ticket', 'localities', 'sale', 'event'])
+        .getMany();
+      if (tickets.length === 0)
+        throw new NotFoundException('No se encontraron tickets');
+      return tickets;
+    } catch (error) {
+      this.logger.error(error);
+      handleDbError(error);
+    }
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} ticket`;
+  async findOne(id: number) {
+    try {
+      const ticket = await this.ticketRepository
+        .createQueryBuilder('ticket')
+        .innerJoin('ticket.locality', 'localities')
+        .innerJoin('ticket.sale', 'sale')
+        .innerJoin('sale.event', 'event')
+        .select(['ticket', 'localities', 'sale', 'event'])
+        .where('ticket.id=:id', { id })
+        .getOne();
+      if (!ticket) throw new NotFoundException('El ticket no existe');
+      return ticket;
+    } catch (error) {
+      this.logger.error(error);
+      handleDbError(error);
+    }
+  }
+  async findOneByQR(qr: string) {
+    try {
+      const ticket = await this.ticketRepository
+        .createQueryBuilder('ticket')
+        .innerJoin('ticket.locality', 'localities')
+        .innerJoin('ticket.sale', 'sale')
+        .innerJoin('sale.event', 'event')
+        .select(['ticket', 'localities', 'sale', 'event'])
+        .where('ticket.qr=:qr', { qr })
+        .getOne();
+      if (ticket.status === TicketStatus.SCAN)
+        throw new BadRequestException('El ticket ya a sido scaneado');
+
+      if (ticket.sale.status != SaleStatus.SOLD)
+        throw new BadRequestException('La venta no a sido completada');
+
+      if (!ticket) throw new NotFoundException('El ticket no existe');
+
+      ticket.status=TicketStatus.SCAN;
+      this.ticketRepository.save(ticket);
+
+      return ticket;
+    } catch (error) {
+      this.logger.error(error);
+      handleDbError(error);
+    }
+  }
+
+
+  async findBySale(id: number) {
+    try {
+      const ticket = await this.ticketRepository
+      .createQueryBuilder('ticket')
+      .innerJoin('ticket.locality', 'localities')
+      .innerJoin('ticket.sale', 'sale')
+      .where('sale.id = :id', { id }) // Reemplaza "id" por el nombre correcto de la columna en la tabla "sale"
+      .select(['ticket', 'localities', 'sale'])
+      .getMany();
+
+      if (!ticket) throw new NotFoundException('El ticket no existe');
+      return ticket;
+    } catch (error) {
+      this.logger.error(error);
+      handleDbError(error);
+    }
+  }
+
+  async findByCustomer(id: number) {
+    try {
+      const ticket = await this.ticketRepository
+        .createQueryBuilder('ticket')
+        .innerJoin('ticket.locality', 'localities')
+        .innerJoin('ticket.sale', 'sale')
+        .innerJoin('sale.event', 'event')
+        .select(['ticket', 'localities', 'sale', 'event'])
+        .getMany();
+
+      if (!ticket) throw new NotFoundException('El ticket no existe');
+      return ticket;
+    } catch (error) {
+      this.logger.error(error);
+      handleDbError(error);
+    }
   }
 
   update(id: number, updateTicketDto: UpdateTicketDto) {

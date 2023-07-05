@@ -15,6 +15,7 @@ import { FirebaseModule } from 'src/firebase/firebase.module';
     FirebaseModule
   ],
   controllers: [LocalitiesController],
-  providers: [LocalitiesService]
+  providers: [LocalitiesService],
+  exports:[LocalitiesService]
 })
 export class LocalitiesModule {}

@@ -46,20 +46,26 @@ export class Sale {
   @Column({ type: 'varchar', nullable: true })
   transactionCode?: string;
 
+  @Column({ type: 'varchar', nullable: true })
+  transfer_photo?: string;
+
   @Column({ type: 'double', nullable: false })
   serviceValue: number;
 
   @Column({ type: 'double', nullable: false })
   catwalkCommission: number;
 
+  @Column({ type: 'double', nullable: true })
+  promoterDiscount: number;
+
   @Column({ type: 'double', nullable: false })
   total: number;
 
-  @Column({ type: 'varchar', nullable: false })
-  qr: string;
-
   @OneToMany((_) => Ticket, (ticket) => ticket.sale)
   tickets: Ticket;
+
+  @Column({ type: 'timestamp', nullable: true })
+  authorization_date: Date;
 
   @CreateDateColumn({ name: 'created_at', type: 'timestamp' })
   createdAt: Date;
