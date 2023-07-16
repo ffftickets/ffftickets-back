@@ -18,6 +18,7 @@ import { AppResource, AppRoles } from 'src/app.roles';
 import { Auth } from 'src/common/helpers/decorators';
 import { handleError } from 'src/common/helpers/error-handler.helper';
 import { Response } from 'express';
+import { v4 as uuidv4 } from 'uuid';
 @ApiTags('Users')
 @Controller('user')
 export class UserController {
@@ -55,6 +56,9 @@ export class UserController {
       this.logger.log('Registrando persona publica');
       this.logger.log('Correo: ', createUserDto.email);
       createUserDto.roles = [AppRoles.CUSTOMER];
+      if(!createUserDto.password){
+        createUserDto.password = await uuidv4();
+      }
       const data = await this.userService.create(createUserDto);
       return res.status(HttpStatus.OK).json(data);
     } catch (error) {

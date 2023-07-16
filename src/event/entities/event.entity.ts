@@ -67,7 +67,9 @@ export class Event extends BaseEntity {
 
   @Column({ type: 'varchar', nullable: true })
   issuance_authorization: string;
-  true;
+
+  @Column({ type: 'varchar', nullable: true,default:'Dirección' })
+  address: string;
 
   @Column({ type: 'varchar', nullable: true })
   capacity_authorization: string;

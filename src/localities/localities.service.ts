@@ -71,7 +71,7 @@ export class LocalitiesService {
       const localities = await this.localitiesRepository
         .createQueryBuilder('locality')
         .innerJoin('locality.event', 'event')
-        .select(['locality', 'event'])
+        .select(['locality'])
         .where('locality.event=:id', { id })
         .getMany();
       if (!localities || localities.length === 0)

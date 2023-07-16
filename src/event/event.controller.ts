@@ -62,7 +62,6 @@ export class EventController {
     }
   }
 
-
   @Get(':id')
   async findOne(@Param('id') id: string, @Res() res: Response) {
     try {
@@ -77,7 +76,10 @@ export class EventController {
   }
 
   @Get('organizer/:organizer')
-  async findEventsByUser(@Param('organizer') organizer: string, @Res() res: Response) {
+  async findEventsByUser(
+    @Param('organizer') organizer: string,
+    @Res() res: Response,
+  ) {
     try {
       this.logger.log(`Buscando eventos de usuario: ${organizer} `);
       const data = await this.eventService.findEventsByUser(+organizer);
@@ -88,8 +90,6 @@ export class EventController {
       return res.status(errorData.statusCode).json(errorData);
     }
   }
-
-
 
   @Auth()
   @Patch(':id')
@@ -125,18 +125,24 @@ export class EventController {
       }
       this.logger.log('Verificando galería de eventos.');
       if (updateEventDto.event_gallery) {
+        console.log('aqui');
         const updatedImages = [];
         for (const image of updateEventDto.event_gallery) {
+          console.log('aqui');
           const img = await this.firebaseService.uploadBase64({
             route: `${user.id} - ${user.name}/${event.name}/event-gallery`,
             image: image,
           });
           updatedImages.push(img.imageUrl);
         }
-        updateEventDto.event_gallery = [
-          ...updatedImages,
-          ...event.event_gallery,
-        ];
+        if (event.event_gallery === null) {
+          updateEventDto.event_gallery = [...updatedImages];
+        } else {
+          updateEventDto.event_gallery = [
+            ...updatedImages,
+            ...event.event_gallery,
+          ];
+        }
       }
       this.logger.log('Verificando galería informativa.');
       if (updateEventDto.informative_gallery) {
@@ -148,10 +154,14 @@ export class EventController {
           });
           updatedImages.push(img.imageUrl);
         }
-        updateEventDto.informative_gallery = [
-          ...updatedImages,
-          ...event.informative_gallery,
-        ];
+        if (event.informative_gallery === null) {
+          updateEventDto.informative_gallery = [...updatedImages];
+        } else {
+          updateEventDto.informative_gallery = [
+            ...updatedImages,
+            ...event.informative_gallery,
+          ];
+        }
       }
       const data = await this.eventService.update(+id, updateEventDto);
       return res.status(HttpStatus.OK).json(data);

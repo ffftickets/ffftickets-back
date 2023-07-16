@@ -9,6 +9,7 @@ import {
   UnauthorizedException,
   ForbiddenException,
   Req,
+  NotFoundException,
 } from '@nestjs/common';
 import { compare } from 'bcryptjs';
 import { AuthService } from './auth.service';
@@ -21,6 +22,7 @@ import { UserService } from 'src/user/user.service';
 import { UserStatus } from 'src/core/enums';
 import { Request } from 'express';
 import { LoginLogsService } from 'src/login-logs/login-logs.service';
+import { LoginSocialNetwork } from './dto/loginSocialNetwork.dto';
 @ApiTags('Auth')
 @Controller('auth')
 export class AuthController {
@@ -36,8 +38,8 @@ export class AuthController {
   async login(@Body() loginDto: LoginDto, @Req() req: Request) {
     this.logger.log('Logeando usuario: ', loginDto.email);
     //TODO: GUARDAR LOG DE LOGUEO Y MEJORAR EL CONTROL DE ERRORES DE INICIO DE SESIÓN
-   
-    const user = await this.userService.findUserByLogin( loginDto.email);
+
+    const user = await this.userService.findUserByLogin(loginDto.email);
 
     if (!user) {
       await this.loginLogsService.createLoginLog({
@@ -78,27 +80,30 @@ export class AuthController {
     if (user && (await compare(loginDto.password, user.password))) {
       await this.loginLogsService.createLoginLog({
         ipDetail: req['ip-details'],
-        email:loginDto.email,
+        email: loginDto.email,
         blockStatus: user.status,
         isCorrect: true,
         userAgent: req['ua'],
       });
+      console.log(1);
       const { password, ...rest } = user;
       const data = await this.authService.login(user);
       return data;
     } else {
-
       await this.loginLogsService.createLoginLog({
         ipDetail: req['ip-details'],
-        email:loginDto.email,
+        email: loginDto.email,
         blockStatus: user.status,
         isCorrect: false,
         userAgent: req['ua'],
       });
 
-      const incorrectLogins = await this.loginLogsService.countBadLoginLogs(user.email,user.lastLogin>=user.updatedAt ? user.lastLogin : user.updatedAt  );
+      const incorrectLogins = await this.loginLogsService.countBadLoginLogs(
+        user.email,
+        user.lastLogin >= user.updatedAt ? user.lastLogin : user.updatedAt,
+      );
 
-      console.log(incorrectLogins)
+      console.log(incorrectLogins);
       this.logger.debug('Incorrect logins: ' + incorrectLogins);
       const invalidLoginAttempts = 3;
 
@@ -108,12 +113,51 @@ export class AuthController {
         throw new ForbiddenException(`Su usuario se encuentra bloqueado`);
       }
 
-     
       const remainingAttempts = invalidLoginAttempts - incorrectLogins;
       throw new UnauthorizedException(
-        `Usuario o contraseña incorrectos, le restan ${Math.max(remainingAttempts, 0)} intentos`,
+        `Usuario o contraseña incorrectos, le restan ${Math.max(
+          remainingAttempts,
+          0,
+        )} intentos`,
       );
     }
+  }
+
+  @UseInterceptors(IpDetailsInterceptor)
+  @Post('login-social')
+  async loginWithSocialNetwork(
+    @Body() loginDto: LoginSocialNetwork,
+    @Req() req: Request,
+  ) {
+    this.logger.log('Logeando usuario: ', loginDto.email);
+
+    const user = await this.userService.findUserByLogin(loginDto.email);
+
+    if (user.status == UserStatus.BLOCKED) {
+      await this.loginLogsService.createLoginLog({
+        ipDetail: req['ip-details'],
+        email: loginDto.email,
+        blockStatus: 'UNREGISTERED',
+        isCorrect: false,
+        userAgent: req['ua'],
+      });
+
+      if (user.status == UserStatus.BLOCKED) {
+        this.logger.debug(`El usuario ${user.email} está bloqueado`);
+        throw new ForbiddenException(`Su usuario se encuentra bloqueado`);
+      }
+
+      if (user.status == UserStatus.ADMIN_BLOCKED) {
+        this.logger.debug(
+          `El usuario ${user.email} está bloqueado por el administrador`,
+        );
+        throw new ForbiddenException(
+          `Su cuenta ha sido bloqueada. Por favor comuníquese con servicio el al cliente`,
+        );
+      }
+    }
+    const data = await this.authService.login(user);
+    return data;
   }
 
   @Auth()

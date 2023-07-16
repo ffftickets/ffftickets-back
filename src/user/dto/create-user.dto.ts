@@ -32,11 +32,9 @@ export class CreateUserDto {
     example: '12345678',
     description: 'Contraseña del usuario',
   })
-  @IsNotEmpty()
+  @IsOptional()
   @IsString()
-  @MinLength(8)
-  @MaxLength(25)
-  password: string;
+  password?: string;
 
   @ApiProperty({
     example: 'Oscar Parraga',
@@ -56,6 +54,8 @@ export class CreateUserDto {
   @MaxLength(10)
   phone: string;
 
+ 
+
   @ApiProperty({
     example: '3716271821001',
     description: 'Identificación del usuario',
@@ -66,44 +66,49 @@ export class CreateUserDto {
   @MaxLength(13)
   identification: string;
 
-  @ApiProperty({
+  @ApiPropertyOptional({
     example: 'Tungurahua',
     description: 'Provincia del usuario',
   })
-  @IsNotEmpty()
+  @IsOptional()
   @IsString()
   @MaxLength(35)
-  province: string;
+  province?: string;
 
-  @ApiProperty({
+  @ApiPropertyOptional({
     example: 'Ambato',
     description: 'Ciudad del usuario',
   })
-  @IsNotEmpty()
+  @IsOptional()
   @IsString()
   @MaxLength(35)
-  city: string;
+  city?: string;
 
-  @ApiProperty({
+  @ApiPropertyOptional({
     example: 'Ambato',
     description: 'Dirección del usuario',
   })
-  @IsNotEmpty()
+  @IsOptional()
   @IsString()
   @MaxLength(100)
-  address: string;
+  address?: string;
 
   @ApiPropertyOptional({
-    example: AppRoles.CUSTOMER,
-    description: 'Rol del usuario',
-    enum: AppRoles,
+    example: 'http://',
+    description: 'Foto del usuario',
   })
+  @IsOptional()
+  @IsString()
+  photo?: string;
+
+
   @ApiPropertyOptional({
     type: [],
     description: 'Roles del usuario',
     enum: AppRoles,
     example: AppRoles.CUSTOMER,
   })
+  @IsOptional()
   @IsEnum(AppRoles, {
     each: true,
     message: `must be a valid role value, ${EnumToString(AppRoles)}`,
@@ -117,7 +122,7 @@ export class CreateUserDto {
   })
   @IsString()
   @IsEnum(IdentificationType)
-  IdentificationType: string;
+  identificationType: string;
 
   @ApiPropertyOptional({
     example: UserStatus.ACTIVE,
@@ -127,7 +132,7 @@ export class CreateUserDto {
   @IsOptional()
   @IsString()
   @IsEnum(UserStatus)
-  status: string;
+  status?: string;
 
   @ApiPropertyOptional({
     example: true,
@@ -145,20 +150,20 @@ export class CreateUserDto {
   @IsBoolean()
   terms?: boolean;
 
-  @ApiProperty({
+  @ApiPropertyOptional({
     example: '2023-05-28T02:31:07.313Z',
     description: 'Fecha del cumpleaños del usuario',
   })
-  @IsNotEmpty()
+  @IsOptional()
   @IsDateString()
-  birthdate: string;
+  birthdate?: string;
 
-  @ApiProperty({
+  @ApiPropertyOptional({
     example: Gender.MASCULINO,
     description: 'Genero del usuario',
     enum: Gender,
   })
-  @IsNotEmpty()
+  @IsOptional()
   @IsString()
   @IsEnum(Gender)
   gender: string;

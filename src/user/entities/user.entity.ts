@@ -18,6 +18,7 @@ import { License } from 'src/license/entities/license.entity';
 import { Event } from 'src/event/entities/event.entity';
 import { Sale } from 'src/sales/entities/sale.entity';
 import { EventPromoter } from 'src/event-promoter/entities/event-promoter.entity';
+import { IdentificationType } from '../emun/identification-type.enum';
 
 @Entity('user')
 export class User extends BaseEntity {
@@ -25,33 +26,43 @@ export class User extends BaseEntity {
   id: number;
 
   @Column({ type: 'varchar', length: 100, default: '', nullable: false })
-  email;
+  email:string;
 
-  @Column({ type: 'varchar', length: 500, nullable: false })
-  password: string;
+  @Column({ type: 'varchar', nullable: false })
+  password?: string;
 
   @Column({ type: 'varchar', length: 75, nullable: false })
   name: string;
 
-  @Column({ type: 'varchar', length: 10, nullable: false })
-  phone: string;
-
+  @Column({ type: 'varchar', length: 10, nullable: true })
+  phone?: string;
+ 
   @Column({ type: 'varchar', length: 13, nullable: false })
   identification: string;
 
-  @Column({ type: 'varchar', length: 35, nullable: false })
-  province: string;
+  @Column({
+    type: 'enum',
+    enum: IdentificationType,
+    default: IdentificationType.CEDULA,
+  })
+  identificationType: string;
 
-  @Column({ type: 'varchar', length: 35, nullable: false })
-  city: string;
+  @Column({ type: 'varchar', length: 35, nullable: true })
+  province?: string;
 
-  @Column({ type: 'varchar', length: 100, nullable: false })
-  address: string;
+  @Column({ type: 'varchar', nullable: true })
+  photo?: string;
 
-  @Column({ type: 'varchar', length: 25, nullable: false })
-  birthdate: string;
+  @Column({ type: 'varchar', length: 35, nullable: true })
+  city?: string;
 
-  @Column({ type: 'enum', enum: Gender })
+  @Column({ type: 'varchar', length: 100, nullable: true })
+  address?: string;
+
+  @Column({ type: 'varchar', length: 25, nullable: true })
+  birthdate?: string;
+
+  @Column({ type: 'enum', enum: Gender,nullable:true })
   gender: string;
 
   @OneToMany((_) => License, (license) => license.user)
@@ -65,11 +76,10 @@ export class User extends BaseEntity {
 
   @OneToMany((_) => Sale, (sale) => sale.organizer)
   saleOrganizer: Sale;
-  
 
   @OneToMany((_) => Sale, (sale) => sale.promoter)
   salePromoter: Sale;
-  
+
   @OneToMany((_) => Sale, (sale) => sale.customer)
   saleCustomer: Sale;
 
@@ -82,7 +92,7 @@ export class User extends BaseEntity {
   @Column({ type: 'bool', default: true })
   isActive: boolean;
 
-  @Column({ type: 'bool', default: false })
+  @Column({ type: 'bool', default: true })
   terms: boolean;
 
   @OneToMany((_) => EventPromoter, (eventPromoter) => eventPromoter.promoter)
@@ -142,7 +152,7 @@ export class User extends BaseEntity {
     if (emailExist) {
       throw new ConflictException('El correo ya se encuentra registrado');
     }
-    const identificationExist = await User.findOne({
+    /*  const identificationExist = await User.findOne({
       where: { identification: this.identification },
     });
 
@@ -150,6 +160,6 @@ export class User extends BaseEntity {
       throw new ConflictException(
         'El numero de identificación ya se encuentra registrado',
       );
-    }
+    } */
   }
 }

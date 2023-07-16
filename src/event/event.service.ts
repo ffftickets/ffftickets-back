@@ -53,7 +53,7 @@ export class EventService {
     try {
       const event = await this.eventRepository
       .createQueryBuilder('event')
-      .leftJoinAndSelect('event.user', 'user', 'event.userId = user.id')
+      .innerJoin('event.user', 'user')
       .where('event.id = :id', { id })
       .select(['event','user.id','user.name'])
       .getOne();

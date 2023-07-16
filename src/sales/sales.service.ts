@@ -135,7 +135,6 @@ export class SalesService {
     }
   }
 
-
   async findByPromoter(id: number) {
     try {
       const sales = await this.saleRepository
@@ -154,7 +153,6 @@ export class SalesService {
       handleDbError(error);
     }
   }
-
 
   update(id: number, updateSaleDto: UpdateSaleDto) {
     return `This action updates a #${id} sale`;

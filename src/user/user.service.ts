@@ -51,7 +51,8 @@ export class UserService {
           birthdate: '2023-05-28T02:31:07.313Z',
           gender: 'MASCULINO',
           terms: true,
-          IdentificationType: IdentificationType.CEDULA,
+          identificationType: IdentificationType.CEDULA,
+          photo: 'http',
         },
       ];
       const newUsers = this.userRepository.create(users);
@@ -97,7 +98,6 @@ export class UserService {
   async findUserByLogin(email: string) {
     try {
       const user = await this.userRepository.findOne({ where: { email } });
-
       if (!user) throw new NotFoundException('No se encontró al usuario');
       return user;
     } catch (error) {
