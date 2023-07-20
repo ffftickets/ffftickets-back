@@ -9,17 +9,18 @@ import {
   UpdateDateColumn,
 } from 'typeorm';
 import { TicketStatus } from '../enum/ticket-status.enum';
+import { User } from 'src/user/entities/user.entity';
 
-@Entity('ticket')
-export class Ticket {
+@Entity('free-tickets')
+export class FreeTicket {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @ManyToOne((_) => Sale, (sale) => sale.tickets)
-  sale: Sale;
-
-  @ManyToOne((_) => Localities, (locality) => locality.ticket)
+  @ManyToOne((_) => Localities, (locality) => locality.free_ticket)
   locality: Localities;
+
+  @ManyToOne((_) => User, (user) => user.free_ticket)
+  user: User;
 
   @Column({
     type: 'enum',

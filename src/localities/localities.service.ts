@@ -61,7 +61,6 @@ export class LocalitiesService {
       if (!locality) throw new NotFoundException('No se encontró la localidad');
       return locality;
     } catch (error) {
-      console.log(error);
       this.logger.error(error);
       handleDbError(error);
     }
@@ -101,6 +100,9 @@ export class LocalitiesService {
       await this.localitiesRepository.update(id, {
         sold: sold,
       });
+      console.log(await this.localitiesRepository.update(id, {
+        sold: sold,
+      }))
       return null;
     } catch (error) {
       this.logger.error(error);

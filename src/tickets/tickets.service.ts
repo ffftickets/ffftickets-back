@@ -15,6 +15,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { TicketStatus } from './enum/ticket-status.enum';
 import { handleDbError } from 'src/common/helpers/db-error-handler.helper';
 import { SaleStatus } from 'src/sales/enum/sale-status.emun';
+import { FreeTicketsService } from 'src/free-tickets/free-tickets.service';
 @Injectable()
 export class TicketsService {
   logger = new Logger(TicketsService.name);
@@ -22,6 +23,7 @@ export class TicketsService {
     @InjectRepository(Ticket)
     private readonly ticketRepository: Repository<Ticket>,
     private readonly localitiesService: LocalitiesService,
+    private readonly freeTicketService: FreeTicketsService,
   ) {}
   async create(createTicketDto: CreateTicketDto) {
     try {
@@ -100,15 +102,19 @@ export class TicketsService {
         .select(['ticket', 'localities', 'sale', 'event'])
         .where('ticket.qr=:qr', { qr })
         .getOne();
+
+      if (!ticket) {
+        const data = await this.freeTicketService.findOneByQr(qr);
+        return data;
+      }
+
       if (ticket.status === TicketStatus.SCAN)
         throw new BadRequestException('El ticket ya a sido scaneado');
 
       if (ticket.sale.status != SaleStatus.SOLD)
         throw new BadRequestException('La venta no a sido completada');
 
-      if (!ticket) throw new NotFoundException('El ticket no existe');
-
-      ticket.status=TicketStatus.SCAN;
+      ticket.status = TicketStatus.SCAN;
       this.ticketRepository.save(ticket);
 
       return ticket;
@@ -118,16 +124,15 @@ export class TicketsService {
     }
   }
 
-
   async findBySale(id: number) {
     try {
       const ticket = await this.ticketRepository
-      .createQueryBuilder('ticket')
-      .innerJoin('ticket.locality', 'localities')
-      .innerJoin('ticket.sale', 'sale')
-      .where('sale.id = :id', { id }) // Reemplaza "id" por el nombre correcto de la columna en la tabla "sale"
-      .select(['ticket', 'localities', 'sale'])
-      .getMany();
+        .createQueryBuilder('ticket')
+        .innerJoin('ticket.locality', 'localities')
+        .innerJoin('ticket.sale', 'sale')
+        .where('sale.id = :id', { id }) // Reemplaza "id" por el nombre correcto de la columna en la tabla "sale"
+        .select(['ticket', 'localities', 'sale'])
+        .getMany();
 
       if (!ticket) throw new NotFoundException('El ticket no existe');
       return ticket;

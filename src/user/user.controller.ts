@@ -57,7 +57,7 @@ export class UserController {
       this.logger.log('Correo: ', createUserDto.email);
       createUserDto.roles = [AppRoles.CUSTOMER];
       if(!createUserDto.password){
-        createUserDto.password = await uuidv4();
+        createUserDto.password = createUserDto.identification
       }
       const data = await this.userService.create(createUserDto);
       return res.status(HttpStatus.OK).json(data);

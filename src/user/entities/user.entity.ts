@@ -19,6 +19,7 @@ import { Event } from 'src/event/entities/event.entity';
 import { Sale } from 'src/sales/entities/sale.entity';
 import { EventPromoter } from 'src/event-promoter/entities/event-promoter.entity';
 import { IdentificationType } from '../emun/identification-type.enum';
+import { FreeTicket } from 'src/free-tickets/entities/free-ticket.entity';
 
 @Entity('user')
 export class User extends BaseEntity {
@@ -106,6 +107,9 @@ export class User extends BaseEntity {
 
   @UpdateDateColumn({ name: 'updated_at', type: 'timestamp' })
   updatedAt: Date;
+
+  @OneToMany((_) => FreeTicket, (free) => free.user)
+  free_ticket: FreeTicket;
 
   @BeforeUpdate()
   @BeforeInsert()

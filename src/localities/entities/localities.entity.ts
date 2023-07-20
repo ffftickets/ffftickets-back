@@ -10,6 +10,7 @@ import {
 } from 'typeorm';
 import { LocaliteStatus } from '../enum/localite-status.enum';
 import { Ticket } from 'src/tickets/entities/ticket.entity';
+import { FreeTicket } from 'src/free-tickets/entities/free-ticket.entity';
 
 @Entity('localities')
 export class Localities {
@@ -19,6 +20,8 @@ export class Localities {
   @ManyToOne(() => Event, (event) => event.localities)
   event: Event;
 
+  @OneToMany((_) => FreeTicket, (free) => free.locality)
+  free_ticket: FreeTicket;
   @Column({ type: 'varchar', nullable: false })
   name: string;
 
