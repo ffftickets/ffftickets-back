@@ -12,6 +12,9 @@ import { TicketStatus } from '../enum/ticket-status.enum';
 
 @Entity('ticket')
 export class Ticket {
+  reduce(arg0: (acc: any, ticket: any) => any, arg1: {}) {
+    throw new Error('Method not implemented.');
+  }
   @PrimaryGeneratedColumn()
   id: number;
 
@@ -37,4 +40,5 @@ export class Ticket {
 
   @UpdateDateColumn({ name: 'updated_at', type: 'timestamp' })
   updatedAt: Date;
+  map: any;
 }

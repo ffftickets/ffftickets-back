@@ -3,7 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { MoreThan, MoreThanOrEqual, Repository } from 'typeorm';
 import { LoginLog } from './entities/login-log.entity';
 import { CreateLoginLogDto } from './dto';
-import { handleDbError } from 'src/common/helpers/db-error-handler.helper';
+import { customError } from 'src/common/helpers/custom-error.helper';
 import { UserService } from 'src/user/user.service';
 
 @Injectable()
@@ -22,7 +22,7 @@ export class LoginLogsService {
       return await this.loginLogRepository.save(createLoginLogDto);
     } catch (error) {
       this.logger.error(error);
-      handleDbError(error);
+      customError(error);
     }
   }
 
@@ -38,7 +38,7 @@ export class LoginLogsService {
         .getCount();
     } catch (error) {
       this.logger.error(error);
-      handleDbError(error);
+      customError(error);
     }
   }
 }

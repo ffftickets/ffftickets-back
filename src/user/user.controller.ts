@@ -16,7 +16,7 @@ import { UpdateUserDto } from './dto/update-user.dto';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { AppResource, AppRoles } from 'src/app.roles';
 import { Auth } from 'src/common/helpers/decorators';
-import { handleError } from 'src/common/helpers/error-handler.helper';
+ 
 import { Response } from 'express';
 import { v4 as uuidv4 } from 'uuid';
 @ApiTags('Users')
@@ -36,15 +36,9 @@ export class UserController {
     @Body() createUserDto: CreateUserDto,
     @Res() res: Response,
   ) {
-    try {
-      this.logger.log('Registrando usuario como administrador');
-      const data = await this.userService.create(createUserDto);
-      return res.status(HttpStatus.OK).json(data);
-    } catch (error) {
-      this.logger.error(error);
-      const errorData = handleError(error);
-      return res.status(errorData.statusCode).json(errorData);
-    }
+    this.logger.log('Registrando usuario como administrador');
+    const data = await this.userService.create(createUserDto);
+    return res.status(HttpStatus.OK).json(data);
   }
 
   @Post('public-register')
@@ -52,47 +46,27 @@ export class UserController {
     @Body() createUserDto: CreateUserDto,
     @Res() res: Response,
   ) {
-    try {
-      this.logger.log('Registrando persona publica');
-      this.logger.log('Correo: ', createUserDto.email);
-      createUserDto.roles = [AppRoles.CUSTOMER];
-      if(!createUserDto.password){
-        createUserDto.password = createUserDto.identification
-      }
-      const data = await this.userService.create(createUserDto);
-      return res.status(HttpStatus.OK).json(data);
-    } catch (error) {
-      this.logger.error(error);
-      const errorData = handleError(error);
-      return res.status(errorData.statusCode).json(errorData);
+    this.logger.log('Registrando persona publica');
+    this.logger.log('Correo: ', createUserDto.email);
+    createUserDto.roles = [AppRoles.CUSTOMER];
+    if (!createUserDto.password) {
+      createUserDto.password = createUserDto.identification;
     }
+    const data = await this.userService.create(createUserDto);
+    return res.status(HttpStatus.OK).json(data);
   }
   @Patch(':id/unblock')
-  async UnblockUser( @Param('id') id: number,
-    @Res() res: Response,
-  ) {
-    try {
-      this.logger.log('Desbloqueando usuario', id);
-      const data = await this.userService.unblockUser(id);
-      return res.status(HttpStatus.OK).json(data);
-    } catch (error) {
-      this.logger.error(error);
-      const errorData = handleError(error);
-      return res.status(errorData.statusCode).json(errorData);
-    }
+  async UnblockUser(@Param('id') id: number, @Res() res: Response) {
+    this.logger.log('Desbloqueando usuario', id);
+    const data = await this.userService.unblockUser(id);
+    return res.status(HttpStatus.OK).json(data);
   }
 
   @Get('/userSeed')
   async UserSeed(@Res() res: Response) {
-    try {
-      this.logger.log('Creando seed de usuario');
-      const data = await this.userService.createSeedUser();
-      return res.status(HttpStatus.OK).json('Usuarios creados');
-    } catch (error) {
-      this.logger.error(error);
-      const errorData = handleError(error);
-      return res.status(errorData.statusCode).json(errorData);
-    }
+    this.logger.log('Creando seed de usuario');
+    const data = await this.userService.createSeedUser();
+    return res.status(HttpStatus.OK).json('Usuarios creados');
   }
   @Auth({
     possession: 'any',
@@ -101,15 +75,9 @@ export class UserController {
   })
   @Get()
   async findAll(@Res() res: Response) {
-    try {
-      this.logger.log('Buscando todos los usuarios');
-      const users = await this.userService.findAll();
-      return res.status(HttpStatus.OK).json(users);
-    } catch (error) {
-      this.logger.error(error);
-      const errorData = handleError(error);
-      return res.status(errorData.statusCode).json(errorData);
-    }
+    this.logger.log('Buscando todos los usuarios');
+    const users = await this.userService.findAll();
+    return res.status(HttpStatus.OK).json(users);
   }
   @Auth({
     possession: 'any',
@@ -118,15 +86,9 @@ export class UserController {
   })
   @Get(':id')
   async findOne(@Param('id') id: number, @Res() res: Response) {
-    try {
-      this.logger.log('Buscando usuario por ID: ', id);
-      const data = await this.userService.findOne({ id });
-      return res.status(HttpStatus.OK).json(data);
-    } catch (error) {
-      this.logger.error(error);
-      const errorData = handleError(error);
-      return res.status(errorData.statusCode).json(errorData);
-    }
+    this.logger.log('Buscando usuario por ID: ', id);
+    const data = await this.userService.findOne({ id });
+    return res.status(HttpStatus.OK).json(data);
   }
 
   @ApiBearerAuth()
@@ -141,15 +103,9 @@ export class UserController {
     @Body() updateUserDto: UpdateUserDto,
     @Res() res: Response,
   ) {
-    try {
-      this.logger.log('Actualizando usuario: ', updateUserDto.email);
-      const data = await this.userService.update(+id, updateUserDto);
-      return res.status(HttpStatus.OK).json(data);
-    } catch (error) {
-      this.logger.error(error);
-      const errorData = handleError(error);
-      return res.status(errorData.statusCode).json(errorData);
-    }
+    this.logger.log('Actualizando usuario: ', updateUserDto.email);
+    const data = await this.userService.update(+id, updateUserDto);
+    return res.status(HttpStatus.OK).json(data);
   }
   @ApiBearerAuth()
   @Auth({
@@ -159,14 +115,8 @@ export class UserController {
   })
   @Delete(':id')
   async remove(@Param('id') id: string, @Res() res: Response) {
-    try {
-      this.logger.log('Desactivando usuario: ', id);
-      const data = await this.userService.remove(+id);
-      return res.status(HttpStatus.OK).json(data);
-    } catch (error) {
-      this.logger.error(error);
-      const errorData = handleError(error);
-      return res.status(errorData.statusCode).json(errorData);
-    }
+    this.logger.log('Desactivando usuario: ', id);
+    const data = await this.userService.remove(+id);
+    return res.status(HttpStatus.OK).json(data);
   }
 }

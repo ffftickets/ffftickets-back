@@ -11,7 +11,7 @@ import { User } from './entities/user.entity';
 import { Repository } from 'typeorm';
 import { FindUserDto } from './dto';
 import { UserStatus } from 'src/core/enums';
-import { handleDbError } from 'src/common/helpers/db-error-handler.helper';
+import { customError } from 'src/common/helpers/custom-error.helper';
 import { IdentificationType } from './emun/identification-type.enum';
 
 @Injectable()
@@ -29,7 +29,7 @@ export class UserService {
       return user;
     } catch (error) {
       this.logger.error(error);
-      handleDbError(error);
+      customError(error);
     }
   }
 
@@ -61,7 +61,7 @@ export class UserService {
       return true;
     } catch (error) {
       this.logger.error(error);
-      handleDbError(error);
+      customError(error);
     }
   }
 
@@ -75,7 +75,7 @@ export class UserService {
       return dataWithoutPasswords;
     } catch (error) {
       this.logger.error(error);
-      handleDbError(error);
+      customError(error);
     }
   }
 
@@ -92,7 +92,7 @@ export class UserService {
       return user;
     } catch (error) {
       this.logger.error(error);
-      handleDbError(error);
+      customError(error);
     }
   }
   async findUserByLogin(email: string) {
@@ -102,7 +102,7 @@ export class UserService {
       return user;
     } catch (error) {
       this.logger.error(error);
-      handleDbError(error);
+      customError(error);
     }
   }
 
@@ -121,7 +121,7 @@ export class UserService {
       return user;
     } catch (error) {
       this.logger.error(error);
-      handleDbError(error);
+      customError(error);
     }
   }
 
@@ -132,7 +132,7 @@ export class UserService {
       return user;
     } catch (error) {
       this.logger.error(error);
-      handleDbError(error);
+      customError(error);
     }
   }
   async blockUser(id: number) {
@@ -142,7 +142,7 @@ export class UserService {
       });
     } catch (error) {
       this.logger.error(error);
-      handleDbError(error);
+      customError(error);
     }
   }
   async unblockUser(id: number) {
@@ -158,7 +158,7 @@ export class UserService {
       return user;
     } catch (error) {
       this.logger.error(error);
-      handleDbError(error);
+      customError(error);
     }
   }
   async updateLastLogin(id: number) {
@@ -168,7 +168,7 @@ export class UserService {
       });
     } catch (error) {
       this.logger.error(error);
-      handleDbError(error);
+      customError(error);
     }
   }
 }

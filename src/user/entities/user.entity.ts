@@ -75,9 +75,6 @@ export class User extends BaseEntity {
   @OneToMany((_) => License, (license) => license.userAdmin)
   licenseAdmin: License;
 
-  @OneToMany((_) => Sale, (sale) => sale.organizer)
-  saleOrganizer: Sale;
-
   @OneToMany((_) => Sale, (sale) => sale.promoter)
   salePromoter: Sale;
 

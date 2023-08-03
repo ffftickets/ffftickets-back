@@ -7,8 +7,8 @@ import {
   IsOptional,
   IsString,
 } from 'class-validator';
-import { SaleStatus } from '../enum/sale-status.emun';
-import { PayTypes } from '../enum/pay-types.emun';
+import { SaleStatus } from '../enum/sale-status.enum';
+import { PayTypes } from '../enum/pay-types.enum';
 import {
   CreateTicketDto,
   DetailTicket,
@@ -22,13 +22,6 @@ export class CreateSaleDto {
   @IsNotEmpty()
   event: any;
 
-  @ApiProperty({
-    example: 11,
-    description: 'Id del organizador',
-  })
-  @IsNotEmpty()
-  organizer: any;
-
   @ApiPropertyOptional({
     example: 11,
     description: 'Id del promotor',
@@ -36,12 +29,12 @@ export class CreateSaleDto {
   @IsOptional()
   promoter?: any;
 
-  @ApiProperty({
+  @ApiPropertyOptional({
     example: 11,
     description: 'Id del usuario de compro la localidad',
   })
-  @IsNotEmpty()
-  customer: any;
+  @IsOptional()
+  customer?: any;
 
   @ApiProperty({
     example: PayTypes.DEBIT_CARD,
@@ -98,13 +91,13 @@ export class CreateSaleDto {
   @IsOptional()
   promoterDiscount?: number;
 
-  @ApiProperty({
+  @ApiPropertyOptional({
     example: 30,
     description: 'Valor de comisión de la pasarela',
   })
   @IsNumber()
-  @IsNotEmpty()
-  catwalkCommission: number;
+  @IsOptional()
+  catwalkCommission?: number;
 
   @ApiProperty({
     example: 40,

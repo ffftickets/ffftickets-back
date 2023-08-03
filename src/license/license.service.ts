@@ -5,7 +5,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { License } from './entities/license.entity';
 import { Repository } from 'typeorm';
 import { UserService } from 'src/user/user.service';
-import { handleDbError } from 'src/common/helpers/db-error-handler.helper';
+import { customError } from 'src/common/helpers/custom-error.helper';
 
 @Injectable()
 export class LicenseService {
@@ -33,7 +33,7 @@ export class LicenseService {
       return license;
     } catch (error) {
       this.logger.error(error);
-      handleDbError(error);
+      customError(error);
     }
   }
 
@@ -78,7 +78,7 @@ export class LicenseService {
       return licenses;
     } catch (error) {
       this.logger.error(error);
-      handleDbError(error);
+      customError(error);
     }
   }
 
@@ -103,7 +103,7 @@ export class LicenseService {
       return license;
     } catch (error) {
       this.logger.error(error);
-      handleDbError(error);
+      customError(error);
     }
   }
 
@@ -112,7 +112,7 @@ export class LicenseService {
       return await this.licenseRepository.update(id, { ...updateLicenseDto });
     } catch (error) {
       this.logger.error(error);
-      handleDbError(error);
+      customError(error);
     }
   }
 
@@ -124,7 +124,7 @@ export class LicenseService {
       return await this.findOne(id);
     } catch (error) {
       this.logger.error(error);
-      handleDbError(error);
+      customError(error);
     }
   }
 }

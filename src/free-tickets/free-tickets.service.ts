@@ -12,7 +12,7 @@ import { Repository } from 'typeorm';
 import { LocalitiesService } from 'src/localities/localities.service';
 import { UserService } from 'src/user/user.service';
 import { v4 as uuidv4 } from 'uuid';
-import { handleDbError } from 'src/common/helpers/db-error-handler.helper';
+import { customError } from 'src/common/helpers/custom-error.helper';
 import { TicketStatus } from './enum/ticket-status.enum';
 import { User } from 'src/user/entities/user.entity';
 @Injectable()
@@ -41,7 +41,7 @@ export class FreeTicketsService {
       return tickets;
     } catch (error) {
       this.logger.error(error);
-      handleDbError(error);
+      customError(error);
     }
   }
   async create(createFreeTicketDto: CreateFreeTicketDto) {
@@ -65,7 +65,7 @@ export class FreeTicketsService {
       return newTicket;
     } catch (error) {
       this.logger.error(error);
-      handleDbError(error);
+      customError(error);
     }
   }
 
@@ -83,7 +83,7 @@ export class FreeTicketsService {
       return tickets;
     } catch (error) {
       this.logger.error(error);
-      handleDbError(error);
+      customError(error);
     }
   }
 
@@ -107,7 +107,7 @@ export class FreeTicketsService {
       return ticket;
     } catch (error) {
       this.logger.error(error);
-      handleDbError(error);
+      customError(error);
     }
   }
 
@@ -119,7 +119,7 @@ export class FreeTicketsService {
         .innerJoin('ticket.locality', 'localities')
         .innerJoin('ticket.user', 'user')
         .innerJoin('localities.event', 'event')
-        .select(['ticket', 'localities', 'user', 'event'])
+        .select(['ticket', 'localities', 'user', 'event'  ])
         .where('user.id=:userId', { userId })
         .andWhere('localities.id=:locality', { locality })
         .getOne();
@@ -133,7 +133,7 @@ export class FreeTicketsService {
       return ticket;
     } catch (error) {
       this.logger.error(error);
-      handleDbError(error);
+      customError(error);
     }
   }
 }

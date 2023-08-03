@@ -6,7 +6,7 @@ import {
 } from '@nestjs/common';
 import { CreateLocalityDto } from './dto/create-locality.dto';
 import { UpdateLocalityDto } from './dto/update-locality.dto';
-import { handleDbError } from 'src/common/helpers/db-error-handler.helper';
+import { customError } from 'src/common/helpers/custom-error.helper';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Localities } from './entities/localities.entity';
 import { Repository } from 'typeorm';
@@ -30,7 +30,7 @@ export class LocalitiesService {
       return locality;
     } catch (error) {
       this.logger.error(error);
-      handleDbError(error);
+      customError(error);
     }
   }
 
@@ -46,7 +46,7 @@ export class LocalitiesService {
       return localities;
     } catch (error) {
       this.logger.error(error);
-      handleDbError(error);
+      customError(error);
     }
   }
 
@@ -62,7 +62,7 @@ export class LocalitiesService {
       return locality;
     } catch (error) {
       this.logger.error(error);
-      handleDbError(error);
+      customError(error);
     }
   }
   async getLocalitiesByEvent(id: number) {
@@ -78,7 +78,7 @@ export class LocalitiesService {
       return localities;
     } catch (error) {
       this.logger.error(error);
-      handleDbError(error);
+      customError(error);
     }
   }
 
@@ -91,22 +91,20 @@ export class LocalitiesService {
       return data;
     } catch (error) {
       this.logger.error(error);
-      handleDbError(error);
+      customError(error);
     }
   }
 
   async updateSold(id: number, sold: number) {
     try {
+      this.logger.log('Actualizando venta: ' + id)
       await this.localitiesRepository.update(id, {
         sold: sold,
       });
-      console.log(await this.localitiesRepository.update(id, {
-        sold: sold,
-      }))
       return null;
     } catch (error) {
       this.logger.error(error);
-      handleDbError(error);
+      customError(error);
     }
   }
 
@@ -117,7 +115,7 @@ export class LocalitiesService {
       return data;
     } catch (error) {
       this.logger.error(error);
-      handleDbError(error);
+      customError(error);
     }
   }
 
@@ -136,7 +134,7 @@ export class LocalitiesService {
       return null;
     } catch (error) {
       this.logger.error(error);
-      handleDbError(error);
+      customError(error);
     }
   }
 }

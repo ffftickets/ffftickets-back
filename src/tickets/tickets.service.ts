@@ -13,8 +13,8 @@ import { Repository } from 'typeorm';
 import { LocalitiesService } from 'src/localities/localities.service';
 import { v4 as uuidv4 } from 'uuid';
 import { TicketStatus } from './enum/ticket-status.enum';
-import { handleDbError } from 'src/common/helpers/db-error-handler.helper';
-import { SaleStatus } from 'src/sales/enum/sale-status.emun';
+import { customError } from 'src/common/helpers/custom-error.helper';
+import { SaleStatus } from 'src/sales/enum/sale-status.enum';
 import { FreeTicketsService } from 'src/free-tickets/free-tickets.service';
 @Injectable()
 export class TicketsService {
@@ -30,12 +30,11 @@ export class TicketsService {
       const tickets = [];
 
       for (const element of createTicketDto.detail) {
-        const locality = await this.localitiesService.findOne(element.locality);
         for (let i = 0; i < element.quantity; i++) {
           const ticket = {
             sale: createTicketDto.sale,
             qr: await uuidv4(),
-            locality,
+            locality:element.locality,
             status: TicketStatus.ACTIVE,
           };
           const data = await this.ticketRepository.create(ticket);
@@ -44,16 +43,17 @@ export class TicketsService {
           newTicket.sale = createTicketDto.sale.id;
           tickets.push(newTicket);
         }
+     
         this.localitiesService.updateSold(
-          element.locality,
-          locality.sold + element.quantity,
+          element.locality.id,
+          element.locality.sold + element.quantity
         );
       }
 
       return tickets;
     } catch (error) {
       this.logger.error(error);
-      handleDbError(error);
+      customError(error);
     }
   }
 
@@ -71,7 +71,7 @@ export class TicketsService {
       return tickets;
     } catch (error) {
       this.logger.error(error);
-      handleDbError(error);
+      customError(error);
     }
   }
 
@@ -89,7 +89,7 @@ export class TicketsService {
       return ticket;
     } catch (error) {
       this.logger.error(error);
-      handleDbError(error);
+      customError(error);
     }
   }
   async findOneByQR(qr: string) {
@@ -120,7 +120,7 @@ export class TicketsService {
       return ticket;
     } catch (error) {
       this.logger.error(error);
-      handleDbError(error);
+      customError(error);
     }
   }
 
@@ -130,15 +130,15 @@ export class TicketsService {
         .createQueryBuilder('ticket')
         .innerJoin('ticket.locality', 'localities')
         .innerJoin('ticket.sale', 'sale')
-        .where('sale.id = :id', { id }) // Reemplaza "id" por el nombre correcto de la columna en la tabla "sale"
-        .select(['ticket', 'localities', 'sale'])
+        .where('sale.id = :id', { id }) 
+        .select(['ticket', 'localities'])
         .getMany();
 
       if (!ticket) throw new NotFoundException('El ticket no existe');
       return ticket;
     } catch (error) {
       this.logger.error(error);
-      handleDbError(error);
+      customError(error);
     }
   }
 
@@ -156,7 +156,7 @@ export class TicketsService {
       return ticket;
     } catch (error) {
       this.logger.error(error);
-      handleDbError(error);
+      customError(error);
     }
   }
 

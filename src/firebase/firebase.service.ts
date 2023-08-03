@@ -13,7 +13,7 @@ import {
 import { deleteObject, getStorage, ref, uploadString } from 'firebase/storage';
 import { v4 as uuidv4 } from 'uuid';
 import { UploadBase64ImageDto } from './dto';
-import { handleDbError } from 'src/common/helpers/db-error-handler.helper';
+import { customError } from 'src/common/helpers/custom-error.helper';
 @Injectable()
 export class FirebaseService {
   /**
@@ -60,7 +60,7 @@ export class FirebaseService {
       return { imageUrl };
     } catch (error) {
       this.logger.error('Error al eliminar la imagen:', error);
-      handleDbError(error);
+      customError(error);
     }
   }
   async deleteImageByUrl(imageUrl: string) {

@@ -6,7 +6,7 @@ import {
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { compare } from 'bcryptjs';
-import { handleDbError } from 'src/common/helpers/db-error-handler.helper';
+import { customError } from 'src/common/helpers/custom-error.helper';
 import { UserStatus } from 'src/core/enums';
 import { User } from 'src/user/entities/user.entity';
 import { UserService } from 'src/user/user.service';
@@ -31,7 +31,7 @@ export class AuthService {
       };
     } catch (error) {
       this.logger.error(error);
-      handleDbError(error);
+      customError(error);
     }
    
   }

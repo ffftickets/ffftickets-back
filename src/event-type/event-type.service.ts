@@ -5,7 +5,7 @@ import { EventType } from './entities/event-type.entity';
 import { Repository } from 'typeorm';
 import { UpdateUserDto } from 'src/user/dto';
 import { UpdateEventTypeDto } from './dto/update-event-type.dto';
-import { handleDbError } from 'src/common/helpers/db-error-handler.helper';
+import { customError } from 'src/common/helpers/custom-error.helper';
 
 @Injectable()
 export class EventTypeService {
@@ -20,7 +20,7 @@ export class EventTypeService {
       return await this.eventTypeRepository.save(createEventTypeDto);
     } catch (error) {
       this.logger.error(error);
-      handleDbError(error);
+      customError(error);
     }
   }
 
@@ -33,7 +33,7 @@ export class EventTypeService {
       return events;
     } catch (error) {
       this.logger.error(error);
-      handleDbError(error);
+      customError(error);
     }
   }
   async findOne(id: number) {
@@ -45,7 +45,7 @@ export class EventTypeService {
       return eventType;
     } catch (error) {
       this.logger.error(error);
-      handleDbError(error);
+      customError(error);
     }
   }
 
@@ -58,7 +58,7 @@ export class EventTypeService {
       return await this.findOne(id);
     } catch (error) {
       this.logger.error(error);
-      handleDbError(error);
+      customError(error);
     }
   }
 
@@ -70,7 +70,7 @@ export class EventTypeService {
       return await this.findOne(id);
     } catch (error) {
       this.logger.error(error);
-      handleDbError(error);
+      customError(error);
     }
   }
 }

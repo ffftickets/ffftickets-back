@@ -5,7 +5,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Event } from './entities/event.entity';
 import { Repository } from 'typeorm';
 import { EventTypeService } from 'src/event-type/event-type.service';
-import { handleDbError } from 'src/common/helpers/db-error-handler.helper';
+import { customError } from 'src/common/helpers/custom-error.helper';
 import { FirebaseService } from 'src/firebase/firebase.service';
 
 @Injectable()
@@ -29,7 +29,7 @@ export class EventService {
       return await this.eventRepository.save(event);
     } catch (error) {
       this.logger.error(error);
-      handleDbError(error);
+      customError(error);
     }
   }
 
@@ -45,7 +45,7 @@ export class EventService {
       return events;
     } catch (error) {
       this.logger.error(error);
-      handleDbError(error);
+      customError(error);
     }
   }
 
@@ -61,7 +61,7 @@ export class EventService {
       return event;
     } catch (error) {
       this.logger.error(error);
-      handleDbError(error);
+      customError(error);
     }
   }
   async findEventsByUser(id: number) {
@@ -76,7 +76,7 @@ export class EventService {
       return event;
     } catch (error) {
       this.logger.error(error);
-      handleDbError(error);
+      customError(error);
     }
   }
   async 
@@ -87,7 +87,7 @@ export class EventService {
       return await this.findOne(id);
     } catch (error) {
       this.logger.error(error);
-      handleDbError(error);
+      customError(error);
     }
   }
 
@@ -97,7 +97,7 @@ export class EventService {
       return await this.findOne(id);
     } catch (error) {
       this.logger.error(error);
-      handleDbError(error);
+      customError(error);
     }
   }
   async deleteImgEvent(id: number, url: string) {
@@ -122,7 +122,7 @@ export class EventService {
       return this.eventRepository.save(event);
     } catch (error) {
       this.logger.error(error);
-      handleDbError(error);
+      customError(error);
     }
   }
 }

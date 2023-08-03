@@ -19,7 +19,7 @@ import { AppResource } from 'src/app.roles';
 import { User } from 'src/user/entities/user.entity';
 import axios from 'axios';
 import { Response } from 'express';
-import { handleError } from 'src/common/helpers/error-handler.helper';
+ 
 @ApiTags('License')
 @Controller('license')
 export class LicenseController {
@@ -36,16 +36,10 @@ export class LicenseController {
     @GetUser() user: User,
     @Res() res: Response,
   ) {
-    try {
-      createLicenseDto.userAdmin = user.id;
-      this.logger.log('Creando licencia');
-      const data = await this.licenseService.create(createLicenseDto);
-      return res.status(HttpStatus.OK).json(data);
-    } catch (error) {
-      this.logger.error(error);
-      const errorData = handleError(error);
-      return res.status(errorData.statusCode).json(errorData);
-    }
+    createLicenseDto.userAdmin = user.id;
+    this.logger.log('Creando licencia');
+    const data = await this.licenseService.create(createLicenseDto);
+    return res.status(HttpStatus.OK).json(data);
   }
 
   @Auth({
@@ -55,15 +49,9 @@ export class LicenseController {
   })
   @Get()
   async findAll(@Res() res: Response) {
-    try {
-      this.logger.log('Obteniendo todas las licencias');
-      const data = await this.licenseService.findAll();
-      return res.status(HttpStatus.OK).json(data);
-    } catch (error) {
-      this.logger.error(error);
-      const errorData = handleError(error);
-      return res.status(errorData.statusCode).json(errorData);
-    }
+    this.logger.log('Obteniendo todas las licencias');
+    const data = await this.licenseService.findAll();
+    return res.status(HttpStatus.OK).json(data);
   }
   @Auth({
     possession: 'any',
@@ -72,15 +60,9 @@ export class LicenseController {
   })
   @Get(':id')
   async findOne(@Param('id') id: string, @Res() res: Response) {
-    try {
-      this.logger.log('Buscando licencia con id: ', id);
-      const data = await this.licenseService.findOne(+id);
-      return res.status(HttpStatus.OK).json(data);
-    } catch (error) {
-      this.logger.error(error);
-      const errorData = handleError(error);
-      return res.status(errorData.statusCode).json(errorData);
-    }
+    this.logger.log('Buscando licencia con id: ', id);
+    const data = await this.licenseService.findOne(+id);
+    return res.status(HttpStatus.OK).json(data);
   }
 
   @Auth({
@@ -94,15 +76,9 @@ export class LicenseController {
     @Body() updateLicenseDto: UpdateLicenseDto,
     @Res() res: Response,
   ) {
-    try {
-      this.logger.log('Actualizando licencia: ', id);
-      const data = this.licenseService.update(+id, updateLicenseDto);
-      return res.status(HttpStatus.OK).json(data);
-    } catch (error) {
-      this.logger.error(error);
-      const errorData = handleError(error);
-      return res.status(errorData.statusCode).json(errorData);
-    }
+    this.logger.log('Actualizando licencia: ', id);
+    const data = this.licenseService.update(+id, updateLicenseDto);
+    return res.status(HttpStatus.OK).json(data);
   }
   @Auth({
     possession: 'any',
@@ -111,14 +87,10 @@ export class LicenseController {
   })
   @Delete(':id')
   remove(@Param('id') id: string, @Res() res: Response) {
-    try {
+  
       this.logger.log('Eliminando licencia: ', id);
       const data = this.licenseService.remove(+id);
       return res.status(HttpStatus.OK).json(data);
-    } catch (error) {
-      this.logger.error(error);
-      const errorData = handleError(error);
-      return res.status(errorData.statusCode).json(errorData);
-    }
+  
   }
 }

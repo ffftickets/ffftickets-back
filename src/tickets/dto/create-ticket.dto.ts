@@ -10,7 +10,7 @@ import { TicketStatus } from '../enum/ticket-status.enum';
 
 export class DetailTicket {
   quantity: number;
-  locality: number;
+  locality: any;
 }
 
 export class CreateTicketDto {

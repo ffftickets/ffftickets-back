@@ -7,8 +7,8 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
-import { PayTypes } from '../enum/pay-types.emun';
-import { SaleStatus } from '../enum/sale-status.emun';
+import { PayTypes } from '../enum/pay-types.enum';
+import { SaleStatus } from '../enum/sale-status.enum';
 import { Event } from 'src/event/entities/event.entity';
 import { User } from 'src/user/entities/user.entity';
 import { Ticket } from 'src/tickets/entities/ticket.entity';
@@ -19,9 +19,6 @@ export class Sale {
 
   @ManyToOne(() => Event, (event) => event.sale)
   event: Event;
-
-  @ManyToOne((_) => User, (user) => user.saleOrganizer)
-  organizer: User;
 
   @ManyToOne((_) => User, (user) => user.salePromoter)
   promoter: User;
@@ -52,8 +49,8 @@ export class Sale {
   @Column({ type: 'double', nullable: false })
   serviceValue: number;
 
-  @Column({ type: 'double', nullable: false })
-  catwalkCommission: number;
+  @Column({ type: 'double', nullable: true })
+  catwalkCommission?: number;
 
   @Column({ type: 'double', nullable: true })
   promoterDiscount: number;
