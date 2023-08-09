@@ -7,6 +7,7 @@ import { Repository } from 'typeorm';
 import { EventTypeService } from 'src/event-type/event-type.service';
 import { customError } from 'src/common/helpers/custom-error.helper';
 import { FirebaseService } from 'src/firebase/firebase.service';
+import { EncryptionService } from 'src/encryption/encryption.service';
 
 @Injectable()
 export class EventService {
@@ -15,6 +16,7 @@ export class EventService {
     private readonly eventRepository: Repository<Event>,
     private readonly eventTypeService: EventTypeService,
     private readonly firebaseService: FirebaseService,
+    private readonly encryptionService:EncryptionService
   ) {}
   logger = new Logger(EventService.name);
   async create(createEventDto: CreateEventDto) {
@@ -33,53 +35,99 @@ export class EventService {
     }
   }
 
-  async findAll() {
+  async findAll(page: number = 1, limit: number = 10) {
     try {
-      const events = await this.eventRepository
-      .createQueryBuilder('event')
-      .leftJoinAndSelect('event.user', 'user', 'event.userId = user.id')
-    
-      .select(['event','user.id','user.name'])
-      .getMany();
-      if (!events) throw new NotFoundException('No se encontraron eventos');
-      return events;
+      const skip = (page - 1) * limit;
+  
+      const [events, totalCount] = await this.eventRepository
+        .createQueryBuilder('event')
+        .leftJoinAndSelect('event.user', 'user', 'event.userId = user.id')
+        .select(['event', 'user.id', 'user.name'])
+        .skip(skip)
+        .take(limit)
+        .getManyAndCount();
+  
+      if (totalCount === 0) {
+        throw new NotFoundException('No se encontraron eventos');
+      }
+  
+      const decryptedEvents = events.map((event) => {
+        event.user.name = this.encryptionService.decryptData(event.user.name);
+        return event;
+      });
+  
+      const totalPages = Math.ceil(totalCount / limit);
+  
+      return {
+        events: decryptedEvents,
+        currentPage: page,
+        pageSize: limit,
+        totalPages,
+        totalCount,
+      };
+    } catch (error) {
+      this.logger.error(error);
+      customError(error);
+    }
+  }
+  
+  
+
+  async findOne(id: number) {
+    try {
+      const event = await this.eventRepository
+        .createQueryBuilder('event')
+        .innerJoin('event.user', 'user')
+        .where('event.id = :id', { id })
+        .select(['event', 'user.id', 'user.name'])
+        .getOne();
+      if (!event) throw new NotFoundException('No se encontró el evento');
+      event.user.name = this.encryptionService.decryptData(event.user.name);
+      return event;
     } catch (error) {
       this.logger.error(error);
       customError(error);
     }
   }
 
-  async findOne(id: number) {
+
+  async findEventsByUser(id: number, page: number = 1, limit: number = 10) {
     try {
-      const event = await this.eventRepository
-      .createQueryBuilder('event')
-      .innerJoin('event.user', 'user')
-      .where('event.id = :id', { id })
-      .select(['event','user.id','user.name'])
-      .getOne();
-      if (!event) throw new NotFoundException('No se encontró el evento');
-      return event;
+      const skip = (page - 1) * limit;
+  console.log(id)
+      const [events, totalCount] = await this.eventRepository
+        .createQueryBuilder('event')
+        .leftJoinAndSelect('event.user', 'user', 'event.userId = user.id')
+        .where('event.user = :id', { id })
+        .select(['event', 'user.id', 'user.name'])
+        .skip(skip)
+        .take(limit)
+        .getManyAndCount();
+  
+      if (totalCount === 0) {
+        throw new NotFoundException('No se encontraron eventos');
+      }
+  
+      const decryptedEvents = events.map((event) => {
+        event.user.name = this.encryptionService.decryptData(event.user.name);
+        return event;
+      });
+  
+      const totalPages = Math.ceil(totalCount / limit);
+  
+      return {
+        events: decryptedEvents,
+        currentPage: page,
+        pageSize: limit,
+        totalPages,
+        totalCount,
+      };
     } catch (error) {
       this.logger.error(error);
       customError(error);
     }
   }
-  async findEventsByUser(id: number) {
-    try {
-      const event = await this.eventRepository
-      .createQueryBuilder('event')
-      .leftJoinAndSelect('event.user', 'user', 'event.userId = user.id')
-      .where('event.user = :id', { id })
-      .select(['event','user.id','user.name'])
-      .getMany();
-      if (!event || event.length===0) throw new NotFoundException('No se encontraron eventos');
-      return event;
-    } catch (error) {
-      this.logger.error(error);
-      customError(error);
-    }
-  }
-  async 
+  
 
   async update(id: number, updateEventDto: UpdateEventDto) {
     try {
@@ -93,7 +141,7 @@ export class EventService {
 
   async remove(id: number) {
     try {
-      await this.eventRepository.update(id,{isActive:false});
+      await this.eventRepository.update(id, { isActive: false });
       return await this.findOne(id);
     } catch (error) {
       this.logger.error(error);
@@ -110,7 +158,7 @@ export class EventService {
       if (event.courtesy_ticket === url) {
         event.courtesy_ticket = null;
       }
-   
+
       event.event_gallery = event.event_gallery.filter(
         (element) => element !== url,
       );

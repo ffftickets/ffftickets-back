@@ -27,6 +27,9 @@ import { TicketsModule } from './tickets/tickets.module';
 import { CouponModule } from './coupon/coupon.module';
 import { EventPromoterModule } from './event-promoter/event-promoter.module';
 import { FreeTicketsModule } from './free-tickets/free-tickets.module';
+import { EncryptionModule } from './encryption/encryption.module';
+import { MailModule } from './mail/mail.module';
+import { MailLogsModule } from './mail-logs/mail-logs.module';
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true, load: [configuration] }),
@@ -77,6 +80,12 @@ import { FreeTicketsModule } from './free-tickets/free-tickets.module';
     EventPromoterModule,
 
     FreeTicketsModule,
+
+    EncryptionModule,
+
+    MailModule,
+
+    MailLogsModule,
 
   ],
   controllers: [AppController],

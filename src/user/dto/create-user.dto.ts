@@ -25,7 +25,6 @@ export class CreateUserDto {
   })
   @IsNotEmpty()
   @IsEmail()
-  @MaxLength(100)
   email: string;
 
   @ApiProperty({
@@ -42,7 +41,6 @@ export class CreateUserDto {
   })
   @IsNotEmpty()
   @IsString()
-  @MaxLength(75)
   name: string;
 
   @ApiProperty({
@@ -51,7 +49,7 @@ export class CreateUserDto {
   })
   @IsNotEmpty()
   @IsNumberString()
-  @MaxLength(10)
+
   phone: string;
 
  
@@ -62,8 +60,6 @@ export class CreateUserDto {
   })
   @IsNotEmpty()
   @IsNumberString()
-  @MinLength(10)
-  @MaxLength(13)
   identification: string;
 
   @ApiPropertyOptional({
@@ -72,7 +68,6 @@ export class CreateUserDto {
   })
   @IsOptional()
   @IsString()
-  @MaxLength(35)
   province?: string;
 
   @ApiPropertyOptional({
@@ -81,7 +76,6 @@ export class CreateUserDto {
   })
   @IsOptional()
   @IsString()
-  @MaxLength(35)
   city?: string;
 
   @ApiPropertyOptional({
@@ -90,7 +84,6 @@ export class CreateUserDto {
   })
   @IsOptional()
   @IsString()
-  @MaxLength(100)
   address?: string;
 
   @ApiPropertyOptional({
@@ -117,7 +110,7 @@ export class CreateUserDto {
 
   @ApiProperty({
     example: IdentificationType.CEDULA,
-    description: 'Tipo de identificación',
+    description: 'Tipo de identificac ión',
     enum: IdentificationType,
   })
   @IsString()

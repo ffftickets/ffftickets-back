@@ -9,6 +9,7 @@ import {
   Logger,
   Res,
   HttpStatus,
+  Query,
 } from '@nestjs/common';
 import { UserService } from './user.service';
 import { CreateUserDto } from './dto/create-user.dto';
@@ -16,7 +17,7 @@ import { UpdateUserDto } from './dto/update-user.dto';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { AppResource, AppRoles } from 'src/app.roles';
 import { Auth } from 'src/common/helpers/decorators';
- 
+
 import { Response } from 'express';
 import { v4 as uuidv4 } from 'uuid';
 @ApiTags('Users')
@@ -74,9 +75,13 @@ export class UserController {
     resource: AppResource.USER,
   })
   @Get()
-  async findAll(@Res() res: Response) {
+  async findAll(
+    @Res() res: Response,
+    @Query('page') page: number = 1,
+    @Query('limit') limit: number = 10,
+  ) {
     this.logger.log('Buscando todos los usuarios');
-    const users = await this.userService.findAll();
+    const users = await this.userService.findAll(page, limit);
     return res.status(HttpStatus.OK).json(users);
   }
   @Auth({

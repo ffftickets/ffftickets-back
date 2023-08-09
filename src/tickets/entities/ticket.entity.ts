@@ -12,6 +12,7 @@ import { TicketStatus } from '../enum/ticket-status.enum';
 
 @Entity('ticket')
 export class Ticket {
+  length: any;
   reduce(arg0: (acc: any, ticket: any) => any, arg1: {}) {
     throw new Error('Method not implemented.');
   }

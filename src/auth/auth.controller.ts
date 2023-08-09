@@ -23,6 +23,8 @@ import { UserStatus } from 'src/core/enums';
 import { Request } from 'express';
 import { LoginLogsService } from 'src/login-logs/login-logs.service';
 import { LoginSocialNetwork } from './dto/loginSocialNetwork.dto';
+import { EncryptionService } from 'src/encryption/encryption.service';
+import { MailService } from 'src/mail/mail.service';
 @ApiTags('Auth')
 @Controller('auth')
 export class AuthController {
@@ -30,12 +32,15 @@ export class AuthController {
     private readonly authService: AuthService,
     private readonly userService: UserService,
     private readonly loginLogsService: LoginLogsService,
+    private readonly encryptionService: EncryptionService,
+    private readonly mailService: MailService,
   ) {}
   logger = new Logger(AuthController.name);
 
   @UseInterceptors(IpDetailsInterceptor)
   @Post('login')
   async login(@Body() loginDto: LoginDto, @Req() req: Request) {
+    loginDto.email = this.encryptionService.encryptData(loginDto.email);
     this.logger.log('Logeando usuario: ', loginDto.email);
     //TODO: GUARDAR LOG DE LOGUEO Y MEJORAR EL CONTROL DE ERRORES DE INICIO DE SESIÓN
 
@@ -85,9 +90,13 @@ export class AuthController {
         isCorrect: true,
         userAgent: req['ua'],
       });
-      console.log(1);
       const { password, ...rest } = user;
       const data = await this.authService.login(user);
+      this.mailService.sendLoginEmail({
+        email: user.email,
+        name: user.name,
+        ip: req['ip-details'].query,
+      });
       return data;
     } else {
       await this.loginLogsService.createLoginLog({
@@ -130,7 +139,7 @@ export class AuthController {
     @Req() req: Request,
   ) {
     this.logger.log('Logeando usuario: ', loginDto.email);
-
+    loginDto.email = this.encryptionService.encryptData(loginDto.email);
     const user = await this.userService.findUserByLogin(loginDto.email);
 
     if (user.status == UserStatus.BLOCKED) {
@@ -157,6 +166,11 @@ export class AuthController {
       }
     }
     const data = await this.authService.login(user);
+    this.mailService.sendLoginEmail({
+      email: user.email,
+      name: user.name,
+      ip: req['ip-details'].query,
+    });
     return data;
   }
 

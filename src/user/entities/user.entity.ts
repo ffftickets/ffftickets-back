@@ -26,19 +26,19 @@ export class User extends BaseEntity {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column({ type: 'varchar', length: 100, default: '', nullable: false })
+  @Column({ type: 'varchar', default: '', nullable: false })
   email:string;
 
   @Column({ type: 'varchar', nullable: false })
   password?: string;
 
-  @Column({ type: 'varchar', length: 75, nullable: false })
+  @Column({ type: 'varchar', nullable: false })
   name: string;
 
-  @Column({ type: 'varchar', length: 10, nullable: true })
+  @Column({ type: 'varchar', nullable: true })
   phone?: string;
  
-  @Column({ type: 'varchar', length: 13, nullable: false })
+  @Column({ type: 'varchar',  nullable: false })
   identification: string;
 
   @Column({
@@ -48,19 +48,19 @@ export class User extends BaseEntity {
   })
   identificationType: string;
 
-  @Column({ type: 'varchar', length: 35, nullable: true })
+  @Column({ type: 'varchar',  nullable: true })
   province?: string;
 
   @Column({ type: 'varchar', nullable: true })
   photo?: string;
 
-  @Column({ type: 'varchar', length: 35, nullable: true })
+  @Column({ type: 'varchar',  nullable: true })
   city?: string;
 
-  @Column({ type: 'varchar', length: 100, nullable: true })
+  @Column({ type: 'varchar',  nullable: true })
   address?: string;
 
-  @Column({ type: 'varchar', length: 25, nullable: true })
+  @Column({ type: 'varchar',  nullable: true })
   birthdate?: string;
 
   @Column({ type: 'enum', enum: Gender,nullable:true })

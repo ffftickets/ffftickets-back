@@ -8,6 +8,7 @@ import { JwtService } from '@nestjs/jwt';
 import { compare } from 'bcryptjs';
 import { customError } from 'src/common/helpers/custom-error.helper';
 import { UserStatus } from 'src/core/enums';
+import { EncryptionService } from 'src/encryption/encryption.service';
 import { User } from 'src/user/entities/user.entity';
 import { UserService } from 'src/user/user.service';
 
@@ -16,6 +17,7 @@ export class AuthService {
   constructor(
     private readonly userService: UserService,
     private readonly jwtService: JwtService,
+   
   ) {}
   logger = new Logger(AuthService.name);
 

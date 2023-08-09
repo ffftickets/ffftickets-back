@@ -20,7 +20,20 @@ export default () => ({
     appId: process.env.FIREBASE_APP_ID || '',
     measurementId: process.env.FIREBASE_MEASUREMENT_ID || '',
   },
-  
+  encryption: {
+    secretKey: process.env.SECRET_KEY || '',
+    secretIv: process.env.SECRET_IV || '',
+    encryptionMethod: process.env.ENCRYPTION_METHOD || '',
+  },
+  mail: {
+    host: process.env.MAIL_HOST,
+    port: parseInt(process.env.MAIL_PORT, 10) || 587,
+    secure: process.env.MAIL_SECURE === 'true',
+    auth: {
+      user: process.env.MAIL_USER,
+      pass: process.env.MAIL_PASS,
+    },
+  },
 });
 
 export const PORT = 'port';
@@ -41,4 +54,13 @@ export const FIREBASE_MESSAGING_SENDER_ID = 'firebase.messagingSenderId';
 export const FIREBASE_APP_ID = 'firebase.appId';
 export const FIREBASE_MEASUREMENT_ID = 'firebase.measurementId';
 
+export const SECRET_KEY = 'encryption.secretKey';
+export const SECRET_IV = 'encryption.secretIv';
+export const ENCRYPTION_METHOD = 'encryption.encryptionMethod';
+
+export const MAIL_HOST = 'mail.host';
+export const MAIL_PORT = 'mail.port';
+export const MAIL_SECURE = 'mail.secure';
+export const MAIL_USER = 'mail.auth.user';
+export const MAIL_PASS = 'mail.auth.pass';
 
