@@ -74,7 +74,7 @@ export class Event extends BaseEntity {
   @Column({ type: 'varchar', nullable: true })
   capacity_authorization: string;
 
-  @Column({ type: 'bool', default: true })
+  @Column({ type: 'bool', default: false })
   isActive: boolean;
 
   @Column({ type: 'enum', enum: EventStatus, default: EventStatus.ACTIVE })

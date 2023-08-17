@@ -30,6 +30,8 @@ import { FreeTicketsModule } from './free-tickets/free-tickets.module';
 import { EncryptionModule } from './encryption/encryption.module';
 import { MailModule } from './mail/mail.module';
 import { MailLogsModule } from './mail-logs/mail-logs.module';
+import { BullModule } from '@nestjs/bull';
+
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true, load: [configuration] }),
@@ -49,8 +51,6 @@ import { MailLogsModule } from './mail-logs/mail-logs.module';
     }),
 
     AccessControlModule.forRoles(roles),
-
-
     UserModule,
 
     LicenseModule,

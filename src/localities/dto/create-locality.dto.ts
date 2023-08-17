@@ -50,12 +50,12 @@ export class CreateLocalityDto {
   @IsNotEmpty()
   photo: string;
 
-  @ApiProperty({
+  @ApiPropertyOptional({
     example: LocaliteStatus.ACTIVE,
     description: 'Estado de la localidad',
     enum: LocaliteStatus,
   })
-  @IsNotEmpty()
+  @IsOptional()
   @IsString()
   @IsEnum(LocaliteStatus)
   status: string;

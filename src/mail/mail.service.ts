@@ -15,7 +15,7 @@ export class MailService {
   async sendLoginEmail(loginMailDto: LoginMailDto) {
     const { email } = loginMailDto;
     this.logger.log('Enviando email login: ', email);
-    this.mailerService 
+  /*   this.mailerService 
       .sendMail({
         to: email,
         subject: 'Notificación FFFTickets',
@@ -38,6 +38,6 @@ export class MailService {
           details: error,
           content: error.response || loginMailDto,
         });
-      });
+      }); */
   }
 }

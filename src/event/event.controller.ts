@@ -55,6 +55,20 @@ export class EventController {
     return res.status(HttpStatus.OK).json(data);
   }
 
+  @Auth()
+  @Get('/find/administration')
+  async findAllForAdmin(
+    @Res() res: Response,
+    @Query('page') page: number = 1,
+    @Query('limit') limit: number = 10,
+  ) {
+    this.logger.log('Buscando todos los eventos para administración');
+    const data = await this.eventService.findAllForAdmin(page, limit);
+    return res.status(HttpStatus.OK).json(data);
+  }
+
+
+
   @Get(':id')
   async findOne(@Param('id') id: string, @Res() res: Response) {
     this.logger.log(`Buscando evento: ${id} `);
@@ -103,7 +117,7 @@ export class EventController {
     @GetUser() user: User,
     @Res() res: Response,
   ) {
-    this.logger.log(`Actualizando evento: `, updateEventDto.name);
+    this.logger.log(`Actualizando evento: `, id);
     const event = await this.eventService.findOne(+id);
     this.logger.log('Verificando tickets.');
 
@@ -128,10 +142,10 @@ export class EventController {
     }
     this.logger.log('Verificando galería de eventos.');
     if (updateEventDto.event_gallery) {
-      console.log('aqui');
+
       const updatedImages = [];
       for (const image of updateEventDto.event_gallery) {
-        console.log('aqui');
+
         const img = await this.firebaseService.uploadBase64({
           route: `${user.id} - ${user.name}/${event.name}/event-gallery`,
           image: image,
