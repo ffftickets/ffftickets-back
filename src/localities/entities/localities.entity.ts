@@ -5,12 +5,14 @@ import {
   Entity,
   ManyToOne,
   OneToMany,
+  OneToOne,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
 import { LocaliteStatus } from '../enum/localite-status.enum';
 import { Ticket } from 'src/tickets/entities/ticket.entity';
 import { FreeTicket } from 'src/free-tickets/entities/free-ticket.entity';
+import { CreateLogPayCard } from 'src/log-pay-card/entities/log-pay-card.entity';
 
 @Entity('localities')
 export class Localities {
@@ -25,19 +27,23 @@ export class Localities {
   @Column({ type: 'varchar', nullable: false })
   name: string;
 
-  @Column({ type: 'double', nullable: false })
+  @Column({type: 'decimal', precision: 5, scale: 2, nullable: false})
   price: number;
 
   @Column({ type: 'int', nullable: false })
   capacity: number;
 
-  @Column({ type: 'int',  default: 0 })
+  @Column({ type: 'int', default: 0 })
   sold: number;
 
-  @Column({ type: 'varchar', nullable: false })
-  photo: string;
+  @Column({ type: 'varchar', nullable: true })
+  photo?: string;
 
-  @Column({ type: 'enum',enum: LocaliteStatus, default: LocaliteStatus.ACTIVE })
+  @Column({
+    type: 'enum',
+    enum: LocaliteStatus,
+    default: LocaliteStatus.ACTIVE,
+  })
   status: string;
 
   @Column({ type: 'boolean', default: true })
@@ -48,7 +54,16 @@ export class Localities {
 
   @UpdateDateColumn({ name: 'updated_at', type: 'timestamp' })
   updatedAt: Date;
-  
+
   @OneToMany((_) => Ticket, (ticket) => ticket.locality)
   ticket: Ticket;
+
+  @Column({ type: 'decimal', precision: 5, scale: 2, nullable: false })
+  iva: number;
+
+  @Column({type: 'decimal', precision: 5, scale: 2, nullable: false})
+  total: number;
+
+
+
 }

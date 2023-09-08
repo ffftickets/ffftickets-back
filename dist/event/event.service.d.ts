@@ -1,0 +1,75 @@
+import { Logger } from '@nestjs/common';
+import { CreateEventDto } from './dto/create-event.dto';
+import { UpdateEventDto } from './dto/update-event.dto';
+import { Event } from './entities/event.entity';
+import { Repository } from 'typeorm';
+import { EventTypeService } from 'src/event-type/event-type.service';
+import { FirebaseService } from 'src/firebase/firebase.service';
+import { EncryptionService } from 'src/encryption/encryption.service';
+export declare class EventService {
+    private readonly eventRepository;
+    private readonly eventTypeService;
+    private readonly firebaseService;
+    private readonly encryptionService;
+    constructor(eventRepository: Repository<Event>, eventTypeService: EventTypeService, firebaseService: FirebaseService, encryptionService: EncryptionService);
+    logger: Logger;
+    create(createEventDto: CreateEventDto): Promise<Event>;
+    findAll(page?: number, limit?: number): Promise<{
+        events: Event[];
+        currentPage: number;
+        pageSize: number;
+        totalPages: number;
+        totalCount: number;
+    }>;
+    findAllForAdmin(page?: number, limit?: number): Promise<{
+        events: {
+            soldCount: any;
+            incompleteCount: any;
+            id: number;
+            user: import("../user/entities/user.entity").User;
+            localities: import("../localities/entities/localities.entity").Localities;
+            name: string;
+            event_date: Date;
+            hour: string;
+            city: string;
+            province: string;
+            geo_location: string;
+            poster: string;
+            event_gallery: string[];
+            informative_gallery: string[];
+            courtesy_ticket: string;
+            ruc: string;
+            municipal_authorization: string;
+            issuance_authorization: string;
+            address: string;
+            capacity_authorization: string;
+            isActive: boolean;
+            status: string;
+            event_type: import("../event-type/entities/event-type.entity").EventType;
+            past_events: string[];
+            createdAt: Date;
+            updatedAt: Date;
+            sale: import("../sales/entities/sale.entity").Sale;
+            promoter: import("../event-promoter/entities/event-promoter.entity").EventPromoter;
+            commission: number;
+            payment_methods: import("./emun/payment-method.enum").PaymentMethod[];
+            iva: boolean;
+        }[];
+        currentPage: number;
+        pageSize: number;
+        totalPages: number;
+        totalCount: number;
+    }>;
+    findOne(id: number): Promise<Event>;
+    findEventsByUser(id: number, page?: number, limit?: number): Promise<{
+        events: Event[];
+        currentPage: number;
+        pageSize: number;
+        totalPages: number;
+        totalCount: number;
+    }>;
+    update(id: number, updateEventDto: UpdateEventDto): Promise<Event>;
+    remove(id: number): Promise<Event>;
+    deleteImgEvent(id: number, url: string): Promise<Event>;
+    countEventsForUser(userId: number): Promise<number>;
+}

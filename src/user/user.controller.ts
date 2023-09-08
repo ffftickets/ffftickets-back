@@ -79,9 +79,10 @@ export class UserController {
     @Res() res: Response,
     @Query('page') page: number = 1,
     @Query('limit') limit: number = 10,
+    @Query('role') role: string,
   ) {
     this.logger.log('Buscando todos los usuarios');
-    const users = await this.userService.findAll(page, limit);
+    const users = await this.userService.findAll(page, limit, role);
     return res.status(HttpStatus.OK).json(users);
   }
   @Auth({

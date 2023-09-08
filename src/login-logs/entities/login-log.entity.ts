@@ -1,6 +1,6 @@
 import { Entity, Column, PrimaryGeneratedColumn, BeforeUpdate, BeforeInsert } from 'typeorm';
 
-@Entity({ name: 'loginLogs' })
+@Entity({ name: 'log_login' })
 export class LoginLog {
   @PrimaryGeneratedColumn()
   id: number;

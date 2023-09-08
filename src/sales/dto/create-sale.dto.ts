@@ -56,7 +56,7 @@ export class CreateSaleDto {
     example: '4671628756348179027894321',
     description: 'Numero de autorización del pago',
   })
-  @IsNumberString()
+  @IsString()
   @IsOptional()
   authorizationNumber?: string;
 
@@ -64,7 +64,7 @@ export class CreateSaleDto {
     example: '4671628756348179027894321',
     description: 'Numero de transacción',
   })
-  @IsNumberString()
+  @IsString()
   @IsOptional()
   transactionCode?: string;
 
@@ -81,8 +81,8 @@ export class CreateSaleDto {
     description: 'Valor del servicio',
   })
   @IsNumber()
-  @IsNotEmpty()
-  serviceValue: number;
+  @IsOptional()
+  serviceValue?: number;
   @ApiProperty({
     example: 30,
     description: 'Descuento del promotor',
@@ -104,8 +104,8 @@ export class CreateSaleDto {
     description: 'Valor total cobrado',
   })
   @IsNumber()
-  @IsNotEmpty()
-  total: number;
+  @IsOptional()
+  total?: number;
 
   @ApiPropertyOptional({
     example: [

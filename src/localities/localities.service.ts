@@ -97,10 +97,12 @@ export class LocalitiesService {
 
   async updateSold(id: number, sold: number) {
     try {
+      console.log(id,sold)
       this.logger.log('Actualizando venta: ' + id)
       await this.localitiesRepository.update(id, {
         sold: sold,
       });
+
       return null;
     } catch (error) {
       this.logger.error(error);

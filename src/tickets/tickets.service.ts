@@ -56,6 +56,29 @@ export class TicketsService {
       customError(error);
     }
   }
+  async deleteTicketsAndUpdateLocalities(ventaData:any,saleId: number) {
+    try {
+      this.logger.log('Eliminando tickets y agregando localidades');  
+      // Find and delete tickets with the specific sale ID
+      const ticketsToDelete = await this.findBySale(saleId);
+      if(ticketsToDelete.length !== 0) {
+      ticketsToDelete.forEach(async (element) => {
+       await  this.ticketRepository.update(element.id, { status: TicketStatus.CANCELED });
+      });
+    }
+      const localidades = await this.localitiesService.findOne(ventaData.localityId);
+      this.localitiesService.updateSold(
+        ventaData.localityId,
+        localidades.sold - ventaData.ticketCount
+      );
+      // Update the locality by adding the 'ticketCount' value
+      return 'Tickets deleted and locality updated successfully';
+    } catch (error) {
+      this.logger.error(error);
+      customError(error);
+    }
+  }
+  
 
   async findAll() {
     try {

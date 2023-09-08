@@ -1,6 +1,6 @@
 import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn } from 'typeorm';
 
-@Entity('mail-logs')
+@Entity('log_mail')
 export class MailLog {
   @PrimaryGeneratedColumn()
   id: number;

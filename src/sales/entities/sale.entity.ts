@@ -2,8 +2,10 @@ import {
   Column,
   CreateDateColumn,
   Entity,
+  JoinColumn,
   ManyToOne,
   OneToMany,
+  OneToOne,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
@@ -12,6 +14,7 @@ import { SaleStatus } from '../enum/sale-status.enum';
 import { Event } from 'src/event/entities/event.entity';
 import { User } from 'src/user/entities/user.entity';
 import { Ticket } from 'src/tickets/entities/ticket.entity';
+import { CreateLogPayCard } from 'src/log-pay-card/entities/log-pay-card.entity';
 @Entity('sales')
 export class Sale {
   @PrimaryGeneratedColumn()
@@ -46,16 +49,16 @@ export class Sale {
   @Column({ type: 'varchar', nullable: true })
   transfer_photo?: string;
 
-  @Column({ type: 'double', nullable: false })
+  @Column({ type: 'decimal', precision: 5, scale: 2, default: 0 })
   serviceValue: number;
 
-  @Column({ type: 'double', nullable: true })
+  @Column({ type: 'decimal', precision: 5, scale: 2, default: 0 })
   catwalkCommission?: number;
 
-  @Column({ type: 'double', nullable: true })
+  @Column({ type: 'decimal', precision: 5, scale: 2, default: 0 })
   promoterDiscount: number;
 
-  @Column({ type: 'double', nullable: false })
+  @Column({ type: 'decimal', precision: 5, scale: 2, default: 1 })
   total: number;
 
   @OneToMany((_) => Ticket, (ticket) => ticket.sale)
@@ -69,4 +72,10 @@ export class Sale {
 
   @UpdateDateColumn({ name: 'updated_at', type: 'timestamp' })
   updatedAt: Date;
+  //!Relacion con sales
+
+  @OneToOne(() => CreateLogPayCard, log => log.sale)
+  @JoinColumn({ name: 'logPayCardId' })
+  log: CreateLogPayCard;
+
 }

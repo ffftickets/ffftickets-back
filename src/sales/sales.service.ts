@@ -23,8 +23,16 @@ import { UploadPhotoDto } from './dto/uploadPhoto.dto';
 import { EncryptionService } from 'src/encryption/encryption.service';
 import { InjectQueue } from '@nestjs/bull';
 import { Queue } from 'bull';
+import { PayTypes } from './enum/pay-types.enum';
+import { CreateLogPayCard } from 'src/log-pay-card/entities/log-pay-card.entity';
+import { UpdateSaleCard } from './dto/update-sale-card';
+import { LogPayCardService } from 'src/log-pay-card/log-pay-card.service';
+import { MailService } from 'src/mail/mail.service';
+import { TicketsEmailDto } from 'src/mail/dto';
+import { CreateLogSaleDto } from 'src/log-sale/dto/create-log-sale.dto';
+import { LogSaleService } from 'src/log-sale/log-sale.service';
+import { ActionSale } from 'src/log-sale/enum/sale-action.enum';
 //Cola de espera
-
 
 @Injectable()
 export class SalesService {
@@ -39,28 +47,50 @@ export class SalesService {
     private readonly localitiesService: LocalitiesService,
     private readonly firebaseService: FirebaseService,
     private readonly encryptionService: EncryptionService,
- 
+    private readonly logPayCardService: LogPayCardService,
+    private readonly mailService: MailService,
+    private readonly logSaleService: LogSaleService,
   ) {}
-  async create(createSaleDto: CreateSaleDto) {
+  async create(createSaleDto: CreateSaleDto, logSale: CreateLogSaleDto) {
     try {
-      
-      const verifyExist = await this.verifyPendingPurchase(
-        createSaleDto.customer.id,
-      );
-      if (verifyExist)
-        throw new ConflictException(
-          'Tu pedido no se pudo completar ya que actualmente tienes pedidos pendientes de validación.',
-        );
-
+      const { tickets, ...createSale } = createSaleDto;
+      //!Obtener el evento
       const event = await this.eventService.findOne(createSaleDto.event);
       createSaleDto.event = event;
+      //! Calcular el valor del servicio.
+     
+      createSale.serviceValue = this.calculateServiceValue(tickets,event.commission);
+      //? Verificar si el usuario tiene pedidos pendientes de validación
+      const verifyExist = await this.verifyPendingPurchase(
+        createSale.customer.id,
+      );
+        console.log("Verificar si tiene pedidos pendientes",verifyExist);
+      //?En caso de que tenga una compra pendiente entra a validación!
+      if (verifyExist) {
+        //! Si tiene pedidos pendientes de validación con transferencia y no a subido un comprobante se elimina la compra anterior y se crea una nueva.
+        //! Si tiene pedidos pendientes de validación con transferencia y ya subió un comprobante se emite el mensaje de que tiene compras pendientes.
+        if (verifyExist.sale.payType === PayTypes.TRANSFER && createSale.payType === PayTypes.TRANSFER) {
+            throw new ConflictException(
+              'Tu pedido no se pudo completar ya que actualmente tienes pedidos pendientes de validación.',
+            );
+        } else {
+          //! Si tiene pedidos pendientes de validación con tarjeta se elimina la compra anterior y se crea una nueva.
+          console.log("Eliminando compra anterior");
+          logSale.action = ActionSale.DELETE;
+          logSale.data = verifyExist;
+          this.logSaleService.create(logSale);
+          await this.deleteSaleAndTickets(verifyExist);
 
-      const { tickets, ...createSale } = createSaleDto;
+        }
+      }
 
+
+      let totalTickets = 0;
       for (const element of tickets) {
         element.locality = await this.localitiesService.findOne(
           element.locality,
         );
+        totalTickets = element.quantity * element.locality.total;
         if (
           element.locality.capacity <
           element.locality.sold + element.quantity
@@ -72,32 +102,63 @@ export class SalesService {
           );
       }
 
-      if (createSaleDto.promoter) {
+      if (createSale.promoter) {
         const promoter = await this.userService.findOne({
           id: createSaleDto.promoter,
         });
-        createSaleDto.promoter = promoter;
+        createSale.promoter = promoter;
       }
+
+      createSale.total = createSale.serviceValue + totalTickets;
+
+      console.log('Creación de venta', createSale);
 
       const sale = await this.saleRepository.create(createSale);
       const newSale = await this.saleRepository.save(sale);
-
       const newTickets = await this.ticketService.create({
         sale: newSale,
         detail: tickets,
       });
+      logSale.action = ActionSale.CREATE;
+      logSale.data = {newSale,newTickets};
+      this.logSaleService.create(logSale);
       return {
         message:
           'Compra realizada con éxito y a la espera del pago a espera de pago',
-        saleId: sale.id,
+           saleId: sale.id,
       };
     } catch (error) {
       this.logger.error(error);
       customError(error);
     }
   }
+  async deleteSaleAndTickets(saleDelete: any) {
+    
+    const { localities, sale } = saleDelete;
+    
+   
 
-  async findAll(page: number = 1, limit: number = 10) {
+    for (const locality of localities) {
+      await this.ticketService.deleteTicketsAndUpdateLocalities(locality,sale.id);
+    }
+    console.log("Eliminando venta",sale.id)
+    await this.saleRepository.update(sale.id, { status: SaleStatus.CANCELED })
+  }
+  calculateServiceValue(tickets: any[],commission:number): any {
+    let serviceValue = 0;
+    for (const element of tickets) {
+      serviceValue += element.quantity;
+    }
+    serviceValue = serviceValue * commission;
+    return serviceValue + (serviceValue * 0);
+  }
+
+  async findAll(
+    page: number = 1,
+    limit: number = 10,
+    status: string,
+    paymentMethod: string,
+  ) {
     try {
       const skip = (page - 1) * limit;
 
@@ -158,12 +219,91 @@ export class SalesService {
     }
   }
 
+  async findAllByEvent(
+    event: number,
+    page: number = 1,
+    limit: number = 10,
+    status: string,
+    paymentMethod: string,
+  ) {
+    try {
+      const skip = (page - 1) * limit;
+
+      const query = this.saleRepository
+        .createQueryBuilder('sale')
+        .innerJoin('sale.customer', 'customer')
+        .leftJoin('sale.promoter', 'promoter')
+        .select([
+          'sale',
+          'customer.id',
+          'customer.name',
+          'customer.email',
+          'promoter.id',
+          'promoter.name',
+          'promoter.email',
+        ])
+        .where('promoter.id IS NOT NULL OR promoter.id IS NULL')
+        .andWhere('sale.event = :event', { event });
+
+      // Agregar los filtros solo si status y paymentMethod son diferentes de ""
+      if (status !== '') {
+        query.andWhere('sale.status = :status', { status });
+      }
+      if (paymentMethod !== '') {
+        query.andWhere('sale.payType = :paymentMethod', { paymentMethod });
+      }
+
+      const [sales, totalCount] = await query
+        .skip(skip)
+        .take(limit)
+        .getManyAndCount();
+
+      if (totalCount === 0) {
+        throw new NotFoundException('No se encuentran ventas');
+      }
+
+      const decryptedSales = sales.map((sale) => {
+        sale.customer.name = this.encryptionService.decryptData(
+          sale.customer.name,
+        );
+        sale.customer.email = this.encryptionService.decryptData(
+          sale.customer.email,
+        );
+
+        if (sale.promoter) {
+          sale.promoter.name = this.encryptionService.decryptData(
+            sale.promoter.name,
+          );
+          sale.promoter.email = this.encryptionService.decryptData(
+            sale.promoter.email,
+          );
+        }
+
+        return sale;
+      });
+
+      const totalPages = Math.ceil(totalCount / limit);
+
+      return {
+        sales: decryptedSales,
+        currentPage: page,
+        pageSize: limit,
+        totalPages,
+        totalCount,
+      };
+    } catch (error) {
+      this.logger.error(error);
+      customError(error);
+    }
+  }
+
   async findOne(id: number) {
     try {
       const sale = await this.saleRepository
         .createQueryBuilder('sale')
         .innerJoinAndSelect('sale.customer', 'customer')
         .leftJoinAndSelect('sale.promoter', 'promoter')
+        .innerJoin('sale.event', 'event')
         .where('sale.id = :id', { id })
         .andWhere('(promoter.id IS NOT NULL OR promoter.id IS NULL)')
         .select([
@@ -174,6 +314,7 @@ export class SalesService {
           'promoter.id',
           'promoter.name',
           'promoter.email',
+          'event.id',
         ])
         .getOne();
 
@@ -275,6 +416,7 @@ export class SalesService {
           'event.id',
           'event.name',
           'event.event_date',
+          'event.commission'
         ])
         .getOne();
       if (!sale) return null;
@@ -394,4 +536,75 @@ export class SalesService {
       customError(error);
     }
   }
+  async validateSaleAdmin(id: number) {
+    try {
+      const sale = await this.findOne(id);
+      sale.status = SaleStatus.SOLD;
+      return await this.saleRepository.save(sale);
+    } catch (error) {
+      this.logger.error(error);
+      customError(error);
+    }
+  }
+  //TODO:Cambiar esto en base a la pasarela de pago
+  async updateSaleWIthCard(id:number,updateSaleCard:UpdateSaleCard){
+    try {
+      const sale = await this.findOne(id);
+      updateSaleCard.log.sale = sale;
+      const {log, ...updateData} = updateSaleCard;
+      this.logPayCardService.create(log);
+      sale.status = SaleStatus.SOLD;
+      sale.authorizationNumber = updateData.authorizationNumber;
+      sale.transactionCode = updateData.transactionCode;
+      sale.catwalkCommission = updateData.catwalkCommission;
+      const dataSale =  await this.saleRepository.save(sale);
+      const dataEvent = await this.eventService.findOne(dataSale.event.id);
+      const dataLocalities = await this.ticketService.findBySale(dataSale.id);
+
+      const localities = this.transformTicketsToLocalities(dataLocalities);
+
+       const dataSendEmail:TicketsEmailDto={
+        email: dataSale.customer.email,
+        name: dataSale.customer.name,
+        event:{
+          name: dataEvent.name,
+          event_date: dataEvent.event_date,
+          place: dataEvent.address,
+          poster: dataEvent.poster,
+          user: {name: dataEvent.user.name}
+        },
+        sale:{ id: dataSale.id},
+        localities:[...localities]
+        }
+      console.log("Datos correo",dataSendEmail);
+      this.mailService.sendTicketsEmail(dataSendEmail);
+ 
+    } catch (error) {
+      this.logger.error(error);
+      customError(error);
+    }
+
+  }
+   transformTicketsToLocalities(tickets) {
+    const localityMap = {};
+  
+    for (const ticket of tickets) {
+      const localityName = ticket.locality.name;
+      const qr = ticket.qr;
+  
+      if (!localityMap[localityName]) {
+        localityMap[localityName] = {
+          localityName: localityName,
+          qrs: [qr],
+        };
+      } else {
+        localityMap[localityName].qrs.push(qr);
+      }
+    }
+  
+    return Object.values(localityMap);
+  }
+  
+
+  
 }

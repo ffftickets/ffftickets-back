@@ -5,12 +5,14 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { PassportModule } from '@nestjs/passport';
 import { User } from './entities/user.entity';
 import { EncryptionModule } from 'src/encryption/encryption.module';
+import { EventModule } from 'src/event/event.module';
 
 @Module({
   imports: [
     TypeOrmModule.forFeature([User]),
     PassportModule.register({ defaultStrategy: 'jwt' }),
-    EncryptionModule
+    EncryptionModule,
+    EventModule
   ],
   controllers: [UserController],
   providers: [UserService],

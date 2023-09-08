@@ -1,0 +1,38 @@
+import { BaseEntity } from 'typeorm';
+import { EventType } from 'src/event-type/entities/event-type.entity';
+import { User } from 'src/user/entities/user.entity';
+import { Localities } from 'src/localities/entities/localities.entity';
+import { Sale } from 'src/sales/entities/sale.entity';
+import { EventPromoter } from 'src/event-promoter/entities/event-promoter.entity';
+import { PaymentMethod } from '../emun/payment-method.enum';
+export declare class Event extends BaseEntity {
+    id: number;
+    user: User;
+    localities: Localities;
+    name: string;
+    event_date: Date;
+    hour: string;
+    city: string;
+    province: string;
+    geo_location: string;
+    poster: string;
+    event_gallery: string[];
+    informative_gallery: string[];
+    courtesy_ticket: string;
+    ruc: string;
+    municipal_authorization: string;
+    issuance_authorization: string;
+    address: string;
+    capacity_authorization: string;
+    isActive: boolean;
+    status: string;
+    event_type: EventType;
+    past_events: string[];
+    createdAt: Date;
+    updatedAt: Date;
+    sale: Sale;
+    promoter: EventPromoter;
+    commission: number;
+    payment_methods: PaymentMethod[];
+    iva: boolean;
+}

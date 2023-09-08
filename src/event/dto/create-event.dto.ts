@@ -1,5 +1,6 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import {
+  IsArray,
   IsBoolean,
   IsDateString,
   IsEnum,
@@ -10,6 +11,7 @@ import {
   IsString,
 } from 'class-validator';
 import { EventStatus } from '../emun/status-event.enum';
+import { PaymentMethod } from '../emun/payment-method.enum';
 
 export class CreateEventDto {
   @ApiPropertyOptional({
@@ -134,7 +136,6 @@ export class CreateEventDto {
   @IsNumberString()
   capacity_authorization?: string;
 
- 
   @ApiPropertyOptional({
     example: 'ACTIVE',
     description: 'Estado del evento',
@@ -160,11 +161,45 @@ export class CreateEventDto {
   @IsNumber()
   event_type: any;
 
-
   @ApiPropertyOptional({
     type: [],
     description: 'Eventos pasados',
   })
   @IsOptional()
   past_events?: any[];
+
+  @ApiPropertyOptional({
+    type: Number,
+    description: 'Valor de sumisión',
+  })
+  @IsOptional()
+  @IsNumber()
+  commission?: number;
+
+  @ApiProperty({
+    type: [String],
+    enum: PaymentMethod,
+    default: [
+      PaymentMethod.TRANSFER,
+      PaymentMethod.CARD,
+      PaymentMethod.PAYPHONE,
+    ],
+  })
+  @IsArray()
+  @IsEnum(PaymentMethod, { each: true })
+  @IsOptional()
+  payment_methods?: PaymentMethod[] = [
+    PaymentMethod.TRANSFER,
+    PaymentMethod.CARD,
+    PaymentMethod.PAYPHONE,
+  ];
+
+  @ApiProperty({
+    example: true,
+    description: 'Iva del evento',
+    default: true,
+  })
+  @IsBoolean()
+  @IsNotEmpty()
+  iva: boolean = true;
 }

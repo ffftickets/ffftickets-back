@@ -42,13 +42,13 @@ export class CreateLocalityDto {
   @IsOptional()
   sold?: number;
 
-  @ApiProperty({
+  @ApiPropertyOptional({
     example: 'imgBase64 / URL',
     description: 'Imagen de la localidad',
   })
   @IsString()
-  @IsNotEmpty()
-  photo: string;
+  @IsOptional()
+  photo?: string;
 
   @ApiPropertyOptional({
     example: LocaliteStatus.ACTIVE,
@@ -59,6 +59,20 @@ export class CreateLocalityDto {
   @IsString()
   @IsEnum(LocaliteStatus)
   status: string;
+
+  @ApiPropertyOptional({
+    example: 12.3,
+    description: 'Valor del iva',
+  })
+  @IsNumber()
+  iva: number;
+
+  @ApiPropertyOptional({
+    example:20,
+    description: 'Total',
+  })
+  @IsNumber()
+  total: number;
 
 
 }

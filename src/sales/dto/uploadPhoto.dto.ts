@@ -28,4 +28,11 @@ export class UploadPhotoDto {
   })
   @IsOptional()
   photo: any;
+
+  @ApiPropertyOptional({
+    example: 11,
+    description: 'Total compra actualizado',
+  })
+  @IsOptional()
+  total: any;
 }

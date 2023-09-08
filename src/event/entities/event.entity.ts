@@ -17,6 +17,7 @@ import { EventStatus } from '../emun/status-event.enum';
 import { Localities } from 'src/localities/entities/localities.entity';
 import { Sale } from 'src/sales/entities/sale.entity';
 import { EventPromoter } from 'src/event-promoter/entities/event-promoter.entity';
+import { PaymentMethod } from '../emun/payment-method.enum';
 
 @Entity('event')
 export class Event extends BaseEntity {
@@ -68,7 +69,7 @@ export class Event extends BaseEntity {
   @Column({ type: 'varchar', nullable: true })
   issuance_authorization: string;
 
-  @Column({ type: 'varchar', nullable: true,default:'Dirección' })
+  @Column({ type: 'varchar', nullable: true, default: 'Dirección' })
   address: string;
 
   @Column({ type: 'varchar', nullable: true })
@@ -98,9 +99,12 @@ export class Event extends BaseEntity {
   @OneToMany((_) => EventPromoter, (eventPromoter) => eventPromoter.event)
   promoter: EventPromoter;
 
+  @Column({ type: 'decimal', precision: 5, scale: 2, default: 1 })
+  commission: number;
 
+  @Column('simple-array')
+  payment_methods: PaymentMethod[];
   
-
-
-
+  @Column({ type: 'bool', nullable: false, default: true })
+  iva: boolean;
 }

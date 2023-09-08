@@ -1,4 +1,4 @@
-class UserAgentDto {
+export class UserAgentDto {
   userAgent: string;
   browser: {
     name: string;
@@ -26,7 +26,7 @@ class UserAgentDto {
     architecture: string;
   };
 }
-class IpDetail {
+export class IpDetail {
   status: string;
   country: string;
   countryCode: string;

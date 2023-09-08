@@ -1,4 +1,5 @@
 export enum TicketStatus{
     ACTIVE='ACTIVE',
-    SCAN='SCAN'
+    SCAN='SCAN',
+    CANCELED='CANCELED',
 }

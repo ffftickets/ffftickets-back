@@ -31,6 +31,8 @@ import { EncryptionModule } from './encryption/encryption.module';
 import { MailModule } from './mail/mail.module';
 import { MailLogsModule } from './mail-logs/mail-logs.module';
 import { BullModule } from '@nestjs/bull';
+import { LogPayCardModule } from './log-pay-card/log-pay-card.module';
+import { LogSaleModule } from './log-sale/log-sale.module';
 
 @Module({
   imports: [
@@ -86,6 +88,10 @@ import { BullModule } from '@nestjs/bull';
     MailModule,
 
     MailLogsModule,
+
+    LogPayCardModule,
+
+    LogSaleModule,
 
   ],
   controllers: [AppController],

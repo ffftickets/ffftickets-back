@@ -45,7 +45,7 @@ export class EventService {
         .select(['event', 'user.id', 'user.name'])
         .where('event.isActive = :isActive', { isActive: true }) // Agregar esta línea para la condición
         .skip(skip)
-        .take(limit)  
+        .take(limit)
         .getManyAndCount();
 
       if (totalCount === 0) {
@@ -75,26 +75,43 @@ export class EventService {
   async findAllForAdmin(page: number = 1, limit: number = 10) {
     try {
       const skip = (page - 1) * limit;
-
+  
       const [events, totalCount] = await this.eventRepository
         .createQueryBuilder('event')
         .leftJoinAndSelect('event.user', 'user', 'event.userId = user.id')
-        .select(['event', 'user.id', 'user.name'])
+        .leftJoinAndSelect('event.event_type', 'event-type', 'event.eventTypeId = event-type.id')
+        .leftJoinAndSelect('event.sale', 'sales', 'event.id = sales.eventId') // Agregar la relación 'sale'
+        .select(['event', 'user.id', 'user.name', 'event-type.name', 'sales'])
         .skip(skip)
-        .take(limit)  
+        .take(limit)
         .getManyAndCount();
-
+  
       if (totalCount === 0) {
         throw new NotFoundException('No se encontraron eventos');
       }
-
-      const decryptedEvents = events.map((event) => {
+  
+      const eventsWithCount = events.map((event) => {
+        const sales:any = event.sale;
+        const soldCount = sales.filter((sale) => sale.status === 'SOLD').length;
+        const incompleteCount = sales.filter((sale) => sale.status === 'INCOMPLETE').length;
+  
+        // Eliminar la propiedad 'sale'
+        delete event.sale;
+  
+        return {
+          ...event,
+          soldCount,
+          incompleteCount,
+        };
+      });
+  
+      const decryptedEvents = eventsWithCount.map((event) => {
         event.user.name = this.encryptionService.decryptData(event.user.name);
         return event;
       });
-
+  
       const totalPages = Math.ceil(totalCount / limit);
-
+  
       return {
         events: decryptedEvents,
         currentPage: page,
@@ -107,8 +124,7 @@ export class EventService {
       customError(error);
     }
   }
-
-
+  
   
 
   async findOne(id: number) {
@@ -188,6 +204,7 @@ export class EventService {
 
   async update(id: number, updateEventDto: UpdateEventDto) {
     try {
+      console.log(updateEventDto);
       await this.eventRepository.update(id, { ...updateEventDto });
       return await this.findOne(id);
     } catch (error) {
@@ -208,20 +225,23 @@ export class EventService {
   async deleteImgEvent(id: number, url: string) {
     try {
       const event = await this.findOne(id);
-
+      console.log(1);
       if (event.poster === url) {
         event.poster = null;
       }
       if (event.courtesy_ticket === url) {
         event.courtesy_ticket = null;
       }
-
-      event.event_gallery = event.event_gallery.filter(
-        (element) => element !== url,
-      );
-      event.informative_gallery = event.informative_gallery.filter(
-        (element) => element !== url,
-      );
+      if (event.event_gallery) {
+        event.event_gallery = event.event_gallery.filter(
+          (element) => element !== url,
+        );
+      }
+      if (event.informative_gallery) {
+        event.informative_gallery = event.informative_gallery.filter(
+          (element) => element !== url,
+        );
+      }
 
       await this.firebaseService.deleteImageByUrl(url);
       return this.eventRepository.save(event);
@@ -229,5 +249,16 @@ export class EventService {
       this.logger.error(error);
       customError(error);
     }
+  }
+  async countEventsForUser(userId: number): Promise<number> {
+    const eventCount = await this.eventRepository.count({
+      where: {
+        user: {
+          id: userId,
+        },
+      },
+    });
+
+    return eventCount || 0; // Devolver el eventoCount o 0 si es falsy
   }
 }
