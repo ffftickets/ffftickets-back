@@ -17,7 +17,13 @@ async function bootstrap() {
   app.enableCors();
   //Prefijo Global de la api
   app.setGlobalPrefix('api');
-  //
+  // Configuración de CORS
+  app.enableCors({
+    origin:'*',
+     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
+     allowedHeaders: 'Content-Type, Accept',
+     credentials: true,
+   });
   app.useGlobalPipes(
     new ValidationPipe({ whitelist: true, forbidNonWhitelisted: true }),
   );
