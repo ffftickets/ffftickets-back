@@ -14,12 +14,12 @@ async function bootstrap() {
   app.use(json({ limit: '150mb' }));
   app.use(urlencoded({ extended: true, limit: '150mb' }));
   //Cors
-  app.enableCors();
+
   //Prefijo Global de la api
   app.setGlobalPrefix('api');
   // Configuración de CORS
   app.enableCors({
-    origin:'*',
+    origin:['https://ffftickets.com'],
      methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
      allowedHeaders: 'Content-Type, Accept',
      credentials: true,
