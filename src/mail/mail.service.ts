@@ -45,7 +45,6 @@ export class MailService {
   async sendLoginEmail(loginMailDto: LoginMailDto) {
     const { email } = loginMailDto;
     this.logger.log('Enviando email login: ', email);
-
     const emailData = {
       to: email,
       subject: 'Notificación de inicio de sesión FFF Tickets',
