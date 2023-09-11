@@ -34,6 +34,7 @@ export default () => ({
       pass: process.env.MAIL_PASS,
     },
   },
+  nodeEnv: process.env.NODE_ENV || 'development',
 });
 
 export const PORT = 'port';
@@ -63,4 +64,4 @@ export const MAIL_PORT = 'mail.port';
 export const MAIL_SECURE = 'mail.secure';
 export const MAIL_USER = 'mail.auth.user';
 export const MAIL_PASS = 'mail.auth.pass';
-
+export const NODE_ENV = 'nodeEnv';

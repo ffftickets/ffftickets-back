@@ -16,7 +16,7 @@ export class LogSaleService {
   ) {}
   create(createLogSaleDto: CreateLogSaleDto) {
     try {
-      console.log("log para venta");
+
       const data = this.logSaleRepository.create(createLogSaleDto);
       return this.logSaleRepository.save(data);
     }catch(error){  

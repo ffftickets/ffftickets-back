@@ -4,5 +4,6 @@ export class CreateMailLogDto {
     status: string;
     details?: object;
     content: object;
+    subject: string;
   }
   

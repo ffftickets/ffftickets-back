@@ -31,10 +31,15 @@ let EncryptionService = EncryptionService_1 = class EncryptionService {
         return encryptedData;
     }
     decryptData(encryptedData) {
-        const decipher = crypto.createDecipheriv(this.config.get(config_env_1.ENCRYPTION_METHOD), Buffer.from(this.secretKey), this.secretIv);
-        let decryptedData = decipher.update(encryptedData, 'hex', 'utf-8');
-        decryptedData += decipher.final('utf-8');
-        return decryptedData;
+        try {
+            const decipher = crypto.createDecipheriv(this.config.get(config_env_1.ENCRYPTION_METHOD), Buffer.from(this.secretKey), this.secretIv);
+            let decryptedData = decipher.update(encryptedData, 'hex', 'utf-8');
+            decryptedData += decipher.final('utf-8');
+            return decryptedData;
+        }
+        catch (e) {
+            return '';
+        }
     }
 };
 EncryptionService = EncryptionService_1 = __decorate([

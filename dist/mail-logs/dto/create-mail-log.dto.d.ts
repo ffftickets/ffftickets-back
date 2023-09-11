@@ -3,4 +3,5 @@ export declare class CreateMailLogDto {
     status: string;
     details?: object;
     content: object;
+    subject: string;
 }

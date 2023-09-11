@@ -11,6 +11,10 @@ export class MailLog {
   @Column({ type: 'varchar', length: 255 })
   status: string;
 
+  
+  @Column({ type: 'varchar', length: 255 })
+  subject: string;
+
   @Column({ type: 'json' })
   details: object;
 

@@ -14,24 +14,20 @@ import { UserService } from 'src/user/user.service';
 import { TicketsService } from 'src/tickets/tickets.service';
 import { customError } from 'src/common/helpers/custom-error.helper';
 import { LocalitiesService } from 'src/localities/localities.service';
-import { TicketStatus } from 'src/tickets/enum/ticket-status.enum';
-import { v4 as uuidv4 } from 'uuid';
 import { SaleStatus } from './enum/sale-status.enum';
 import { User } from 'src/user/entities/user.entity';
 import { FirebaseService } from 'src/firebase/firebase.service';
 import { UploadPhotoDto } from './dto/uploadPhoto.dto';
 import { EncryptionService } from 'src/encryption/encryption.service';
-import { InjectQueue } from '@nestjs/bull';
-import { Queue } from 'bull';
 import { PayTypes } from './enum/pay-types.enum';
-import { CreateLogPayCard } from 'src/log-pay-card/entities/log-pay-card.entity';
 import { UpdateSaleCard } from './dto/update-sale-card';
 import { LogPayCardService } from 'src/log-pay-card/log-pay-card.service';
 import { MailService } from 'src/mail/mail.service';
-import { TicketsEmailDto } from 'src/mail/dto';
+import { GenerateOrderDto, TicketsEmailDto } from 'src/mail/dto';
 import { CreateLogSaleDto } from 'src/log-sale/dto/create-log-sale.dto';
 import { LogSaleService } from 'src/log-sale/log-sale.service';
 import { ActionSale } from 'src/log-sale/enum/sale-action.enum';
+import { OrderCompletedDto } from 'src/mail/dto/order-completed';
 //Cola de espera
 
 @Injectable()
@@ -64,7 +60,8 @@ export class SalesService {
       const verifyExist = await this.verifyPendingPurchase(
         createSale.customer.id,
       );
-        console.log("Verificar si tiene pedidos pendientes",verifyExist);
+
+        console.log("Tiene compras pendientes",verifyExist ? 'Si' : 'No');
       //?En caso de que tenga una compra pendiente entra a validación!
       if (verifyExist) {
         //! Si tiene pedidos pendientes de validación con transferencia y no a subido un comprobante se elimina la compra anterior y se crea una nueva.
@@ -75,8 +72,8 @@ export class SalesService {
             );
         } else {
           //! Si tiene pedidos pendientes de validación con tarjeta se elimina la compra anterior y se crea una nueva.
-          console.log("Eliminando compra anterior");
-          logSale.action = ActionSale.DELETE;
+          console.log("Cancelando compra anterior");
+          logSale.action = ActionSale.CANCEL; 
           logSale.data = verifyExist;
           this.logSaleService.create(logSale);
           await this.deleteSaleAndTickets(verifyExist);
@@ -84,13 +81,18 @@ export class SalesService {
         }
       }
 
-
-      let totalTickets = 0;
+      let localityDataToEmail = [];
+      let totalLocalities = 0;
       for (const element of tickets) {
         element.locality = await this.localitiesService.findOne(
           element.locality,
         );
-        totalTickets = element.quantity * element.locality.total;
+        localityDataToEmail.push({
+          name: element.locality.name,
+          quantity: element.quantity,
+          price: element.locality.total,
+        })
+        totalLocalities += element.locality.total*element.quantity;
         if (
           element.locality.capacity <
           element.locality.sold + element.quantity
@@ -109,9 +111,9 @@ export class SalesService {
         createSale.promoter = promoter;
       }
 
-      createSale.total = createSale.serviceValue + totalTickets;
+      createSale.total = createSale.serviceValue + totalLocalities;
 
-      console.log('Creación de venta', createSale);
+    
 
       const sale = await this.saleRepository.create(createSale);
       const newSale = await this.saleRepository.save(sale);
@@ -122,6 +124,19 @@ export class SalesService {
       logSale.action = ActionSale.CREATE;
       logSale.data = {newSale,newTickets};
       this.logSaleService.create(logSale);
+      if(createSale.payType === PayTypes.TRANSFER){
+      const dataOrderGeneratedEmail:GenerateOrderDto = {
+        email: sale.customer.email,
+        event: event.name,
+        subtotal: totalLocalities,
+        serviceValue: sale.serviceValue,
+        total: sale.total,
+        order: sale.id,
+        localities: [...localityDataToEmail]
+      }
+      this.mailService.sendOrderGeneratedEmail(dataOrderGeneratedEmail);
+    }
+     
       return {
         message:
           'Compra realizada con éxito y a la espera del pago a espera de pago',
@@ -176,6 +191,7 @@ export class SalesService {
           'promoter.email',
         ])
         .where('promoter.id IS NOT NULL OR promoter.id IS NULL')
+        .orderBy('sale.id', 'DESC')
         .skip(skip)
         .take(limit)
         .getManyAndCount();
@@ -243,6 +259,7 @@ export class SalesService {
           'promoter.email',
         ])
         .where('promoter.id IS NOT NULL OR promoter.id IS NULL')
+        .orderBy('sale.id', 'DESC')
         .andWhere('sale.event = :event', { event });
 
       // Agregar los filtros solo si status y paymentMethod son diferentes de ""
@@ -369,7 +386,7 @@ export class SalesService {
           'event.geo_location',
           'event.address',
         ])
-        .orderBy('event.event_date', 'DESC')
+        .orderBy('sale.id', 'DESC')
         .skip(skip)
         .take(limit)
         .getManyAndCount();
@@ -420,11 +437,13 @@ export class SalesService {
         ])
         .getOne();
       if (!sale) return null;
+
       const localityTicketInfo: {
         [localityName: string]: {
           ticketCount: number;
           price: number;
           localityId: number;
+          total: number;
         };
       } = {};
 
@@ -432,7 +451,7 @@ export class SalesService {
         const localityName = ticket.locality.name;
         const ticketPrice = ticket.locality.price;
         const localityId = ticket.locality.id;
-
+        const total = ticket.locality.total;
         if (localityTicketInfo[localityName]) {
           localityTicketInfo[localityName].ticketCount++;
         } else {
@@ -440,6 +459,7 @@ export class SalesService {
             ticketCount: 1,
             price: ticketPrice,
             localityId: localityId,
+            total:total
           };
         }
       });
@@ -451,6 +471,77 @@ export class SalesService {
           ticketCount: ticketInfo.ticketCount,
           price: ticketInfo.price,
           localityId: ticketInfo.localityId,
+          total: ticketInfo.total
+        }),
+      );
+      delete sale.tickets;
+      return { sale, localities: result };
+    } catch (error) {
+      customError(error);
+    }
+  }
+
+  
+  async verifyInfoSaleWIthLocalities(saleId:number) {
+    try {
+      const sale: any = await this.saleRepository
+        .createQueryBuilder('sale')
+        .innerJoin('sale.customer', 'customer')
+        .innerJoin('sale.event', 'event')
+        .innerJoin('sale.customer', 'user')
+        .leftJoinAndSelect('sale.tickets', 'ticket')
+        .leftJoinAndSelect('ticket.locality', 'locality')
+        .where('sale.id=:saleId', { saleId })
+        .select([
+          'sale',
+          'ticket',
+          'locality',
+          'event.id',
+          'event.name',
+          'event.event_date',
+          'event.commission',
+          'user.name',
+          'user.email',
+          'user.phone',
+          'user.identification',
+        ])
+        .getOne();
+      if (!sale) return null;
+
+      const localityTicketInfo: {
+        [localityName: string]: {
+          ticketCount: number;
+          price: number;
+          localityId: number;
+          total: number;
+        };
+      } = {};
+
+      sale.tickets.forEach((ticket) => {
+        const localityName = ticket.locality.name;
+        const ticketPrice = ticket.locality.price;
+        const localityId = ticket.locality.id;
+        const total = ticket.locality.total;
+        if (localityTicketInfo[localityName]) {
+          localityTicketInfo[localityName].ticketCount++;
+        } else {
+          localityTicketInfo[localityName] = {
+            ticketCount: 1,
+            price: ticketPrice,
+            localityId: localityId,
+            total:total
+          };
+        }
+      });
+
+      // Convertir el objeto de resultados en un array de objetos
+      const result = Object.entries(localityTicketInfo).map(
+        ([localityName, ticketInfo]) => ({
+          localityName,
+          ticketCount: ticketInfo.ticketCount,
+          price: ticketInfo.price,
+          localityId: ticketInfo.localityId,
+          total: ticketInfo.total
         }),
       );
       delete sale.tickets;
@@ -540,7 +631,10 @@ export class SalesService {
     try {
       const sale = await this.findOne(id);
       sale.status = SaleStatus.SOLD;
-      return await this.saleRepository.save(sale);
+      const data =  await this.saleRepository.save(sale);
+      this.generateDataToEmailCompleteOrder(id);
+      this.generateDataToEmailTickets(id);
+      return data;
     } catch (error) {
       this.logger.error(error);
       customError(error);
@@ -558,27 +652,10 @@ export class SalesService {
       sale.transactionCode = updateData.transactionCode;
       sale.catwalkCommission = updateData.catwalkCommission;
       const dataSale =  await this.saleRepository.save(sale);
-      const dataEvent = await this.eventService.findOne(dataSale.event.id);
-      const dataLocalities = await this.ticketService.findBySale(dataSale.id);
-
-      const localities = this.transformTicketsToLocalities(dataLocalities);
-
-       const dataSendEmail:TicketsEmailDto={
-        email: dataSale.customer.email,
-        name: dataSale.customer.name,
-        event:{
-          name: dataEvent.name,
-          event_date: dataEvent.event_date,
-          place: dataEvent.address,
-          poster: dataEvent.poster,
-          user: {name: dataEvent.user.name}
-        },
-        sale:{ id: dataSale.id},
-        localities:[...localities]
-        }
-      console.log("Datos correo",dataSendEmail);
-      this.mailService.sendTicketsEmail(dataSendEmail);
- 
+      
+      this.generateDataToEmailCompleteOrder(id);
+      this.generateDataToEmailTickets(id);
+      return 'Venta actualizada con éxito';
     } catch (error) {
       this.logger.error(error);
       customError(error);
@@ -605,6 +682,76 @@ export class SalesService {
     return Object.values(localityMap);
   }
   
+  async generateDataToEmailCompleteOrder(id:number){
+    const data:any = await this.verifyInfoSaleWIthLocalities(id);
+    console.log(data)
+    let totalLocalidades = 0;
+    data.localities.forEach(element => {
+      totalLocalidades += parseFloat((element.total * element.ticketCount).toFixed(2));
+    })
+    const newLocalities = data.localities.map((locality) => ({
+      name: locality.localityName,
+      price: parseFloat(locality.total), // Convertir a número si es necesario
+      quantity: locality.ticketCount
+    }));
+
+    const payTypeToPayNameMap = {
+      [PayTypes.TRANSFER]: 'Transferencia',
+      [PayTypes.CREDIT_CARD]: 'Tarjeta',
+      [PayTypes.DEBIT_CARD]: 'Tarjeta',
+      [PayTypes.PAY_PHONE]: 'Pago por celular',
+    };
+    
+    const PayName = payTypeToPayNameMap[data.sale.payType] || 'Método no especificado';
+    const payNumber = data.sale.authorizationNumber || null;
+    
+    
+
+    const dataEmail:OrderCompletedDto={
+      order: data.sale.id,
+      email: this.encryptionService.decryptData(data.sale.customer.email),
+      event: data.sale.event.name,
+      subtotal: totalLocalidades,
+      serviceValue: data.sale.serviceValue,
+      total: data.sale.total,
+      localities: [...newLocalities],
+      customer: {
+        name: this.encryptionService.decryptData(data.sale.customer.name),
+        phone: this.encryptionService.decryptData(data.sale.customer.phone),
+        ci: this.encryptionService.decryptData(data.sale.customer.identification),
+        address: this.encryptionService.decryptData(data.sale.customer.address || '')
+      },
+      pay:{
+        name: PayName,
+        number: payNumber
+      }
+    }
+    this.mailService.sendOrderCompletedEmail(dataEmail);
+  }
+  async generateDataToEmailTickets(idSale:number){
+    const dataSale:any = await this.findOne(idSale);
+    
+    const dataEvent = await this.eventService.findOne(dataSale.event.id);
+    const dataLocalities = await this.ticketService.findBySale(dataSale.id);
+
+    const localities = this.transformTicketsToLocalities(dataLocalities);
+
+     const dataSendEmail:TicketsEmailDto={
+      email: dataSale.customer.email,
+      name: dataSale.customer.name,
+      event:{
+        name: dataEvent.name,
+        event_date: dataEvent.event_date,
+        place: dataEvent.address,
+        poster: dataEvent.poster,
+        user: {name: dataEvent.user.name}
+      },
+      sale:{ id: dataSale.id},
+      localities:[...localities]
+      }
+
+    this.mailService.sendTicketsEmail(dataSendEmail);
+  }
 
   
 }

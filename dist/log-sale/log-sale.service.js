@@ -26,7 +26,6 @@ let LogSaleService = LogSaleService_1 = class LogSaleService {
     }
     create(createLogSaleDto) {
         try {
-            console.log("log para venta");
             const data = this.logSaleRepository.create(createLogSaleDto);
             return this.logSaleRepository.save(data);
         }

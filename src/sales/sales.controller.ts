@@ -202,3 +202,4 @@ export class SalesController {
     return res.status(HttpStatus.OK).json(data);;
   }
 }
+ 

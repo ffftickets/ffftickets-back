@@ -18,6 +18,8 @@ const mail_logs_service_1 = require("../mail-logs/mail-logs.service");
 const sendTickets_1 = require("./templates/sendTickets");
 const firebase_service_1 = require("../firebase/firebase.service");
 const qrcode = require("qrcode");
+const generate_order_1 = require("./templates/generate_order");
+const order_completed_1 = require("./templates/order_completed");
 let MailService = MailService_1 = class MailService {
     constructor(mailerService, mailLogsService, firebaseService) {
         this.mailerService = mailerService;
@@ -25,85 +27,77 @@ let MailService = MailService_1 = class MailService {
         this.firebaseService = firebaseService;
         this.logger = new common_1.Logger(MailService_1.name);
     }
-    async sendLoginEmail(loginMailDto) {
-        const { email } = loginMailDto;
-        this.logger.log('Enviando email login: ', email);
-        const data = {
-            name: 'Alex Villegas',
-            event: {
-                name: 'Evento de prueba',
-                event_date: '4 de septiembre de 2023 a las 16:50',
-                place: 'Quito',
-                user: {
-                    name: 'NH FEST',
-                },
-            },
-            sale: {
-                id: 1,
-                costumer: {
-                    name: 'Alex Villegas',
-                },
-            },
-            localities: [
-                {
-                    qrs: ['qr1', 'qr2', 'qr3'],
-                    localityName: 'General',
-                },
-                {
-                    qrs: ['qr4', 'qr5', 'qr6'],
-                    localityName: 'VIP',
-                },
-            ],
-        };
-        const newData = Object.assign(Object.assign({}, data), { localities: await Promise.all(data.localities.map(async (locality) => (Object.assign(Object.assign({}, locality), { qrs: await Promise.all(locality.qrs.map(async (qr) => await this.generarQRBase64(qr))) })))) });
+    async sendEmail(dataEmail, dto) {
         try {
-            const emailContent = await (0, sendTickets_1.sendTickets)(newData);
-            const result = await this.mailerService.sendMail({
-                to: email,
-                subject: 'Notificación de compra de tickets',
-                html: emailContent,
-            });
+            const result = await this.mailerService.sendMail(dataEmail);
             this.mailLogsService.create({
-                receiver: email,
+                receiver: dataEmail.to,
                 status: 'success',
                 details: result,
-                content: { email: (0, templates_1.loginMail)(loginMailDto) },
+                content: dto,
+                subject: dataEmail.subject,
             });
         }
         catch (error) {
             this.mailLogsService.create({
-                receiver: email,
+                receiver: dataEmail.to,
                 status: 'error',
                 details: error,
-                content: error.response || loginMailDto,
+                content: { error: error.response, dto: dto },
+                subject: dataEmail.subject,
             });
         }
+    }
+    async sendLoginEmail(loginMailDto) {
+        const { email } = loginMailDto;
+        this.logger.log('Enviando email login: ', email);
+        const emailData = {
+            to: email,
+            subject: 'Notificación de inicio de sesión FFF Tickets',
+            html: (0, templates_1.loginMail)(loginMailDto),
+        };
+        this.sendEmail(emailData, loginMailDto);
     }
     async sendTicketsEmail(ticketsMailDto) {
         const { email } = ticketsMailDto;
         this.logger.log('Enviando email tickets: ', email);
         const newData = Object.assign(Object.assign({}, ticketsMailDto), { localities: await Promise.all(ticketsMailDto.localities.map(async (locality) => (Object.assign(Object.assign({}, locality), { qrs: await Promise.all(locality.qrs.map(async (qr) => await this.generarQRBase64(qr))) })))) });
         try {
-            const emailContent = await (0, sendTickets_1.sendTickets)(newData);
-            const result = await this.mailerService.sendMail({
+            const emailData = {
                 to: email,
                 subject: 'Notificación de compra de tickets',
-                html: emailContent,
-            });
-            this.mailLogsService.create({
-                receiver: email,
-                status: 'success',
-                details: result,
-                content: { email: emailContent },
-            });
+                html: await (0, sendTickets_1.sendTickets)(newData),
+            };
+            this.sendEmail(emailData, ticketsMailDto);
+        }
+        catch (error) { }
+    }
+    async sendOrderCompletedEmail(orderCompleteDto) {
+        try {
+            const { email } = orderCompleteDto;
+            this.logger.log('Enviando email orden completada: ', email);
+            const emailData = {
+                to: email,
+                subject: 'Notificación orden completada FFFTICKETS',
+                html: await (0, order_completed_1.OrderComplete)(orderCompleteDto),
+            };
+            this.sendEmail(emailData, orderCompleteDto);
         }
         catch (error) {
-            this.mailLogsService.create({
-                receiver: email,
-                status: 'error',
-                details: error,
-                content: error.response || sendTickets_1.sendTickets,
-            });
+        }
+    }
+    async sendOrderGeneratedEmail(generateOrderDto) {
+        try {
+            const { email } = generateOrderDto;
+            this.logger.log('Enviando email orden generada: ', email);
+            const emailData = {
+                to: email,
+                subject: 'Notificación orden generada FFFTICKETS',
+                html: await (0, generate_order_1.GenerateOrder)(generateOrderDto),
+            };
+            this.sendEmail(emailData, generateOrderDto);
+        }
+        catch (error) {
         }
     }
     async generarQRBase64(qrCodeData) {

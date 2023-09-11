@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.MAIL_PASS = exports.MAIL_USER = exports.MAIL_SECURE = exports.MAIL_PORT = exports.MAIL_HOST = exports.ENCRYPTION_METHOD = exports.SECRET_IV = exports.SECRET_KEY = exports.FIREBASE_MEASUREMENT_ID = exports.FIREBASE_APP_ID = exports.FIREBASE_MESSAGING_SENDER_ID = exports.FIREBASE_STORAGE_BUCKET = exports.FIREBASE_PROJECT_ID = exports.FIREBASE_AUTH_DOMAIN = exports.FIREBASE_API_KEY = exports.DATABASE_NAME = exports.DATABASE_PASSWORD = exports.DATABASE_USERNAME = exports.DATABASE_PORT = exports.DATABASE_HOST = exports.JWT_EXPIRES_IN = exports.JWT_SECRET = exports.PORT = void 0;
+exports.NODE_ENV = exports.MAIL_PASS = exports.MAIL_USER = exports.MAIL_SECURE = exports.MAIL_PORT = exports.MAIL_HOST = exports.ENCRYPTION_METHOD = exports.SECRET_IV = exports.SECRET_KEY = exports.FIREBASE_MEASUREMENT_ID = exports.FIREBASE_APP_ID = exports.FIREBASE_MESSAGING_SENDER_ID = exports.FIREBASE_STORAGE_BUCKET = exports.FIREBASE_PROJECT_ID = exports.FIREBASE_AUTH_DOMAIN = exports.FIREBASE_API_KEY = exports.DATABASE_NAME = exports.DATABASE_PASSWORD = exports.DATABASE_USERNAME = exports.DATABASE_PORT = exports.DATABASE_HOST = exports.JWT_EXPIRES_IN = exports.JWT_SECRET = exports.PORT = void 0;
 exports.default = () => ({
     port: parseInt(process.env.PORT, 10) || 4000,
     jwt: {
@@ -37,6 +37,7 @@ exports.default = () => ({
             pass: process.env.MAIL_PASS,
         },
     },
+    nodeEnv: process.env.NODE_ENV || 'development',
 });
 exports.PORT = 'port';
 exports.JWT_SECRET = 'jwt.secret';
@@ -61,4 +62,5 @@ exports.MAIL_PORT = 'mail.port';
 exports.MAIL_SECURE = 'mail.secure';
 exports.MAIL_USER = 'mail.auth.user';
 exports.MAIL_PASS = 'mail.auth.pass';
+exports.NODE_ENV = 'nodeEnv';
 //# sourceMappingURL=config.env.js.map

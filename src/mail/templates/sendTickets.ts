@@ -10,7 +10,7 @@ import { ConfigService } from '@nestjs/config';
 
 export const sendTickets = async (data: TicketsEmailDto) => {
 
-  console.log(data)
+
   const currentDate = format(
     new Date(),
     "dd 'de' MMMM 'de' yyyy  'a las' HH:mm",
@@ -217,19 +217,19 @@ let qrIndex=1;
                             cellspacing="0"
                           >
                             <tr>
-                              <td><b>${data.event.name}</b></td>
+                              <td><b>Nombre: ${data.event.name}</b></td>
                               <td rowspan="4">
                               <img src="${qr}" alt="QR">
                               </td>
                             </tr>
                             <tr>
-                              <td><b>${locality.localityName}</b></td>
+                              <td><b>Localidad: ${locality.localityName}</b></td>
                             </tr>
                             <tr>
-                              <td>${data.event.event_date}</td>
+                              <td>Fecha:${data.event.event_date}</td>
                             </tr>
                             <tr>
-                              <td>${data.event.user.name}</td>
+                              <td>Organizador: ${data.event.user.name}</td>
                             </tr>
 
                             <tr>
@@ -665,7 +665,7 @@ let qrIndex=1;
                                           <img
                                             align="center"
                                             border="0"
-                                            src="${data.event.poster}"
+                                            src="https://firebasestorage.googleapis.com/v0/b/ffftickets-bfc4b.appspot.com/o/FFF%20Imagenes%20Correos%2Ffff-logo.png?alt=media&token=f0ba6a86-603c-4077-b755-cd966d56f946"
                                             alt="image"
                                             title="image"
                                             style="

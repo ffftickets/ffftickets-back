@@ -10,7 +10,6 @@ import { User } from 'src/user/entities/user.entity';
 import { FirebaseService } from 'src/firebase/firebase.service';
 import { UploadPhotoDto } from './dto/uploadPhoto.dto';
 import { EncryptionService } from 'src/encryption/encryption.service';
-import { CreateLogPayCard } from 'src/log-pay-card/entities/log-pay-card.entity';
 import { UpdateSaleCard } from './dto/update-sale-card';
 import { LogPayCardService } from 'src/log-pay-card/log-pay-card.service';
 import { MailService } from 'src/mail/mail.service';
@@ -69,7 +68,7 @@ export declare class SalesService {
             authorization_date: Date;
             createdAt: Date;
             updatedAt: Date;
-            log: CreateLogPayCard;
+            log: import("../log-pay-card/entities/log-pay-card.entity").CreateLogPayCard;
         }[];
         currentPage: number;
         pageSize: number;
@@ -83,6 +82,17 @@ export declare class SalesService {
             ticketCount: number;
             price: number;
             localityId: number;
+            total: number;
+        }[];
+    }>;
+    verifyInfoSaleWIthLocalities(saleId: number): Promise<{
+        sale: any;
+        localities: {
+            localityName: string;
+            ticketCount: number;
+            price: number;
+            localityId: number;
+            total: number;
         }[];
     }>;
     findByPromoter(id: number, page?: number, limit?: number): Promise<{
@@ -94,6 +104,8 @@ export declare class SalesService {
     }>;
     uploadVoucher(id: number, user: User, uploadPhoto: UploadPhotoDto): Promise<Sale>;
     validateSaleAdmin(id: number): Promise<Sale>;
-    updateSaleWIthCard(id: number, updateSaleCard: UpdateSaleCard): Promise<void>;
+    updateSaleWIthCard(id: number, updateSaleCard: UpdateSaleCard): Promise<string>;
     transformTicketsToLocalities(tickets: any): unknown[];
+    generateDataToEmailCompleteOrder(id: number): Promise<void>;
+    generateDataToEmailTickets(idSale: number): Promise<void>;
 }

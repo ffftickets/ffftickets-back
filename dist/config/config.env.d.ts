@@ -34,6 +34,7 @@ declare const _default: () => {
             pass: string;
         };
     };
+    nodeEnv: string;
 };
 export default _default;
 export declare const PORT = "port";
@@ -59,3 +60,4 @@ export declare const MAIL_PORT = "mail.port";
 export declare const MAIL_SECURE = "mail.secure";
 export declare const MAIL_USER = "mail.auth.user";
 export declare const MAIL_PASS = "mail.auth.pass";
+export declare const NODE_ENV = "nodeEnv";

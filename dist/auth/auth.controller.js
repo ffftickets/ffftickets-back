@@ -105,17 +105,7 @@ let AuthController = AuthController_1 = class AuthController {
                 isCorrect: false,
                 userAgent: req['ua'],
             });
-            const incorrectLogins = await this.loginLogsService.countBadLoginLogs(user.email, user.lastLogin >= user.updatedAt ? user.lastLogin : user.updatedAt);
-            console.log(incorrectLogins);
-            this.logger.debug('Incorrect logins: ' + incorrectLogins);
-            const invalidLoginAttempts = 3;
-            if (incorrectLogins >= invalidLoginAttempts) {
-                this.logger.debug('Bloqueando usuario : ' + user.id);
-                const userBloked = await this.userService.blockUser(+user.id);
-                throw new common_1.ForbiddenException(`Su usuario se encuentra bloqueado`);
-            }
-            const remainingAttempts = invalidLoginAttempts - incorrectLogins;
-            throw new common_1.UnauthorizedException(`Usuario o contraseña incorrectos, le restan ${Math.max(remainingAttempts, 0)} intentos`);
+            throw new common_1.UnauthorizedException(`Usuario o contraseña incorrectos`);
         }
     }
     async loginWithSocialNetwork(loginDto, req) {

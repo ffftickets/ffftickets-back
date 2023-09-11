@@ -15,7 +15,7 @@ async function bootstrap() {
     app.enableCors();
     app.setGlobalPrefix('api');
     app.enableCors({
-        origin: '*',
+        origin: ['https://ffftickets.com', 'http://localhost'],
         methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
         allowedHeaders: 'Content-Type, Accept',
         credentials: true,
@@ -23,10 +23,14 @@ async function bootstrap() {
     app.useGlobalPipes(new common_1.ValidationPipe({ whitelist: true, forbidNonWhitelisted: true }));
     const config = app.get(config_1.ConfigService);
     const port = config.get(config_env_1.PORT);
-    (0, app_swagger_1.initSwagger)(app);
+    const nodeEnv = config.get(config_env_1.NODE_ENV);
+    if (nodeEnv !== 'production') {
+        logger.log(`Running in ${nodeEnv} mode`);
+        (0, app_swagger_1.initSwagger)(app);
+        logger.log(await `Swagger running in http://localhost:${port}/docs`);
+    }
     await app.listen(port);
     logger.log(`App running in ${await app.getUrl()}/api`);
-    logger.log(await `Swagger running in http://localhost:${port}/docs`);
 }
 bootstrap();
 //# sourceMappingURL=main.js.map

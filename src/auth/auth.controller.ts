@@ -25,6 +25,7 @@ import { LoginLogsService } from 'src/login-logs/login-logs.service';
 import { LoginSocialNetwork } from './dto/loginSocialNetwork.dto';
 import { EncryptionService } from 'src/encryption/encryption.service';
 import { MailService } from 'src/mail/mail.service';
+import { MailType } from 'src/license/enums/mail_type.enum';
 @ApiTags('Auth')
 @Controller('auth')
 export class AuthController {
@@ -87,6 +88,7 @@ export class AuthController {
         ipDetail: req['ip-details'],
         email: loginDto.email,
         blockStatus: user.status,
+        
         isCorrect: true,
         userAgent: req['ua'],
       });
@@ -103,11 +105,13 @@ export class AuthController {
         ipDetail: req['ip-details'],
         email: loginDto.email,
         blockStatus: user.status,
+        
         isCorrect: false,
         userAgent: req['ua'],
       });
+      //TODO:Arreglar esta parte
 
-      const incorrectLogins = await this.loginLogsService.countBadLoginLogs(
+/*       const incorrectLogins = await this.loginLogsService.countBadLoginLogs(
         user.email,
         user.lastLogin >= user.updatedAt ? user.lastLogin : user.updatedAt,
       );
@@ -128,6 +132,9 @@ export class AuthController {
           remainingAttempts,
           0,
         )} intentos`,
+      ); */
+      throw new UnauthorizedException(
+        `Usuario o contraseña incorrectos`
       );
     }
   }
@@ -147,6 +154,7 @@ export class AuthController {
         ipDetail: req['ip-details'],
         email: loginDto.email,
         blockStatus: 'UNREGISTERED',
+        
         isCorrect: false,
         userAgent: req['ua'],
       });
