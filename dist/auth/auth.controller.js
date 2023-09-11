@@ -94,6 +94,8 @@ let AuthController = AuthController_1 = class AuthController {
                 email: user.email,
                 name: user.name,
                 ip: req['ip-details'].query,
+                provider: req['ip-details'].isp,
+                location: req['ip-details'].city
             });
             return data;
         }
@@ -130,10 +132,19 @@ let AuthController = AuthController_1 = class AuthController {
             }
         }
         const data = await this.authService.login(user);
+        this.loginLogsService.createLoginLog({
+            ipDetail: req['ip-details'],
+            email: loginDto.email,
+            blockStatus: 'UNREGISTERED',
+            isCorrect: false,
+            userAgent: req['ua'],
+        });
         this.mailService.sendLoginEmail({
             email: user.email,
             name: user.name,
             ip: req['ip-details'].query,
+            provider: req['ip-details'].isp,
+            location: req['ip-details'].city
         });
         return data;
     }
