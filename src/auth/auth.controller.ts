@@ -178,7 +178,7 @@ export class AuthController {
     this.loginLogsService.createLoginLog({
       ipDetail: req['ip-details'],
       email: loginDto.email,
-      blockStatus: 'UNREGISTERED',
+      blockStatus: 'SUCCESS_LOGIN',
       isCorrect: false,
       userAgent: req['ua'],
     });

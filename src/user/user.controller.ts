@@ -20,6 +20,7 @@ import { Auth } from 'src/common/helpers/decorators';
 
 import { Response } from 'express';
 import { v4 as uuidv4 } from 'uuid';
+import { NewPasswordDto } from './dto';
 @ApiTags('Users')
 @Controller('user')
 export class UserController {
@@ -123,6 +124,20 @@ export class UserController {
   async remove(@Param('id') id: string, @Res() res: Response) {
     this.logger.log('Desactivando usuario: ', id);
     const data = await this.userService.remove(+id);
+    return res.status(HttpStatus.OK).json(data);
+  }
+  
+  @Get('recover-password/:email/:identification')
+  async recoverPassword(@Param('email') email: string,@Param('identification') identification: string, @Res() res: Response) {
+    console.log('Recuperando contraseña: ', email);
+    const data = await this.userService.recoverPassword(email,identification);
+    return res.status(HttpStatus.OK).json(data);
+  }
+
+  @Post('change-password')
+  async changePassword(@Body() body:NewPasswordDto , @Res() res: Response) {
+    console.log('Cambiando contraseña: ', body.email);
+    const data = await this.userService.changePassword(body);
     return res.status(HttpStatus.OK).json(data);
   }
 }

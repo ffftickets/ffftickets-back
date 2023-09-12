@@ -6,13 +6,15 @@ import { PassportModule } from '@nestjs/passport';
 import { User } from './entities/user.entity';
 import { EncryptionModule } from 'src/encryption/encryption.module';
 import { EventModule } from 'src/event/event.module';
+import { MailModule } from 'src/mail/mail.module';
 
 @Module({
   imports: [
     TypeOrmModule.forFeature([User]),
     PassportModule.register({ defaultStrategy: 'jwt' }),
     EncryptionModule,
-    EventModule
+    EventModule,
+    MailModule
   ],
   controllers: [UserController],
   providers: [UserService],

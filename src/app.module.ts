@@ -10,6 +10,7 @@ import configuration, {
   DATABASE_PASSWORD,
   DATABASE_PORT,
   DATABASE_USERNAME,
+  MONGODB_URI,
 } from './config/config.env';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { UserModule } from './user/user.module';
@@ -33,6 +34,7 @@ import { MailLogsModule } from './mail-logs/mail-logs.module';
 import { BullModule } from '@nestjs/bull';
 import { LogPayCardModule } from './log-pay-card/log-pay-card.module';
 import { LogSaleModule } from './log-sale/log-sale.module';
+import { MongooseModule } from '@nestjs/mongoose';
 
 @Module({
   imports: [
@@ -50,6 +52,14 @@ import { LogSaleModule } from './log-sale/log-sale.module';
         autoLoadEntities: true,
       }),
       inject: [ConfigService],
+    }),
+    MongooseModule.forRootAsync({
+      inject: [ConfigService],
+      useFactory: async (configService: ConfigService) => {
+        return {
+          uri: configService.get<string>(MONGODB_URI),
+        };
+      },
     }),
 
     AccessControlModule.forRoles(roles),

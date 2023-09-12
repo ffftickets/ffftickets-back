@@ -35,6 +35,7 @@ export default () => ({
     },
   },
   nodeEnv: process.env.NODE_ENV || 'development',
+  mongoDb: process.env.MONGODB_URI || '',
 });
 
 export const PORT = 'port';
@@ -65,3 +66,4 @@ export const MAIL_SECURE = 'mail.secure';
 export const MAIL_USER = 'mail.auth.user';
 export const MAIL_PASS = 'mail.auth.pass';
 export const NODE_ENV = 'nodeEnv';
+export const MONGODB_URI = 'mongoDb';

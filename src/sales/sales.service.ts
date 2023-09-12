@@ -667,7 +667,7 @@ export class SalesService {
   
     for (const ticket of tickets) {
       const localityName = ticket.locality.name;
-      const qr = ticket.qr;
+      const qr = this.encryptionService.encryptData(ticket.qr);
   
       if (!localityMap[localityName]) {
         localityMap[localityName] = {

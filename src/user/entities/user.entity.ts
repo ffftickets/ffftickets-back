@@ -108,6 +108,8 @@ export class User extends BaseEntity {
   @OneToMany((_) => FreeTicket, (free) => free.user)
   free_ticket: FreeTicket;
 
+
+
   @BeforeUpdate()
   @BeforeInsert()
   updateTimeCreated() {

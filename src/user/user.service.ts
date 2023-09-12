@@ -9,21 +9,26 @@ import { UpdateUserDto } from './dto/update-user.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from './entities/user.entity';
 import { Like, Repository } from 'typeorm';
-import { FindUserDto } from './dto';
+import { FindUserDto, NewPasswordDto } from './dto';
 import { UserStatus } from 'src/core/enums';
 import { customError } from 'src/common/helpers/custom-error.helper';
 import { IdentificationType } from './emun/identification-type.enum';
 import { EncryptionService } from 'src/encryption/encryption.service';
 import { EventService } from 'src/event/event.service';
-
+import { MailService } from 'src/mail/mail.service';
+import e from 'express';
+import * as bcrypt from 'bcrypt';
 @Injectable()
 export class UserService {
+  
+ 
   logger = new Logger(UserService.name);
   constructor(
     @InjectRepository(User)
     private readonly userRepository: Repository<User>,
     private readonly encryptionService: EncryptionService,
     private readonly eventService: EventService,
+    private readonly mailService:MailService
   ) {}
   async create(createUserDto: CreateUserDto) {
     try {
@@ -31,6 +36,10 @@ export class UserService {
         await this.encryptUser(createUserDto),
       );
       const user = await this.userRepository.save(newUser);
+      this.mailService.registerEmail({
+        email: createUserDto.email,
+        name: createUserDto.name,
+      });
       return this.encryptionService.decryptData(user.email);
     } catch (error) {
       this.logger.error(error);
@@ -170,6 +179,7 @@ export class UserService {
         data.email = this.encryptionService.encryptData(data.email);
       if (data.identification)
         data.email = this.encryptionService.encryptData(data.identification);
+      console.log(data)
       const user = await this.userRepository
         .createQueryBuilder('user')
         .where(data)
@@ -289,4 +299,53 @@ export class UserService {
       customError(error);
     }
   }
+  async recoverPassword(email: string, identification: string) {
+    try {
+      email = this.encryptionService.encryptData(email);
+      identification = this.encryptionService.encryptData(identification);
+      const data :any = await this.userRepository.findOne({where:{email,identification}});
+      if(!data) throw new ConflictException('Los datos ingresados no coinciden');
+      const min = 8;
+      const max = 14;
+      const lengthPassword = Math.floor(Math.random() * (max - min + 1)) + min;
+      const newPassword = this.generateAlphanumericPassword(lengthPassword);
+      data.password = newPassword;
+      const dataUpdate =  await this.userRepository.save(data);
+      this.mailService.newPasswordEmail({email:this.encryptionService.decryptData(email),newPassword})
+      return {message:'Se ha enviado un correo con la nueva contraseña'};
+    } catch (error) {
+      this.logger.error(error);
+      customError(error);
+      
+    }
+  }
+  generateAlphanumericPassword(length: number): string {
+    const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+    let password = '';
+    for (let i = 0; i < length; i++) {
+      const randomIndex = Math.floor(Math.random() * characters.length);
+      password += characters.charAt(randomIndex);
+    }
+    return password;
+  }
+  async changePassword(body: NewPasswordDto) {
+    try {
+      let { email, oldPassword, newPassword } = body;
+      this.logger.log('Cambiando contraseña: ', email);
+      email = this.encryptionService.encryptData(email);
+      const user:any = await this.userRepository.findOne({ where: { email } });
+      
+      if (!user) throw new NotFoundException('No se encontró al usuario');
+      if(!await bcrypt.compare(oldPassword, user.password)) throw new ConflictException('La contraseña actual no coincide');
+        
+      user.password = newPassword;
+      await this.userRepository.save(user);
+      this.mailService.passwordChangedEmail(this.encryptionService.decryptData(email));
+      return {message:'Se ha cambiado la contraseña'};
+    } catch (error) {
+      this.logger.error(error);
+      customError(error);
+    }	
+  }
+
 }
