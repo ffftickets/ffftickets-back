@@ -72,7 +72,6 @@ export class SalesService {
             );
         } else {
           //! Si tiene pedidos pendientes de validación con tarjeta se elimina la compra anterior y se crea una nueva.
-          console.log("Cancelando compra anterior");
           logSale.action = ActionSale.CANCEL; 
           logSale.data = verifyExist;
           this.logSaleService.create(logSale);
@@ -156,7 +155,7 @@ export class SalesService {
     for (const locality of localities) {
       await this.ticketService.deleteTicketsAndUpdateLocalities(locality,sale.id);
     }
-    console.log("Eliminando venta",sale.id)
+    console.log("Cancelando venta",sale.id)
     await this.saleRepository.update(sale.id, { status: SaleStatus.CANCELED })
   }
   calculateServiceValue(tickets: any[],commission:number): any {
@@ -684,7 +683,6 @@ export class SalesService {
   
   async generateDataToEmailCompleteOrder(id:number){
     const data:any = await this.verifyInfoSaleWIthLocalities(id);
-    console.log(data)
     let totalLocalidades = 0;
     data.localities.forEach(element => {
       totalLocalidades += parseFloat((element.total * element.ticketCount).toFixed(2));

@@ -1,10 +1,10 @@
 import { Logger } from '@nestjs/common';
 import { CreateMailLogDto } from './dto/create-mail-log.dto';
+import { Model } from 'mongoose';
 import { MailLog } from './entities/mail-log.entity';
-import { Repository } from 'typeorm';
 export declare class MailLogsService {
-    private readonly mailLogRepository;
+    private readonly mailLogModel;
     logger: Logger;
-    constructor(mailLogRepository: Repository<MailLog>);
+    constructor(mailLogModel: Model<MailLog>);
     create(mailLog: CreateMailLogDto): Promise<MailLog>;
 }

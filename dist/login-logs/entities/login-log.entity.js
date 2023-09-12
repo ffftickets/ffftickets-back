@@ -9,48 +9,42 @@ var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.LoginLog = void 0;
-const typeorm_1 = require("typeorm");
-let LoginLog = class LoginLog {
+exports.LoginLogSchema = exports.LoginLog = void 0;
+const mongoose_1 = require("@nestjs/mongoose");
+const mongoose_2 = require("mongoose");
+let LoginLog = class LoginLog extends mongoose_2.Document {
 };
 __decorate([
-    (0, typeorm_1.PrimaryGeneratedColumn)(),
-    __metadata("design:type", Number)
-], LoginLog.prototype, "id", void 0);
-__decorate([
-    (0, typeorm_1.Column)({ type: 'varchar', nullable: false }),
+    (0, mongoose_1.Prop)({ required: true }),
     __metadata("design:type", String)
 ], LoginLog.prototype, "email", void 0);
 __decorate([
-    (0, typeorm_1.Column)({ type: 'varchar', nullable: false }),
+    (0, mongoose_1.Prop)({ required: true }),
     __metadata("design:type", String)
 ], LoginLog.prototype, "blockStatus", void 0);
 __decorate([
-    (0, typeorm_1.Column)({ type: 'json', nullable: true }),
+    (0, mongoose_1.Prop)({ type: Object }),
     __metadata("design:type", Object)
 ], LoginLog.prototype, "ipDetail", void 0);
 __decorate([
-    (0, typeorm_1.Column)({ type: 'json', nullable: true }),
+    (0, mongoose_1.Prop)({ type: Object }),
     __metadata("design:type", Object)
 ], LoginLog.prototype, "userAgent", void 0);
 __decorate([
-    (0, typeorm_1.Column)({ type: 'boolean', nullable: false }),
+    (0, mongoose_1.Prop)({ required: true }),
     __metadata("design:type", Boolean)
 ], LoginLog.prototype, "isCorrect", void 0);
 __decorate([
-    (0, typeorm_1.Column)({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' }),
+    (0, mongoose_1.Prop)({ default: Date.now }),
     __metadata("design:type", Date)
 ], LoginLog.prototype, "createdAt", void 0);
 __decorate([
-    (0, typeorm_1.Column)({
-        type: 'timestamp',
-        default: () => 'CURRENT_TIMESTAMP',
-        onUpdate: 'CURRENT_TIMESTAMP',
-    }),
+    (0, mongoose_1.Prop)({ default: Date.now }),
     __metadata("design:type", Date)
 ], LoginLog.prototype, "updatedAt", void 0);
 LoginLog = __decorate([
-    (0, typeorm_1.Entity)({ name: 'log_login' })
+    (0, mongoose_1.Schema)({ collection: 'log_login' })
 ], LoginLog);
 exports.LoginLog = LoginLog;
+exports.LoginLogSchema = mongoose_1.SchemaFactory.createForClass(LoginLog);
 //# sourceMappingURL=login-log.entity.js.map

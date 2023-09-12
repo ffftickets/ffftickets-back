@@ -9,15 +9,17 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.LogPayCardModule = void 0;
 const common_1 = require("@nestjs/common");
 const log_pay_card_service_1 = require("./log-pay-card.service");
-const typeorm_1 = require("@nestjs/typeorm");
+const mongoose_1 = require("@nestjs/mongoose");
 const log_pay_card_entity_1 = require("./entities/log-pay-card.entity");
 let LogPayCardModule = class LogPayCardModule {
 };
 LogPayCardModule = __decorate([
     (0, common_1.Module)({
-        imports: [typeorm_1.TypeOrmModule.forFeature([log_pay_card_entity_1.CreateLogPayCard]),],
+        imports: [
+            mongoose_1.MongooseModule.forFeature([{ name: 'CreateLogPayCard', schema: log_pay_card_entity_1.CreateLogPayCardSchema }]),
+        ],
         providers: [log_pay_card_service_1.LogPayCardService],
-        exports: [log_pay_card_service_1.LogPayCardService]
+        exports: [log_pay_card_service_1.LogPayCardService],
     })
 ], LogPayCardModule);
 exports.LogPayCardModule = LogPayCardModule;

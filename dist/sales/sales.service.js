@@ -69,7 +69,6 @@ let SalesService = SalesService_1 = class SalesService {
                     throw new common_1.ConflictException('Tu pedido no se pudo completar ya que actualmente tienes pedidos pendientes de validación.');
                 }
                 else {
-                    console.log("Cancelando compra anterior");
                     logSale.action = sale_action_enum_1.ActionSale.CANCEL;
                     logSale.data = verifyExist;
                     this.logSaleService.create(logSale);
@@ -133,7 +132,7 @@ let SalesService = SalesService_1 = class SalesService {
         for (const locality of localities) {
             await this.ticketService.deleteTicketsAndUpdateLocalities(locality, sale.id);
         }
-        console.log("Eliminando venta", sale.id);
+        console.log("Cancelando venta", sale.id);
         await this.saleRepository.update(sale.id, { status: sale_status_enum_1.SaleStatus.CANCELED });
     }
     calculateServiceValue(tickets, commission) {
@@ -558,7 +557,6 @@ let SalesService = SalesService_1 = class SalesService {
     }
     async generateDataToEmailCompleteOrder(id) {
         const data = await this.verifyInfoSaleWIthLocalities(id);
-        console.log(data);
         let totalLocalidades = 0;
         data.localities.forEach(element => {
             totalLocalidades += parseFloat((element.total * element.ticketCount).toFixed(2));

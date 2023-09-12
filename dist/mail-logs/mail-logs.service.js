@@ -15,19 +15,18 @@ var MailLogsService_1;
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.MailLogsService = void 0;
 const common_1 = require("@nestjs/common");
-const typeorm_1 = require("@nestjs/typeorm");
-const mail_log_entity_1 = require("./entities/mail-log.entity");
-const typeorm_2 = require("typeorm");
+const mongoose_1 = require("@nestjs/mongoose");
+const mongoose_2 = require("mongoose");
 let MailLogsService = MailLogsService_1 = class MailLogsService {
-    constructor(mailLogRepository) {
-        this.mailLogRepository = mailLogRepository;
+    constructor(mailLogModel) {
+        this.mailLogModel = mailLogModel;
         this.logger = new common_1.Logger(MailLogsService_1.name);
     }
     async create(mailLog) {
         this.logger.log('Creando log: ', mailLog.receiver);
         try {
-            const email = await this.mailLogRepository.save(mailLog);
-            return email;
+            const createdLog = new this.mailLogModel(mailLog);
+            return await createdLog.save();
         }
         catch (error) {
             this.logger.error(error);
@@ -37,8 +36,8 @@ let MailLogsService = MailLogsService_1 = class MailLogsService {
 };
 MailLogsService = MailLogsService_1 = __decorate([
     (0, common_1.Injectable)(),
-    __param(0, (0, typeorm_1.InjectRepository)(mail_log_entity_1.MailLog)),
-    __metadata("design:paramtypes", [typeorm_2.Repository])
+    __param(0, (0, mongoose_1.InjectModel)('MailLog')),
+    __metadata("design:paramtypes", [mongoose_2.Model])
 ], MailLogsService);
 exports.MailLogsService = MailLogsService;
 //# sourceMappingURL=mail-logs.service.js.map

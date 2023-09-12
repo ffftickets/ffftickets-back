@@ -15,30 +15,29 @@ var LogSaleService_1;
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.LogSaleService = void 0;
 const common_1 = require("@nestjs/common");
-const typeorm_1 = require("@nestjs/typeorm");
-const typeorm_2 = require("typeorm");
-const log_sale_entity_1 = require("./entities/log-sale.entity");
+const mongoose_1 = require("@nestjs/mongoose");
+const mongoose_2 = require("mongoose");
 const custom_error_helper_1 = require("../common/helpers/custom-error.helper");
 let LogSaleService = LogSaleService_1 = class LogSaleService {
-    constructor(logSaleRepository) {
-        this.logSaleRepository = logSaleRepository;
+    constructor(logSaleModel) {
+        this.logSaleModel = logSaleModel;
         this.logger = new common_1.Logger(LogSaleService_1.name);
     }
-    create(createLogSaleDto) {
+    async create(createLogSaleDto) {
         try {
-            const data = this.logSaleRepository.create(createLogSaleDto);
-            return this.logSaleRepository.save(data);
+            const data = new this.logSaleModel(createLogSaleDto);
+            return await data.save();
         }
         catch (error) {
-            this.logger.error("Error log venta ", error);
+            this.logger.error('Error log venta ', error);
             (0, custom_error_helper_1.customError)(error);
         }
     }
 };
 LogSaleService = LogSaleService_1 = __decorate([
     (0, common_1.Injectable)(),
-    __param(0, (0, typeorm_1.InjectRepository)(log_sale_entity_1.LogSale)),
-    __metadata("design:paramtypes", [typeorm_2.Repository])
+    __param(0, (0, mongoose_1.InjectModel)('LogSale')),
+    __metadata("design:paramtypes", [mongoose_2.Model])
 ], LogSaleService);
 exports.LogSaleService = LogSaleService;
 //# sourceMappingURL=log-sale.service.js.map

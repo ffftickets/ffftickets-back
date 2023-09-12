@@ -15,21 +15,21 @@ var LoginLogsService_1;
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.LoginLogsService = void 0;
 const common_1 = require("@nestjs/common");
-const typeorm_1 = require("@nestjs/typeorm");
-const typeorm_2 = require("typeorm");
-const login_log_entity_1 = require("./entities/login-log.entity");
+const mongoose_1 = require("mongoose");
+const mongoose_2 = require("@nestjs/mongoose");
 const custom_error_helper_1 = require("../common/helpers/custom-error.helper");
 const user_service_1 = require("../user/user.service");
 let LoginLogsService = LoginLogsService_1 = class LoginLogsService {
-    constructor(loginLogRepository, userService) {
-        this.loginLogRepository = loginLogRepository;
+    constructor(loginLogModel, userService) {
+        this.loginLogModel = loginLogModel;
         this.userService = userService;
         this.logger = new common_1.Logger(LoginLogsService_1.name);
     }
     async createLoginLog(createLoginLogDto) {
         try {
             this.logger.log('Creando registro de login');
-            return await this.loginLogRepository.save(createLoginLogDto);
+            const createdLog = new this.loginLogModel(createLoginLogDto);
+            return await createdLog.save();
         }
         catch (error) {
             this.logger.error(error);
@@ -39,12 +39,13 @@ let LoginLogsService = LoginLogsService_1 = class LoginLogsService {
     async countBadLoginLogs(email, lastLogin) {
         try {
             const updatedAt = (await this.userService.findOne({ email })).updatedAt;
-            return await this.loginLogRepository
-                .createQueryBuilder('loginLog')
-                .where('loginLog.email = :email', { email })
-                .andWhere('loginLog.isCorrect = false')
-                .andWhere('loginLog.createdAt >= :lastLogin', { lastLogin })
-                .getCount();
+            return await this.loginLogModel
+                .countDocuments({
+                email,
+                isCorrect: false,
+                createdAt: { $gte: lastLogin },
+            })
+                .exec();
         }
         catch (error) {
             this.logger.error(error);
@@ -54,8 +55,8 @@ let LoginLogsService = LoginLogsService_1 = class LoginLogsService {
 };
 LoginLogsService = LoginLogsService_1 = __decorate([
     (0, common_1.Injectable)(),
-    __param(0, (0, typeorm_1.InjectRepository)(login_log_entity_1.LoginLog)),
-    __metadata("design:paramtypes", [typeorm_2.Repository,
+    __param(0, (0, mongoose_2.InjectModel)('LoginLog')),
+    __metadata("design:paramtypes", [mongoose_1.Model,
         user_service_1.UserService])
 ], LoginLogsService);
 exports.LoginLogsService = LoginLogsService;

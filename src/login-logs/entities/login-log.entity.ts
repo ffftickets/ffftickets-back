@@ -1,39 +1,32 @@
-import { Entity, Column, PrimaryGeneratedColumn, BeforeUpdate, BeforeInsert } from 'typeorm';
+import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
+import { Document } from 'mongoose';
 
-@Entity({ name: 'log_login' })
-export class LoginLog {
-  @PrimaryGeneratedColumn()
-  id: number;
-
-  @Column({ type: 'varchar', nullable: false })
+@Schema({ collection: 'log_login' })
+export class LoginLog extends Document {
+  @Prop({ required: true })
   email: string;
 
-  @Column({ type: 'varchar', nullable: false })
+  @Prop({ required: true })
   blockStatus: string;
 
-  @Column({ type: 'json', nullable: true })
+  @Prop({ type: Object }) // Especifica el tipo de datos como Object
   ipDetail: IpDetails;
 
-  @Column({ type: 'json', nullable: true })
+   @Prop({ type: Object }) 
   userAgent: UserAgent;
 
-  @Column({ type: 'boolean', nullable: false })
+  @Prop({ required: true })
   isCorrect: boolean;
 
-  @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
+  @Prop({ default: Date.now })
   createdAt: Date;
 
-  @Column({
-    type: 'timestamp',
-    default: () => 'CURRENT_TIMESTAMP',
-    onUpdate: 'CURRENT_TIMESTAMP',
-  })
+  @Prop({ default: Date.now })
   updatedAt: Date;
-
-
-  
-
 }
+
+export const LoginLogSchema = SchemaFactory.createForClass(LoginLog);
+
 
 
 export interface Browser {

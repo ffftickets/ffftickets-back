@@ -1,84 +1,83 @@
+import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
+import { Document } from 'mongoose';
 import { Sale } from 'src/sales/entities/sale.entity';
-import { Entity, Column, PrimaryGeneratedColumn, OneToOne, JoinColumn, CreateDateColumn, UpdateDateColumn } from 'typeorm';
 
-@Entity({ name: 'log_pay_cards' })
-export class CreateLogPayCard {
-  @PrimaryGeneratedColumn()
-  id: number;
-
-  @Column({ type: 'varchar', nullable: false })
+@Schema({ collection: 'log_pay_cards' })
+export class CreateLogPayCard extends Document {
+  @Prop({ required: true })
   id_transaccion: string;
 
-  @Column({ type: 'varchar', nullable: false })
+  @Prop({ required: true })
   token: string;
 
-  @Column({ type: 'decimal', nullable: false })
+  @Prop({ required: true })
   amount: number;
 
-  @Column({ type: 'varchar', nullable: false })
+  @Prop({ required: true })
   cardType: string;
 
-  @Column({ type: 'varchar', nullable: false })
+  @Prop({ required: true })
   cardIssuer: string;
 
-  @Column({ type: 'varchar', nullable: false })
+  @Prop({ required: true })
   cardInfo: string;
 
-  @Column({ type: 'varchar', nullable: false })
+  @Prop({ required: true })
   clientID: string;
 
-  @Column({ type: 'varchar', nullable: false })
+  @Prop({ required: true })
   clientName: string;
 
-  @Column({ type: 'varchar', nullable: false })
+  @Prop({ required: true })
   state: string;
 
-  @Column({ type: 'varchar', nullable: false })
+  @Prop({ required: true })
   fecha: string;
 
-  @Column({ type: 'varchar', nullable: false })
+  @Prop({ required: true })
   acquirer: string;
 
-  @Column({ type: 'decimal', nullable: false })
+  @Prop({ required: true })
   deferred: number;
 
-  @Column({ type: 'varchar', nullable: false })
+  @Prop({ required: true })
   interests: string;
 
-  @Column({ type: 'decimal', nullable: false })
+  @Prop({ required: true })
   interestValue: number;
 
-  @Column({ type: 'varchar', nullable: false })
+  @Prop({ required: true })
   amountWoTaxes: string;
 
-  @Column({ type: 'varchar', nullable: false })
+  @Prop({ required: true })
   amountWTaxes: string;
 
-  @Column({ type: 'varchar', nullable: false })
+  @Prop({ required: true })
   taxesValue: string;
 
-  @Column({ type: 'decimal', nullable: false })
+  @Prop({ required: true })
   amountAuthorized: number;
 
-  @Column({ type: 'varchar', nullable: true })
+  @Prop()
   authorizationNumber: string;
 
-  @Column({ type: 'varchar', nullable: false })
+  @Prop({ required: true })
   tipoPago: string;
 
-  @Column({ type: 'json', nullable: true })
+  @Prop({ type: Object }) // Especifica el tipo de datos como Object
   ipDetail: any;
 
-  @Column({ type: 'json', nullable: true })
+  @Prop({ type: Object }) // Especifica el tipo de datos como Object
   userAgent: any;
 
-  @OneToOne(() => Sale, sale => sale.log)
-  @JoinColumn({ name: 'saleId' })
-  sale: Sale;
-  @CreateDateColumn({ name: 'created_at', type: 'timestamp' })
+  @Prop({ type: Date, default: Date.now }) // Especifica el tipo de datos como Date
   createdAt: Date;
 
-  @UpdateDateColumn({ name: 'updated_at', type: 'timestamp' })
+  @Prop({ type: Date, default: Date.now }) // Especifica el tipo de datos como Date
   updatedAt: Date;
 
+  @Prop({ type: Object }) // Define la relación con el modelo Sale
+  sale: any;
 }
+
+export const CreateLogPayCardSchema = SchemaFactory.createForClass(CreateLogPayCard);

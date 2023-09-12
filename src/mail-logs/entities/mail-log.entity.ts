@@ -1,30 +1,28 @@
-import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn } from 'typeorm';
+import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
+import { Document } from 'mongoose';
 
-@Entity('log_mail')
-export class MailLog {
-  @PrimaryGeneratedColumn()
-  id: number;
-
-  @Column({ type: 'varchar', length: 255 })
+@Schema({ collection: 'log_mail' })
+export class MailLog extends Document {
+  @Prop()
   receiver: string;
 
-  @Column({ type: 'varchar', length: 255 })
+  @Prop()
   status: string;
 
-  
-  @Column({ type: 'varchar', length: 255 })
+  @Prop()
   subject: string;
 
-  @Column({ type: 'json' })
+  @Prop({ type: Object }) // Especifica el tipo de datos como Object
   details: object;
 
-
-  @Column({ type: 'json' })
+  @Prop({ type: Object }) // Especifica el tipo de datos como Object
   content: object;
 
-  @CreateDateColumn()
+  @Prop({ type: Date, default: Date.now }) // Especifica el tipo de datos como Date
   createdAt: Date;
 
-  @UpdateDateColumn()
+  @Prop({ type: Date, default: Date.now }) // Especifica el tipo de datos como Date
   updatedAt: Date;
 }
+
+export const MailLogSchema = SchemaFactory.createForClass(MailLog);

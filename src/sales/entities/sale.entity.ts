@@ -73,9 +73,4 @@ export class Sale {
   @UpdateDateColumn({ name: 'updated_at', type: 'timestamp' })
   updatedAt: Date;
   //!Relacion con sales
-
-  @OneToOne(() => CreateLogPayCard, log => log.sale)
-  @JoinColumn({ name: 'logPayCardId' })
-  log: CreateLogPayCard;
-
 }

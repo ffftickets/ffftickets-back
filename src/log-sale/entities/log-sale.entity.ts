@@ -1,29 +1,24 @@
-
-import { Sale } from 'src/sales/entities/sale.entity';
-import { Entity, Column, PrimaryGeneratedColumn, OneToOne, JoinColumn, CreateDateColumn, UpdateDateColumn } from 'typeorm';
+import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
+import { Document } from 'mongoose';
 import { ActionSale } from '../enum/sale-action.enum';
 
-@Entity({ name: 'log_sale' })
-export class LogSale {
-  @PrimaryGeneratedColumn()
-  id: number;
+@Schema({ collection: 'log_sale' })
+export class LogSale extends Document {
+  @Prop({ enum: ActionSale, required: false }) // Utiliza el decorador @Prop y especifica el tipo y requerimiento
+  action?: string;
 
-  @Column({ type: 'enum', enum: ActionSale, nullable: false })
-  action: string;
+  @Prop({ required: false })
+  user?: string;
 
-  @Column({ type: 'varchar', nullable: false })
-  user: string;
-
-  @Column({ type: 'json', nullable: false })
+  @Prop({ type: Object }) // Especifica el tipo de datos como Object
   data: any;
   
 
-  @Column({ type: 'json', nullable: true })
-  ipDetail: any;
+  @Prop({ type: Object })  // No es necesario especificar el tipo ya que es 'json' por defecto en MongoDB
+  ipDetail?: any;
 
-  @Column({ type: 'json', nullable: true })
-  userAgent: any;
-
-
-
+  @Prop({ type: Object }) // No es necesario especificar el tipo ya que es 'json' por defecto en MongoDB
+  userAgent?: any;
 }
+
+export const LogSaleSchema = SchemaFactory.createForClass(LogSale);

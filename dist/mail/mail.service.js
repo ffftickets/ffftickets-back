@@ -34,7 +34,7 @@ let MailService = MailService_1 = class MailService {
                 receiver: dataEmail.to,
                 status: 'success',
                 details: result,
-                content: dto,
+                content: dataEmail,
                 subject: dataEmail.subject,
             });
         }

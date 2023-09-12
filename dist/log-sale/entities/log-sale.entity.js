@@ -9,37 +9,35 @@ var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.LogSale = void 0;
-const typeorm_1 = require("typeorm");
+exports.LogSaleSchema = exports.LogSale = void 0;
+const mongoose_1 = require("@nestjs/mongoose");
+const mongoose_2 = require("mongoose");
 const sale_action_enum_1 = require("../enum/sale-action.enum");
-let LogSale = class LogSale {
+let LogSale = class LogSale extends mongoose_2.Document {
 };
 __decorate([
-    (0, typeorm_1.PrimaryGeneratedColumn)(),
-    __metadata("design:type", Number)
-], LogSale.prototype, "id", void 0);
-__decorate([
-    (0, typeorm_1.Column)({ type: 'enum', enum: sale_action_enum_1.ActionSale, nullable: false }),
+    (0, mongoose_1.Prop)({ enum: sale_action_enum_1.ActionSale, required: false }),
     __metadata("design:type", String)
 ], LogSale.prototype, "action", void 0);
 __decorate([
-    (0, typeorm_1.Column)({ type: 'varchar', nullable: false }),
+    (0, mongoose_1.Prop)({ required: false }),
     __metadata("design:type", String)
 ], LogSale.prototype, "user", void 0);
 __decorate([
-    (0, typeorm_1.Column)({ type: 'json', nullable: false }),
+    (0, mongoose_1.Prop)({ type: Object }),
     __metadata("design:type", Object)
 ], LogSale.prototype, "data", void 0);
 __decorate([
-    (0, typeorm_1.Column)({ type: 'json', nullable: true }),
+    (0, mongoose_1.Prop)({ type: Object }),
     __metadata("design:type", Object)
 ], LogSale.prototype, "ipDetail", void 0);
 __decorate([
-    (0, typeorm_1.Column)({ type: 'json', nullable: true }),
+    (0, mongoose_1.Prop)({ type: Object }),
     __metadata("design:type", Object)
 ], LogSale.prototype, "userAgent", void 0);
 LogSale = __decorate([
-    (0, typeorm_1.Entity)({ name: 'log_sale' })
+    (0, mongoose_1.Schema)({ collection: 'log_sale' })
 ], LogSale);
 exports.LogSale = LogSale;
+exports.LogSaleSchema = mongoose_1.SchemaFactory.createForClass(LogSale);
 //# sourceMappingURL=log-sale.entity.js.map

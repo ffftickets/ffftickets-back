@@ -40,7 +40,7 @@ export class MailService {
         receiver: dataEmail.to,
         status: 'success',
         details: result,
-        content: dto,
+        content: dataEmail,
         subject: dataEmail.subject,
       });
     } catch (error) {

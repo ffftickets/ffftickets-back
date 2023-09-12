@@ -68,7 +68,6 @@ export declare class SalesService {
             authorization_date: Date;
             createdAt: Date;
             updatedAt: Date;
-            log: import("../log-pay-card/entities/log-pay-card.entity").CreateLogPayCard;
         }[];
         currentPage: number;
         pageSize: number;

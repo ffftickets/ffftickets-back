@@ -15,19 +15,19 @@ var LogPayCardService_1;
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.LogPayCardService = void 0;
 const common_1 = require("@nestjs/common");
-const typeorm_1 = require("@nestjs/typeorm");
-const log_pay_card_entity_1 = require("./entities/log-pay-card.entity");
-const typeorm_2 = require("typeorm");
+const mongoose_1 = require("@nestjs/mongoose");
+const mongoose_2 = require("mongoose");
 const custom_error_helper_1 = require("../common/helpers/custom-error.helper");
 let LogPayCardService = LogPayCardService_1 = class LogPayCardService {
-    constructor(logPayCardRepository) {
-        this.logPayCardRepository = logPayCardRepository;
+    constructor(logPayCardModel) {
+        this.logPayCardModel = logPayCardModel;
         this.logger = new common_1.Logger(LogPayCardService_1.name);
     }
     async create(createLogPayCardDto) {
         try {
             this.logger.log('Creando registro de pago de tarjeta');
-            return await this.logPayCardRepository.save(createLogPayCardDto);
+            const createdLog = new this.logPayCardModel(createLogPayCardDto);
+            return await createdLog.save();
         }
         catch (error) {
             this.logger.error(error);
@@ -37,8 +37,8 @@ let LogPayCardService = LogPayCardService_1 = class LogPayCardService {
 };
 LogPayCardService = LogPayCardService_1 = __decorate([
     (0, common_1.Injectable)(),
-    __param(0, (0, typeorm_1.InjectRepository)(log_pay_card_entity_1.CreateLogPayCard)),
-    __metadata("design:paramtypes", [typeorm_2.Repository])
+    __param(0, (0, mongoose_1.InjectModel)('CreateLogPayCard')),
+    __metadata("design:paramtypes", [mongoose_2.Model])
 ], LogPayCardService);
 exports.LogPayCardService = LogPayCardService;
 //# sourceMappingURL=log-pay-card.service.js.map

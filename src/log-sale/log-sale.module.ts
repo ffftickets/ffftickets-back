@@ -1,11 +1,11 @@
 import { Module } from '@nestjs/common';
+import { MongooseModule } from '@nestjs/mongoose';
 import { LogSaleService } from './log-sale.service';
-import { TypeOrmModule } from '@nestjs/typeorm';
-import { LogSale } from './entities/log-sale.entity';
+import { LogSaleSchema } from './entities/log-sale.entity';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([LogSale]),
+    MongooseModule.forFeature([{ name: 'LogSale', schema: LogSaleSchema }]), // Configura el modelo y el esquema de MongoDB
   ],
   providers: [LogSaleService],
   exports: [LogSaleService],

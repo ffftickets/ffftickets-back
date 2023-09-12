@@ -16,7 +16,6 @@ const sale_status_enum_1 = require("../enum/sale-status.enum");
 const event_entity_1 = require("../../event/entities/event.entity");
 const user_entity_1 = require("../../user/entities/user.entity");
 const ticket_entity_1 = require("../../tickets/entities/ticket.entity");
-const log_pay_card_entity_1 = require("../../log-pay-card/entities/log-pay-card.entity");
 let Sale = class Sale {
 };
 __decorate([
@@ -92,11 +91,6 @@ __decorate([
     (0, typeorm_1.UpdateDateColumn)({ name: 'updated_at', type: 'timestamp' }),
     __metadata("design:type", Date)
 ], Sale.prototype, "updatedAt", void 0);
-__decorate([
-    (0, typeorm_1.OneToOne)(() => log_pay_card_entity_1.CreateLogPayCard, log => log.sale),
-    (0, typeorm_1.JoinColumn)({ name: 'logPayCardId' }),
-    __metadata("design:type", log_pay_card_entity_1.CreateLogPayCard)
-], Sale.prototype, "log", void 0);
 Sale = __decorate([
     (0, typeorm_1.Entity)('sales')
 ], Sale);
