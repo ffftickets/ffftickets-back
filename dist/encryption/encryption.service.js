@@ -1,0 +1,50 @@
+"use strict";
+var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
+var __metadata = (this && this.__metadata) || function (k, v) {
+    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
+};
+var EncryptionService_1;
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.EncryptionService = void 0;
+const common_1 = require("@nestjs/common");
+const crypto = require("crypto");
+const config_env_1 = require("../config/config.env");
+const config_1 = require("@nestjs/config");
+let EncryptionService = EncryptionService_1 = class EncryptionService {
+    constructor(config) {
+        this.config = config;
+        this.logger = new common_1.Logger(EncryptionService_1.name);
+        this.key = this.config.get(config_env_1.SECRET_KEY);
+        this.iv = this.config.get(config_env_1.SECRET_IV);
+        this.secretKey = Buffer.from(this.key, 'hex');
+        this.secretIv = Buffer.from(this.iv, 'hex');
+    }
+    encryptData(data) {
+        const cipher = crypto.createCipheriv(this.config.get(config_env_1.ENCRYPTION_METHOD), Buffer.from(this.secretKey), this.secretIv);
+        let encryptedData = cipher.update(data, 'utf-8', 'hex');
+        encryptedData += cipher.final('hex');
+        return encryptedData;
+    }
+    decryptData(encryptedData) {
+        try {
+            const decipher = crypto.createDecipheriv(this.config.get(config_env_1.ENCRYPTION_METHOD), Buffer.from(this.secretKey), this.secretIv);
+            let decryptedData = decipher.update(encryptedData, 'hex', 'utf-8');
+            decryptedData += decipher.final('utf-8');
+            return decryptedData;
+        }
+        catch (e) {
+            return '';
+        }
+    }
+};
+EncryptionService = EncryptionService_1 = __decorate([
+    (0, common_1.Injectable)(),
+    __metadata("design:paramtypes", [config_1.ConfigService])
+], EncryptionService);
+exports.EncryptionService = EncryptionService;
+//# sourceMappingURL=encryption.service.js.map
