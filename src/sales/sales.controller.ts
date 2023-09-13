@@ -57,7 +57,7 @@ export class SalesController {
     const logSale:CreateLogSaleDto={
       action: ActionSale.CREATE,
       data: createSaleDto,
-      user: this.encryptionService.encryptData(user.identification),
+      user: user.email,
       ipDetail: req['ip-details'],
       userAgent: req['ua'],
     }
@@ -148,8 +148,8 @@ export class SalesController {
     this.logger.log('Subiendo comprobante de venta');
     const logSale:CreateLogSaleDto={
       action: ActionSale.UPDATE,
-      data: {saleUpdate:id},
-      user: this.encryptionService.encryptData(user.identification),
+      data: {saleUpdate:id,description:'Subiendo comprobante de venta'},
+      user: user.email,
       ipDetail: req['ip-details'],
       userAgent: req['ua'],
     }
@@ -169,8 +169,8 @@ export class SalesController {
     this.logger.log('Validando venta' + id);
     const logSale:CreateLogSaleDto={
       action: ActionSale.UPDATE,
-      data: {saleUpdate:id},
-      user: this.encryptionService.encryptData(user.identification),
+      data: {saleUpdate:id,description:'Validando venta por el administrador'},
+      user: user.email,
       ipDetail: req['ip-details'],
       userAgent: req['ua'],
     }
@@ -192,8 +192,8 @@ export class SalesController {
     updateSaleCard.log.userAgent = req['ua'];
     const logSale:CreateLogSaleDto={
       action: ActionSale.UPDATE,
-      data: updateSaleCard,
-      user: this.encryptionService.encryptData(user.identification),
+      data: {updateSaleCard,description:'Validando venta por el usuario con tarjeta'},
+      user: user.email,
       ipDetail: req['ip-details'],
       userAgent: req['ua'],
     }

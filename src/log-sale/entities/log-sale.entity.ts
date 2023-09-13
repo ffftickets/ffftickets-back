@@ -19,6 +19,12 @@ export class LogSale extends Document {
 
   @Prop({ type: Object }) // No es necesario especificar el tipo ya que es 'json' por defecto en MongoDB
   userAgent?: any;
+  
+  @Prop({ type: Date, default: Date.now }) // Especifica el tipo de datos como Date
+  createdAt: Date;
+
+  @Prop({ type: Date, default: Date.now }) // Especifica el tipo de datos como Date
+  updatedAt: Date;
 }
 
 export const LogSaleSchema = SchemaFactory.createForClass(LogSale);
