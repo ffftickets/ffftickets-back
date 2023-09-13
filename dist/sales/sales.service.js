@@ -68,7 +68,7 @@ let SalesService = SalesService_1 = class SalesService {
                 if (verifyExist.sale.payType === pay_types_enum_1.PayTypes.TRANSFER && createSale.payType === pay_types_enum_1.PayTypes.TRANSFER) {
                     throw new common_1.ConflictException('Tu pedido no se pudo completar ya que actualmente tienes pedidos pendientes de validación.');
                 }
-                else {
+                else if (verifyExist.sale.payType === pay_types_enum_1.PayTypes.DEBIT_CARD) {
                     logSale.action = sale_action_enum_1.ActionSale.CANCEL;
                     logSale.data = verifyExist;
                     this.logSaleService.create(logSale);
