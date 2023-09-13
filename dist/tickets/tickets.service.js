@@ -152,7 +152,7 @@ let TicketsService = TicketsService_1 = class TicketsService {
                 .getMany();
             if (!ticket)
                 throw new common_1.NotFoundException('El ticket no existe');
-            const objetosEncriptados = await ticket.map(element => (Object.assign(Object.assign({}, element), { qr: this.encryptionService.decryptData(element.qr) })));
+            const objetosEncriptados = ticket.map(element => (Object.assign(Object.assign({}, element), { qr: this.encryptionService.encryptData(element.qr) })));
             return objetosEncriptados;
         }
         catch (error) {
