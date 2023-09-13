@@ -70,7 +70,7 @@ export class SalesService {
             throw new ConflictException(
               'Tu pedido no se pudo completar ya que actualmente tienes pedidos pendientes de validación.',
             );
-        } else {
+        } else if(verifyExist.sale.payType === PayTypes.DEBIT_CARD){
           //! Si tiene pedidos pendientes de validación con tarjeta se elimina la compra anterior y se crea una nueva.
           logSale.action = ActionSale.CANCEL; 
           logSale.data = verifyExist;
