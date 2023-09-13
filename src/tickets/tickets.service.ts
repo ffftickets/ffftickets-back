@@ -160,7 +160,7 @@ export class TicketsService {
         .getMany();
 
       if (!ticket) throw new NotFoundException('El ticket no existe');
-      const objetosEncriptados = ticket.map(element => ({
+      const objetosEncriptados = await ticket.map(element => ({
         ...element,
         qr: this.encryptionService.decryptData(element.qr)
       }));
