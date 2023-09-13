@@ -16,6 +16,7 @@ import { TicketStatus } from './enum/ticket-status.enum';
 import { customError } from 'src/common/helpers/custom-error.helper';
 import { SaleStatus } from 'src/sales/enum/sale-status.enum';
 import { FreeTicketsService } from 'src/free-tickets/free-tickets.service';
+import { EncryptionService } from 'src/encryption/encryption.service';
 @Injectable()
 export class TicketsService {
   logger = new Logger(TicketsService.name);
@@ -24,6 +25,7 @@ export class TicketsService {
     private readonly ticketRepository: Repository<Ticket>,
     private readonly localitiesService: LocalitiesService,
     private readonly freeTicketService: FreeTicketsService,
+    private readonly encryptionService: EncryptionService,
   ) {}
   async create(createTicketDto: CreateTicketDto) {
     try {
@@ -158,7 +160,11 @@ export class TicketsService {
         .getMany();
 
       if (!ticket) throw new NotFoundException('El ticket no existe');
-      return ticket;
+      const objetosEncriptados = ticket.map(element => ({
+        ...element,
+        qr: this.encryptionService.decryptData(element.qr)
+      }));
+      return objetosEncriptados;
     } catch (error) {
       this.logger.error(error);
       customError(error);

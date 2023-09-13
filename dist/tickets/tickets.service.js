@@ -24,11 +24,13 @@ const ticket_status_enum_1 = require("./enum/ticket-status.enum");
 const custom_error_helper_1 = require("../common/helpers/custom-error.helper");
 const sale_status_enum_1 = require("../sales/enum/sale-status.enum");
 const free_tickets_service_1 = require("../free-tickets/free-tickets.service");
+const encryption_service_1 = require("../encryption/encryption.service");
 let TicketsService = TicketsService_1 = class TicketsService {
-    constructor(ticketRepository, localitiesService, freeTicketService) {
+    constructor(ticketRepository, localitiesService, freeTicketService, encryptionService) {
         this.ticketRepository = ticketRepository;
         this.localitiesService = localitiesService;
         this.freeTicketService = freeTicketService;
+        this.encryptionService = encryptionService;
         this.logger = new common_1.Logger(TicketsService_1.name);
     }
     async create(createTicketDto) {
@@ -150,7 +152,8 @@ let TicketsService = TicketsService_1 = class TicketsService {
                 .getMany();
             if (!ticket)
                 throw new common_1.NotFoundException('El ticket no existe');
-            return ticket;
+            const objetosEncriptados = ticket.map(element => (Object.assign(Object.assign({}, element), { qr: this.encryptionService.decryptData(element.qr) })));
+            return objetosEncriptados;
         }
         catch (error) {
             this.logger.error(error);
@@ -187,7 +190,8 @@ TicketsService = TicketsService_1 = __decorate([
     __param(0, (0, typeorm_1.InjectRepository)(ticket_entity_1.Ticket)),
     __metadata("design:paramtypes", [typeorm_2.Repository,
         localities_service_1.LocalitiesService,
-        free_tickets_service_1.FreeTicketsService])
+        free_tickets_service_1.FreeTicketsService,
+        encryption_service_1.EncryptionService])
 ], TicketsService);
 exports.TicketsService = TicketsService;
 //# sourceMappingURL=tickets.service.js.map
