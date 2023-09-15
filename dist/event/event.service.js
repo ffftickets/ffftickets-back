@@ -52,6 +52,7 @@ let EventService = EventService_1 = class EventService {
                 .leftJoinAndSelect('event.user', 'user', 'event.userId = user.id')
                 .select(['event', 'user.id', 'user.name'])
                 .where('event.isActive = :isActive', { isActive: true })
+                .orderBy('event.event_date', 'DESC')
                 .skip(skip)
                 .take(limit)
                 .getManyAndCount();
@@ -85,6 +86,7 @@ let EventService = EventService_1 = class EventService {
                 .leftJoinAndSelect('event.event_type', 'event-type', 'event.eventTypeId = event-type.id')
                 .leftJoinAndSelect('event.sale', 'sales', 'event.id = sales.eventId')
                 .select(['event', 'user.id', 'user.name', 'event-type.name', 'sales'])
+                .orderBy('event.event_date', 'DESC')
                 .skip(skip)
                 .take(limit)
                 .getManyAndCount();
@@ -157,6 +159,7 @@ let EventService = EventService_1 = class EventService {
                 'event-type.id',
                 'event-type.name',
             ])
+                .orderBy('event.event_date', 'DESC')
                 .skip(skip)
                 .take(limit)
                 .getManyAndCount();

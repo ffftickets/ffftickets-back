@@ -25,9 +25,9 @@ async function bootstrap() {
     const port = config.get(config_env_1.PORT);
     const nodeEnv = config.get(config_env_1.NODE_ENV);
     logger.log(`Running in ${nodeEnv} mode`);
-    (0, app_swagger_1.initSwagger)(app);
     await app.listen(port);
     logger.log(`App running in ${await app.getUrl()}/api`);
+    (0, app_swagger_1.initSwagger)(app);
     logger.log(await `Swagger running in http://localhost:${port}/docs`);
 }
 bootstrap();
