@@ -78,14 +78,15 @@ export class MailService {
   async sendTicketsEmail(ticketsMailDto: TicketsEmailDto) {
     const { email } = ticketsMailDto;
     this.logger.log('Enviando email tickets: ', email);
-
+    const eventName = ticketsMailDto.event.name;
+    console.log(ticketsMailDto)
     const newData = {
       ...ticketsMailDto,
       localities: await Promise.all(
         ticketsMailDto.localities.map(async (locality) => ({
           ...locality,
           qrs: await Promise.all(
-            locality.qrs.map(async (qr) => await this.generarQRBase64(qr)),
+            locality.qrs.map(async (qr) => await this.generarQRBase64(qr,eventName)),
           ),
         })),
       ),
@@ -155,12 +156,12 @@ export class MailService {
   }
 
   //Para generar las imagenes de los QR
-  async generarQRBase64(qrCodeData: string): Promise<string> {
+  async generarQRBase64(qrCodeData: string,event:string): Promise<string> {
     try {
       const qrCodeImageBuffer = await qrcode.toBuffer(qrCodeData);
       const qrCodeBase64 = qrCodeImageBuffer.toString('base64');
       let img = await this.amazon3SService.uploadBase64({
-        route: `FFFQRS`,
+        route: `FFFQRS/${event}`,
         image: qrCodeBase64,
       });
       return img.imageUrl;

@@ -18,5 +18,5 @@ export declare class MailService {
     sendOrderGeneratedEmail(generateOrderDto: GenerateOrderDto): Promise<void>;
     newPasswordEmail(newPasswordDto: GetNewPasswordDto): void;
     passwordChangedEmail(email: string): void;
-    generarQRBase64(qrCodeData: string): Promise<string>;
+    generarQRBase64(qrCodeData: string, event: string): Promise<string>;
 }

@@ -44,7 +44,6 @@ let AmazonS3Service = AmazonS3Service_1 = class AmazonS3Service {
             };
             const uploadCommand = new client_s3_1.PutObjectCommand(params);
             const result = await this.s3.send(uploadCommand);
-            console.log(result);
             let imageUrl = `https://${this.bucketName}.s3.${this.regionName}.amazonaws.com/${params.Key}`;
             imageUrl = imageUrl.replace(/\s+/g, '+');
             return { imageUrl };

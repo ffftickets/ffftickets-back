@@ -71,7 +71,9 @@ let MailService = MailService_1 = class MailService {
     async sendTicketsEmail(ticketsMailDto) {
         const { email } = ticketsMailDto;
         this.logger.log('Enviando email tickets: ', email);
-        const newData = Object.assign(Object.assign({}, ticketsMailDto), { localities: await Promise.all(ticketsMailDto.localities.map(async (locality) => (Object.assign(Object.assign({}, locality), { qrs: await Promise.all(locality.qrs.map(async (qr) => await this.generarQRBase64(qr))) })))) });
+        const eventName = ticketsMailDto.event.name;
+        console.log(ticketsMailDto);
+        const newData = Object.assign(Object.assign({}, ticketsMailDto), { localities: await Promise.all(ticketsMailDto.localities.map(async (locality) => (Object.assign(Object.assign({}, locality), { qrs: await Promise.all(locality.qrs.map(async (qr) => await this.generarQRBase64(qr, eventName))) })))) });
         try {
             const emailData = {
                 to: email,
@@ -135,12 +137,12 @@ let MailService = MailService_1 = class MailService {
             console.log(error);
         }
     }
-    async generarQRBase64(qrCodeData) {
+    async generarQRBase64(qrCodeData, event) {
         try {
             const qrCodeImageBuffer = await qrcode.toBuffer(qrCodeData);
             const qrCodeBase64 = qrCodeImageBuffer.toString('base64');
             let img = await this.amazon3SService.uploadBase64({
-                route: `FFFQRS`,
+                route: `FFFQRS/${event}`,
                 image: qrCodeBase64,
             });
             return img.imageUrl;
