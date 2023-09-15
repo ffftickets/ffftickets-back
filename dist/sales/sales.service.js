@@ -207,7 +207,7 @@ let SalesService = SalesService_1 = class SalesService {
                 'promoter.email',
             ])
                 .where('promoter.id IS NOT NULL OR promoter.id IS NULL')
-                .orderBy('sale.id', 'DESC')
+                .orderBy('sale.updatedAt', 'DESC')
                 .andWhere('sale.event = :event', { event });
             if (status !== '') {
                 query.andWhere('sale.status = :status', { status });

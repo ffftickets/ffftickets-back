@@ -259,7 +259,7 @@ export class SalesService {
           'promoter.email',
         ])
         .where('promoter.id IS NOT NULL OR promoter.id IS NULL')
-        .orderBy('sale.id', 'DESC')
+        .orderBy('sale.updatedAt', 'DESC')
         .andWhere('sale.event = :event', { event });
 
       // Agregar los filtros solo si status y paymentMethod son diferentes de ""
