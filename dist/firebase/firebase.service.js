@@ -18,9 +18,11 @@ const config_env_1 = require("../config/config.env");
 const storage_1 = require("firebase/storage");
 const uuid_1 = require("uuid");
 const custom_error_helper_1 = require("../common/helpers/custom-error.helper");
+const amazon_s3_service_1 = require("../amazon-s3/amazon-s3.service");
 let FirebaseService = FirebaseService_1 = class FirebaseService {
-    constructor(configService) {
+    constructor(configService, s3) {
         this.configService = configService;
+        this.s3 = s3;
         this.firebaseConfig = {
             apiKey: this.configService.get(config_env_1.FIREBASE_API_KEY),
             authDomain: this.configService.get(config_env_1.FIREBASE_AUTH_DOMAIN),
@@ -37,6 +39,7 @@ let FirebaseService = FirebaseService_1 = class FirebaseService {
     }
     async uploadBase64(body) {
         try {
+            this.s3.uploadBase64(body);
             const imageName = (0, uuid_1.v4)();
             const imageData = body.image.includes('data:')
                 ? body.image.split(',')[1]
@@ -78,7 +81,7 @@ let FirebaseService = FirebaseService_1 = class FirebaseService {
 };
 FirebaseService = FirebaseService_1 = __decorate([
     (0, common_1.Injectable)(),
-    __metadata("design:paramtypes", [config_1.ConfigService])
+    __metadata("design:paramtypes", [config_1.ConfigService, amazon_s3_service_1.AmazonS3Service])
 ], FirebaseService);
 exports.FirebaseService = FirebaseService;
 //# sourceMappingURL=firebase.service.js.map

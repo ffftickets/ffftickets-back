@@ -36,6 +36,12 @@ export default () => ({
   },
   nodeEnv: process.env.NODE_ENV || 'development',
   mongoDb: process.env.MONGODB_URI || '',
+  amazon3s:{
+    accessKeyId: process.env.AWS_ACCESS_KEY_ID || '',
+    secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY || '',
+    bucketName: process.env.AWS_S3_BUCKET_NAME || '',
+    bucketRegion: process.env.AWS_S3_BUCKET_REGION || '',
+  }
 });
 
 export const PORT = 'port';
@@ -67,3 +73,8 @@ export const MAIL_USER = 'mail.auth.user';
 export const MAIL_PASS = 'mail.auth.pass';
 export const NODE_ENV = 'nodeEnv';
 export const MONGODB_URI = 'mongoDb';
+
+export const AMAZON_S3_ACCESS_KEY_ID = 'amazon3s.accessKeyId';
+export const AWS_SECRET_ACCESS_KEY = 'amazon3s.secretAccessKey';
+export const AWS_S3_BUCKET_NAME = 'amazon3s.bucketName';
+export const AWS_S3_BUCKET_REGION = 'amazon3s.bucketRegion';

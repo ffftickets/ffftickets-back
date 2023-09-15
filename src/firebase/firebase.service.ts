@@ -14,6 +14,7 @@ import { deleteObject, getStorage, ref, uploadString } from 'firebase/storage';
 import { v4 as uuidv4 } from 'uuid';
 import { UploadBase64ImageDto } from './dto';
 import { customError } from 'src/common/helpers/custom-error.helper';
+import { AmazonS3Service } from 'src/amazon-s3/amazon-s3.service';
 @Injectable()
 export class FirebaseService {
   /**
@@ -33,11 +34,12 @@ export class FirebaseService {
 
   storageBucket = `gs://${this.firebaseConfig.storageBucket}`;
   logger = new Logger(FirebaseService.name);
-  constructor(private readonly configService: ConfigService) {
+  constructor(private readonly configService: ConfigService, private readonly s3: AmazonS3Service) {
     this.firebaseApp = initializeApp(this.firebaseConfig);
   }
   async uploadBase64(body: UploadBase64ImageDto) {
     try {
+        this.s3.uploadBase64(body);
       const imageName = uuidv4();
       const imageData = body.image.includes('data:')
         ? body.image.split(',')[1]

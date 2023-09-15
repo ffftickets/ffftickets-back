@@ -36,6 +36,12 @@ declare const _default: () => {
     };
     nodeEnv: string;
     mongoDb: string;
+    amazon3s: {
+        accessKeyId: string;
+        secretAccessKey: string;
+        bucketName: string;
+        bucketRegion: string;
+    };
 };
 export default _default;
 export declare const PORT = "port";
@@ -63,3 +69,7 @@ export declare const MAIL_USER = "mail.auth.user";
 export declare const MAIL_PASS = "mail.auth.pass";
 export declare const NODE_ENV = "nodeEnv";
 export declare const MONGODB_URI = "mongoDb";
+export declare const AMAZON_S3_ACCESS_KEY_ID = "amazon3s.accessKeyId";
+export declare const AWS_SECRET_ACCESS_KEY = "amazon3s.secretAccessKey";
+export declare const AWS_S3_BUCKET_NAME = "amazon3s.bucketName";
+export declare const AWS_S3_BUCKET_REGION = "amazon3s.bucketRegion";

@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.MONGODB_URI = exports.NODE_ENV = exports.MAIL_PASS = exports.MAIL_USER = exports.MAIL_SECURE = exports.MAIL_PORT = exports.MAIL_HOST = exports.ENCRYPTION_METHOD = exports.SECRET_IV = exports.SECRET_KEY = exports.FIREBASE_MEASUREMENT_ID = exports.FIREBASE_APP_ID = exports.FIREBASE_MESSAGING_SENDER_ID = exports.FIREBASE_STORAGE_BUCKET = exports.FIREBASE_PROJECT_ID = exports.FIREBASE_AUTH_DOMAIN = exports.FIREBASE_API_KEY = exports.DATABASE_NAME = exports.DATABASE_PASSWORD = exports.DATABASE_USERNAME = exports.DATABASE_PORT = exports.DATABASE_HOST = exports.JWT_EXPIRES_IN = exports.JWT_SECRET = exports.PORT = void 0;
+exports.AWS_S3_BUCKET_REGION = exports.AWS_S3_BUCKET_NAME = exports.AWS_SECRET_ACCESS_KEY = exports.AMAZON_S3_ACCESS_KEY_ID = exports.MONGODB_URI = exports.NODE_ENV = exports.MAIL_PASS = exports.MAIL_USER = exports.MAIL_SECURE = exports.MAIL_PORT = exports.MAIL_HOST = exports.ENCRYPTION_METHOD = exports.SECRET_IV = exports.SECRET_KEY = exports.FIREBASE_MEASUREMENT_ID = exports.FIREBASE_APP_ID = exports.FIREBASE_MESSAGING_SENDER_ID = exports.FIREBASE_STORAGE_BUCKET = exports.FIREBASE_PROJECT_ID = exports.FIREBASE_AUTH_DOMAIN = exports.FIREBASE_API_KEY = exports.DATABASE_NAME = exports.DATABASE_PASSWORD = exports.DATABASE_USERNAME = exports.DATABASE_PORT = exports.DATABASE_HOST = exports.JWT_EXPIRES_IN = exports.JWT_SECRET = exports.PORT = void 0;
 exports.default = () => ({
     port: parseInt(process.env.PORT, 10) || 4000,
     jwt: {
@@ -39,6 +39,12 @@ exports.default = () => ({
     },
     nodeEnv: process.env.NODE_ENV || 'development',
     mongoDb: process.env.MONGODB_URI || '',
+    amazon3s: {
+        accessKeyId: process.env.AWS_ACCESS_KEY_ID || '',
+        secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY || '',
+        bucketName: process.env.AWS_S3_BUCKET_NAME || '',
+        bucketRegion: process.env.AWS_S3_BUCKET_REGION || '',
+    }
 });
 exports.PORT = 'port';
 exports.JWT_SECRET = 'jwt.secret';
@@ -65,4 +71,8 @@ exports.MAIL_USER = 'mail.auth.user';
 exports.MAIL_PASS = 'mail.auth.pass';
 exports.NODE_ENV = 'nodeEnv';
 exports.MONGODB_URI = 'mongoDb';
+exports.AMAZON_S3_ACCESS_KEY_ID = 'amazon3s.accessKeyId';
+exports.AWS_SECRET_ACCESS_KEY = 'amazon3s.secretAccessKey';
+exports.AWS_S3_BUCKET_NAME = 'amazon3s.bucketName';
+exports.AWS_S3_BUCKET_REGION = 'amazon3s.bucketRegion';
 //# sourceMappingURL=config.env.js.map

@@ -5,22 +5,21 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
     else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
     return c > 3 && r && Object.defineProperty(target, key, r), r;
 };
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.FirebaseModule = void 0;
-const common_1 = require("@nestjs/common");
-const firebase_service_1 = require("./firebase.service");
-const firebase_controller_1 = require("./firebase.controller");
-const amazon_s3_module_1 = require("../amazon-s3/amazon-s3.module");
-let FirebaseModule = class FirebaseModule {
+var __metadata = (this && this.__metadata) || function (k, v) {
+    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
-FirebaseModule = __decorate([
-    (0, common_1.Global)(),
-    (0, common_1.Module)({
-        controllers: [firebase_controller_1.FirebaseController],
-        providers: [firebase_service_1.FirebaseService],
-        exports: [firebase_service_1.FirebaseService],
-        imports: [amazon_s3_module_1.AmazonS3Module],
-    })
-], FirebaseModule);
-exports.FirebaseModule = FirebaseModule;
-//# sourceMappingURL=firebase.module.js.map
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.AmazonS3Controller = void 0;
+const common_1 = require("@nestjs/common");
+const amazon_s3_service_1 = require("./amazon-s3.service");
+let AmazonS3Controller = class AmazonS3Controller {
+    constructor(amazonS3Service) {
+        this.amazonS3Service = amazonS3Service;
+    }
+};
+AmazonS3Controller = __decorate([
+    (0, common_1.Controller)('amazon-s3'),
+    __metadata("design:paramtypes", [amazon_s3_service_1.AmazonS3Service])
+], AmazonS3Controller);
+exports.AmazonS3Controller = AmazonS3Controller;
+//# sourceMappingURL=amazon-s3.controller.js.map

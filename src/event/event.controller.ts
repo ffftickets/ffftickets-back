@@ -137,7 +137,7 @@ export class EventController {
         route: `${user.id} - ${user.name}/${event.name}`,
         image: updateEventDto.poster,
       });
-      if (event.poster) this.firebaseService.deleteImageByUrl(event.poster);
+     // if (event.poster) this.firebaseService.deleteImageByUrl(event.poster);
       updateEventDto.poster = img.imageUrl;
     }
     this.logger.log('Verificando galería de eventos.');

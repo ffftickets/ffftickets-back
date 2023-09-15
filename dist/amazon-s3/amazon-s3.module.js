@@ -6,21 +6,18 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
     return c > 3 && r && Object.defineProperty(target, key, r), r;
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.FirebaseModule = void 0;
+exports.AmazonS3Module = void 0;
 const common_1 = require("@nestjs/common");
-const firebase_service_1 = require("./firebase.service");
-const firebase_controller_1 = require("./firebase.controller");
-const amazon_s3_module_1 = require("../amazon-s3/amazon-s3.module");
-let FirebaseModule = class FirebaseModule {
+const amazon_s3_service_1 = require("./amazon-s3.service");
+const amazon_s3_controller_1 = require("./amazon-s3.controller");
+let AmazonS3Module = class AmazonS3Module {
 };
-FirebaseModule = __decorate([
-    (0, common_1.Global)(),
+AmazonS3Module = __decorate([
     (0, common_1.Module)({
-        controllers: [firebase_controller_1.FirebaseController],
-        providers: [firebase_service_1.FirebaseService],
-        exports: [firebase_service_1.FirebaseService],
-        imports: [amazon_s3_module_1.AmazonS3Module],
+        controllers: [amazon_s3_controller_1.AmazonS3Controller],
+        providers: [amazon_s3_service_1.AmazonS3Service],
+        exports: [amazon_s3_service_1.AmazonS3Service],
     })
-], FirebaseModule);
-exports.FirebaseModule = FirebaseModule;
-//# sourceMappingURL=firebase.module.js.map
+], AmazonS3Module);
+exports.AmazonS3Module = AmazonS3Module;
+//# sourceMappingURL=amazon-s3.module.js.map

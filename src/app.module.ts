@@ -35,6 +35,7 @@ import { BullModule } from '@nestjs/bull';
 import { LogPayCardModule } from './log-pay-card/log-pay-card.module';
 import { LogSaleModule } from './log-sale/log-sale.module';
 import { MongooseModule } from '@nestjs/mongoose';
+import { AmazonS3Module } from './amazon-s3/amazon-s3.module';
 
 @Module({
   imports: [
@@ -102,6 +103,10 @@ import { MongooseModule } from '@nestjs/mongoose';
     LogPayCardModule,
 
     LogSaleModule,
+
+    AmazonS3Module,
+
+
 
   ],
   controllers: [AppController],
