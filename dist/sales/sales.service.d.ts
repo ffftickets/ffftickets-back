@@ -102,7 +102,7 @@ export declare class SalesService {
         totalCount: number;
     }>;
     uploadVoucher(id: number, user: User, uploadPhoto: UploadPhotoDto): Promise<Sale>;
-    validateSaleAdmin(id: number): Promise<Sale>;
+    validateSaleAdmin(id: number, body: any): Promise<Sale>;
     updateSaleWIthCard(id: number, updateSaleCard: UpdateSaleCard): Promise<string>;
     transformTicketsToLocalities(tickets: any): unknown[];
     generateDataToEmailCompleteOrder(id: number): Promise<void>;

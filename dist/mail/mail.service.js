@@ -72,7 +72,6 @@ let MailService = MailService_1 = class MailService {
         const { email } = ticketsMailDto;
         this.logger.log('Enviando email tickets: ', email);
         const eventName = ticketsMailDto.event.name;
-        console.log(ticketsMailDto);
         const newData = Object.assign(Object.assign({}, ticketsMailDto), { localities: await Promise.all(ticketsMailDto.localities.map(async (locality) => (Object.assign(Object.assign({}, locality), { qrs: await Promise.all(locality.qrs.map(async (qr) => await this.generarQRBase64(qr, eventName))) })))) });
         try {
             const emailData = {

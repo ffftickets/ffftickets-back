@@ -504,16 +504,24 @@ let SalesService = SalesService_1 = class SalesService {
             (0, custom_error_helper_1.customError)(error);
         }
     }
-    async validateSaleAdmin(id) {
+    async validateSaleAdmin(id, body) {
         try {
+            const { transactionCode } = body;
+            console.log("Código transacción: ", transactionCode);
+            const dateExistWithTransactionCode = await this.saleRepository.findOne({ where: { transactionCode } });
+            if (dateExistWithTransactionCode)
+                throw new common_1.ConflictException('El código de transacción ya existe en la compra: ' + dateExistWithTransactionCode.id);
             const sale = await this.findOne(id);
             sale.status = sale_status_enum_1.SaleStatus.SOLD;
+            sale.transactionCode = transactionCode;
+            console.log(sale);
             const data = await this.saleRepository.save(sale);
             this.generateDataToEmailCompleteOrder(id);
             this.generateDataToEmailTickets(id);
             return data;
         }
         catch (error) {
+            console.log('Se fue al error');
             this.logger.error(error);
             (0, custom_error_helper_1.customError)(error);
         }

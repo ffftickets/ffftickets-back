@@ -7,5 +7,6 @@ var SaleStatus;
     SaleStatus["CANCELED"] = "CANCELED";
     SaleStatus["INCOMPLETE"] = "INCOMPLETE";
     SaleStatus["INVOICED"] = "INVOICED";
+    SaleStatus["REJECTED"] = "REJECTED";
 })(SaleStatus = exports.SaleStatus || (exports.SaleStatus = {}));
 //# sourceMappingURL=sale-status.enum.js.map

@@ -15,6 +15,7 @@ export declare class UserController {
     findAll(res: Response, page: number, limit: number, role: string): Promise<Response<any, Record<string, any>>>;
     findOne(id: number, res: Response): Promise<Response<any, Record<string, any>>>;
     update(id: string, updateUserDto: UpdateUserDto, res: Response): Promise<Response<any, Record<string, any>>>;
+    updateRolUser(id: string, updateUserDto: UpdateUserDto, res: Response): Promise<Response<any, Record<string, any>>>;
     remove(id: string, res: Response): Promise<Response<any, Record<string, any>>>;
     recoverPassword(email: string, identification: string, res: Response): Promise<Response<any, Record<string, any>>>;
     changePassword(body: NewPasswordDto, res: Response): Promise<Response<any, Record<string, any>>>;

@@ -79,7 +79,7 @@ export class MailService {
     const { email } = ticketsMailDto;
     this.logger.log('Enviando email tickets: ', email);
     const eventName = ticketsMailDto.event.name;
-    console.log(ticketsMailDto)
+
     const newData = {
       ...ticketsMailDto,
       localities: await Promise.all(

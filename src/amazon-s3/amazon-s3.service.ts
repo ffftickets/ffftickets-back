@@ -54,14 +54,13 @@ export class AmazonS3Service {
 
   async deleteImageByUrl(imageUrl: string) {
     try {
-      
-      
+      const data = imageUrl.split('/');
+      const imageName = data[data.length - 1];
 
       const params = {
         Bucket: this.bucketName,
-        Key: imageUrl,
+        Key:imageUrl,
       };
-
       const deleteCommand = new DeleteObjectCommand(params);
       await this.s3.send(deleteCommand);
 

@@ -118,6 +118,7 @@ export class EventController {
     @GetUser() user: User,
     @Res() res: Response,
   ) {
+   
     this.logger.log(`Actualizando evento: `, id);
     const event = await this.eventService.findOne(+id);
     this.logger.log('Verificando tickets.');
@@ -181,6 +182,7 @@ export class EventController {
         ];
       }
     }
+  
     const data = await this.eventService.update(+id, updateEventDto);
     return res.status(HttpStatus.OK).json(data);
   }

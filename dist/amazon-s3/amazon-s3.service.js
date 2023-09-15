@@ -55,6 +55,8 @@ let AmazonS3Service = AmazonS3Service_1 = class AmazonS3Service {
     }
     async deleteImageByUrl(imageUrl) {
         try {
+            const data = imageUrl.split('/');
+            const imageName = data[data.length - 1];
             const params = {
                 Bucket: this.bucketName,
                 Key: imageUrl,

@@ -91,8 +91,9 @@ let SalesController = SalesController_1 = class SalesController {
         this.logSaleService.create(logSale);
         return await this.salesService.uploadVoucher(id, user, uploadPhoto);
     }
-    async validateSaleAdmin(id, req, user) {
+    async validateSaleAdmin(id, req, user, body) {
         this.logger.log('Validando venta' + id);
+        const data = await this.salesService.validateSaleAdmin(id, body);
         const logSale = {
             action: sale_action_enum_1.ActionSale.UPDATE,
             data: { saleUpdate: id, description: 'Validando venta por el administrador' },
@@ -101,7 +102,7 @@ let SalesController = SalesController_1 = class SalesController {
             userAgent: req['ua'],
         };
         this.logSaleService.create(logSale);
-        return await this.salesService.validateSaleAdmin(id);
+        return data;
     }
     async validateSaleUser(id, updateSaleCard, req, res, user) {
         this.logger.log('Validando venta' + id);
@@ -216,8 +217,9 @@ __decorate([
     __param(0, (0, common_1.Param)('id')),
     __param(1, (0, common_1.Req)()),
     __param(2, (0, decorators_1.GetUser)()),
+    __param(3, (0, common_1.Body)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [Number, Object, user_entity_1.User]),
+    __metadata("design:paramtypes", [Number, Object, user_entity_1.User, Object]),
     __metadata("design:returntype", Promise)
 ], SalesController.prototype, "validateSaleAdmin", null);
 __decorate([

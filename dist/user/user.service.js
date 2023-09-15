@@ -218,8 +218,22 @@ let UserService = UserService_1 = class UserService {
             user.province = updateUserDto.province;
             user.password = updateUserDto.password;
             user.status = updateUserDto.status;
+            if (updateUserDto.roles)
+                user.roles = updateUserDto.roles;
             await this.userRepository.save(user);
             delete user.password;
+            return user;
+        }
+        catch (error) {
+            this.logger.error(error);
+            (0, custom_error_helper_1.customError)(error);
+        }
+    }
+    updateRol(id, updateUserDto) {
+        try {
+            const user = this.userRepository.update(id, {
+                roles: updateUserDto.roles,
+            });
             return user;
         }
         catch (error) {

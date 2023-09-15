@@ -2,5 +2,6 @@ export declare enum SaleStatus {
     SOLD = "SOLD",
     CANCELED = "CANCELED",
     INCOMPLETE = "INCOMPLETE",
-    INVOICED = "INVOICED"
+    INVOICED = "INVOICED",
+    REJECTED = "REJECTED"
 }

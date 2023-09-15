@@ -20,6 +20,7 @@ import e from 'express';
 import * as bcrypt from 'bcrypt';
 @Injectable()
 export class UserService {
+ 
   
  
   logger = new Logger(UserService.name);
@@ -244,8 +245,20 @@ export class UserService {
       user.province = updateUserDto.province;
       user.password = updateUserDto.password;
       user.status = updateUserDto.status;
+      if(updateUserDto.roles) user.roles = updateUserDto.roles;
       await this.userRepository.save(user);
       delete user.password;
+      return user;
+    } catch (error) {
+      this.logger.error(error);
+      customError(error);
+    }
+  }
+  updateRol(id: number, updateUserDto: UpdateUserDto) {
+    try {
+      const user = this.userRepository.update(id, {
+        roles: updateUserDto.roles,
+      });
       return user;
     } catch (error) {
       this.logger.error(error);

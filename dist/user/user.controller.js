@@ -63,8 +63,13 @@ let UserController = UserController_1 = class UserController {
         return res.status(common_1.HttpStatus.OK).json(data);
     }
     async update(id, updateUserDto, res) {
-        this.logger.log('Actualizando usuario: ', updateUserDto.email);
+        this.logger.log('Actualizando usuario: ', id);
         const data = await this.userService.update(+id, updateUserDto);
+        return res.status(common_1.HttpStatus.OK).json(data);
+    }
+    async updateRolUser(id, updateUserDto, res) {
+        this.logger.log('Actualizando usuario: ', id);
+        const data = await this.userService.updateRol(+id, updateUserDto);
         return res.status(common_1.HttpStatus.OK).json(data);
     }
     async remove(id, res) {
@@ -163,6 +168,17 @@ __decorate([
     __metadata("design:paramtypes", [String, update_user_dto_1.UpdateUserDto, Object]),
     __metadata("design:returntype", Promise)
 ], UserController.prototype, "update", null);
+__decorate([
+    (0, swagger_1.ApiBearerAuth)(),
+    (0, decorators_1.Auth)(),
+    (0, common_1.Patch)(':id/rol'),
+    __param(0, (0, common_1.Param)('id')),
+    __param(1, (0, common_1.Body)()),
+    __param(2, (0, common_1.Res)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String, update_user_dto_1.UpdateUserDto, Object]),
+    __metadata("design:returntype", Promise)
+], UserController.prototype, "updateRolUser", null);
 __decorate([
     (0, swagger_1.ApiBearerAuth)(),
     (0, decorators_1.Auth)({

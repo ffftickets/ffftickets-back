@@ -21,6 +21,6 @@ export declare class SalesController {
     findByPromoter(promoter: number, res: Response, page?: number, limit?: number): Promise<Response<any, Record<string, any>>>;
     verifyPendingPurchase(res: Response, user: User): Promise<Response<any, Record<string, any>>>;
     uploadVoucher(id: number, uploadPhoto: UploadPhotoDto, req: Request, user: User): Promise<import("./entities/sale.entity").Sale>;
-    validateSaleAdmin(id: number, req: Request, user: User): Promise<import("./entities/sale.entity").Sale>;
+    validateSaleAdmin(id: number, req: Request, user: User, body: any): Promise<import("./entities/sale.entity").Sale>;
     validateSaleUser(id: number, updateSaleCard: UpdateSaleCard, req: Request, res: Response, user: User): Promise<Response<any, Record<string, any>>>;
 }

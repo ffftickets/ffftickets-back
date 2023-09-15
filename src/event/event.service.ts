@@ -204,7 +204,6 @@ export class EventService {
 
   async update(id: number, updateEventDto: UpdateEventDto) {
     try {
-      console.log(updateEventDto);
       await this.eventRepository.update(id, { ...updateEventDto });
       return await this.findOne(id);
     } catch (error) {

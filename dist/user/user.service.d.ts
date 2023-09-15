@@ -28,6 +28,7 @@ export declare class UserService {
     findOne(data: FindUserDto): Promise<User>;
     findUserByLogin(email: string): Promise<User>;
     update(id: number, updateUserDto: UpdateUserDto): Promise<User>;
+    updateRol(id: number, updateUserDto: UpdateUserDto): Promise<import("typeorm").UpdateResult>;
     remove(id: number): Promise<User>;
     blockUser(id: number): Promise<import("typeorm").UpdateResult>;
     unblockUser(id: number): Promise<User>;

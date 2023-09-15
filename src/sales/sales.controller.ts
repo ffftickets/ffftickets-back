@@ -164,17 +164,25 @@ export class SalesController {
     @Param('id') id: number,
     @Req() req: Request,
     @GetUser() user: User,
+    @Body() body: any,
   ) {
-    this.logger.log('Validando venta' + id);
-    const logSale:CreateLogSaleDto={
-      action: ActionSale.UPDATE,
-      data: {saleUpdate:id,description:'Validando venta por el administrador'},
-      user: user.email,
-      ipDetail: req['ip-details'],
-      userAgent: req['ua'],
-    }
-    this.logSaleService.create(logSale);
-    return await this.salesService.validateSaleAdmin(id);
+  
+      this.logger.log('Validando venta' + id);
+     
+   
+      const data =  await this.salesService.validateSaleAdmin(id,body);
+      const logSale:CreateLogSaleDto={
+        action: ActionSale.UPDATE,
+        data: {saleUpdate:id,description:'Validando venta por el administrador'},
+        user: user.email,
+        ipDetail: req['ip-details'],
+        userAgent: req['ua'],
+      }
+      this.logSaleService.create(logSale);
+      return data;
+
+    
+   
   }
   @Auth()
   @UseInterceptors(IpDetailsInterceptor)

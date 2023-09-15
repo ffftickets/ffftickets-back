@@ -110,8 +110,20 @@ export class UserController {
     @Body() updateUserDto: UpdateUserDto,
     @Res() res: Response,
   ) {
-    this.logger.log('Actualizando usuario: ', updateUserDto.email);
+    this.logger.log('Actualizando usuario: ', id);
     const data = await this.userService.update(+id, updateUserDto);
+    return res.status(HttpStatus.OK).json(data);
+  }
+  @ApiBearerAuth()
+  @Auth()
+  @Patch(':id/rol')
+  async updateRolUser(
+    @Param('id') id: string,
+    @Body() updateUserDto: UpdateUserDto,
+    @Res() res: Response,
+  ) {
+    this.logger.log('Actualizando usuario: ', id);
+    const data = await this.userService.updateRol(+id, updateUserDto);
     return res.status(HttpStatus.OK).json(data);
   }
   @ApiBearerAuth()

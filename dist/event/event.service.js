@@ -183,7 +183,6 @@ let EventService = EventService_1 = class EventService {
     }
     async update(id, updateEventDto) {
         try {
-            console.log(updateEventDto);
             await this.eventRepository.update(id, Object.assign({}, updateEventDto));
             return await this.findOne(id);
         }

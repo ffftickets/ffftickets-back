@@ -50,7 +50,7 @@ export class AuthController {
     if (!user) {
       await this.loginLogsService.createLoginLog({
         ipDetail: req['ip-details'],
-        email: loginDto.email,
+        email: user.email,
         blockStatus: 'UNREGISTERED',
         isCorrect: false,
         userAgent: req['ua'],
@@ -63,7 +63,7 @@ export class AuthController {
       await this.loginLogsService.createLoginLog({
         ipDetail: req['ip-details'],
         email: loginDto.email,
-        blockStatus: 'UNREGISTERED',
+        blockStatus: 'BLOCKED',
         isCorrect: false,
         userAgent: req['ua'],
       });
@@ -86,7 +86,7 @@ export class AuthController {
     if (user && (await compare(loginDto.password, user.password))) {
       await this.loginLogsService.createLoginLog({
         ipDetail: req['ip-details'],
-        email: loginDto.email,
+        email: user.email,
         blockStatus: user.status,
         
         isCorrect: true,
@@ -105,7 +105,7 @@ export class AuthController {
     } else {
       await this.loginLogsService.createLoginLog({
         ipDetail: req['ip-details'],
-        email: loginDto.email,
+        email: user.email,
         blockStatus: user.status,
         isCorrect: false,
         userAgent: req['ua'],
@@ -153,7 +153,7 @@ export class AuthController {
     if (user.status == UserStatus.BLOCKED) {
       await this.loginLogsService.createLoginLog({
         ipDetail: req['ip-details'],
-        email: loginDto.email,
+        email: this.encryptionService.decryptData(loginDto.email),
         blockStatus: 'UNREGISTERED',
         
         isCorrect: false,
@@ -177,8 +177,8 @@ export class AuthController {
     const data = await this.authService.login(user);
     this.loginLogsService.createLoginLog({
       ipDetail: req['ip-details'],
-      email: loginDto.email,
-      blockStatus: 'SUCCESS_LOGIN',
+      email: user.email,
+      blockStatus: user.status,
       isCorrect: false,
       userAgent: req['ua'],
     });
