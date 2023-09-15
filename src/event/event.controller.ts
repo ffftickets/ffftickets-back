@@ -20,14 +20,15 @@ import { Auth, GetUser } from 'src/common/helpers/decorators';
 import { User } from 'src/user/entities/user.entity';
 
 import { Response } from 'express';
-import { FirebaseService } from 'src/firebase/firebase.service';
+import { AmazonS3Service } from 'src/amazon-s3/amazon-s3.service';
+
 
 @ApiTags('Event')
 @Controller('event')
 export class EventController {
   constructor(
     private readonly eventService: EventService,
-    private readonly firebaseService: FirebaseService,
+    private readonly amazon3SService: AmazonS3Service,
   ) {}
 
   logger = new Logger(EventController.name);
@@ -123,21 +124,21 @@ export class EventController {
 
     this.logger.log('Verificando pases de cortesía.');
     if (updateEventDto.courtesy_ticket) {
-      let img = await this.firebaseService.uploadBase64({
+      let img = await this.amazon3SService.uploadBase64({
         route: `${user.id} - ${user.name}/${event.name}`,
         image: updateEventDto.courtesy_ticket,
       });
       if (event.courtesy_ticket)
-        this.firebaseService.deleteImageByUrl(event.courtesy_ticket);
+        this.amazon3SService.deleteImageByUrl(event.courtesy_ticket);
       updateEventDto.courtesy_ticket = img.imageUrl;
     }
     this.logger.log('Verificando poster.');
     if (updateEventDto.poster) {
-      let img = await this.firebaseService.uploadBase64({
+      let img = await this.amazon3SService.uploadBase64({
         route: `${user.id} - ${user.name}/${event.name}`,
         image: updateEventDto.poster,
       });
-     // if (event.poster) this.firebaseService.deleteImageByUrl(event.poster);
+      if (event.poster) this.amazon3SService.deleteImageByUrl(event.poster);
       updateEventDto.poster = img.imageUrl;
     }
     this.logger.log('Verificando galería de eventos.');
@@ -146,7 +147,7 @@ export class EventController {
       const updatedImages = [];
       for (const image of updateEventDto.event_gallery) {
 
-        const img = await this.firebaseService.uploadBase64({
+        const img = await this.amazon3SService.uploadBase64({
           route: `${user.id} - ${user.name}/${event.name}/event-gallery`,
           image: image,
         });
@@ -165,7 +166,7 @@ export class EventController {
     if (updateEventDto.informative_gallery) {
       const updatedImages = [];
       for (const image of updateEventDto.informative_gallery) {
-        const img = await this.firebaseService.uploadBase64({
+        const img = await this.amazon3SService.uploadBase64({
           route: `${user.id} - ${user.name}/${event.name}/informative-gallery`,
           image: image,
         });

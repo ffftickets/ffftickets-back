@@ -13,6 +13,7 @@ const amazon_s3_controller_1 = require("./amazon-s3.controller");
 let AmazonS3Module = class AmazonS3Module {
 };
 AmazonS3Module = __decorate([
+    (0, common_1.Global)(),
     (0, common_1.Module)({
         controllers: [amazon_s3_controller_1.AmazonS3Controller],
         providers: [amazon_s3_service_1.AmazonS3Service],

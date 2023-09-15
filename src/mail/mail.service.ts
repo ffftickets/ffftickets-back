@@ -17,19 +17,20 @@ import {
 } from './templates';
 import { MailLogsService } from 'src/mail-logs/mail-logs.service';
 import { sendTickets } from './templates/sendTickets';
-import { FirebaseService } from 'src/firebase/firebase.service';
+
 import * as qrcode from 'qrcode';
 import { Ticket } from 'src/tickets/entities/ticket.entity';
 import { GenerateOrder } from './templates/generate_order';
 import { OrderCompletedDto } from './dto/order-completed';
 import { OrderComplete } from './templates/order_completed';
+import { AmazonS3Service } from 'src/amazon-s3/amazon-s3.service';
 @Injectable()
 export class MailService {
   logger = new Logger(MailService.name);
   constructor(
     private mailerService: MailerService,
     private readonly mailLogsService: MailLogsService,
-    private readonly firebaseService: FirebaseService,
+    private readonly amazon3SService: AmazonS3Service,
   ) {}
 
   async sendEmail(dataEmail: EmailDataSend, dto: any) {
@@ -158,7 +159,7 @@ export class MailService {
     try {
       const qrCodeImageBuffer = await qrcode.toBuffer(qrCodeData);
       const qrCodeBase64 = qrCodeImageBuffer.toString('base64');
-      let img = await this.firebaseService.uploadBase64({
+      let img = await this.amazon3SService.uploadBase64({
         route: `FFFQRS`,
         image: qrCodeBase64,
       });

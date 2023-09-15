@@ -20,13 +20,13 @@ const event_entity_1 = require("./entities/event.entity");
 const typeorm_2 = require("typeorm");
 const event_type_service_1 = require("../event-type/event-type.service");
 const custom_error_helper_1 = require("../common/helpers/custom-error.helper");
-const firebase_service_1 = require("../firebase/firebase.service");
 const encryption_service_1 = require("../encryption/encryption.service");
+const amazon_s3_service_1 = require("../amazon-s3/amazon-s3.service");
 let EventService = EventService_1 = class EventService {
-    constructor(eventRepository, eventTypeService, firebaseService, encryptionService) {
+    constructor(eventRepository, eventTypeService, amazon3SService, encryptionService) {
         this.eventRepository = eventRepository;
         this.eventTypeService = eventTypeService;
-        this.firebaseService = firebaseService;
+        this.amazon3SService = amazon3SService;
         this.encryptionService = encryptionService;
         this.logger = new common_1.Logger(EventService_1.name);
     }
@@ -218,7 +218,7 @@ let EventService = EventService_1 = class EventService {
             if (event.informative_gallery) {
                 event.informative_gallery = event.informative_gallery.filter((element) => element !== url);
             }
-            await this.firebaseService.deleteImageByUrl(url);
+            await this.amazon3SService.deleteImageByUrl(url);
             return this.eventRepository.save(event);
         }
         catch (error) {
@@ -242,7 +242,7 @@ EventService = EventService_1 = __decorate([
     __param(0, (0, typeorm_1.InjectRepository)(event_entity_1.Event)),
     __metadata("design:paramtypes", [typeorm_2.Repository,
         event_type_service_1.EventTypeService,
-        firebase_service_1.FirebaseService,
+        amazon_s3_service_1.AmazonS3Service,
         encryption_service_1.EncryptionService])
 ], EventService);
 exports.EventService = EventService;

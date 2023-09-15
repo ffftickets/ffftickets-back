@@ -4,11 +4,11 @@ import { CreateEventDto } from './dto/create-event.dto';
 import { UpdateEventDto } from './dto/update-event.dto';
 import { User } from 'src/user/entities/user.entity';
 import { Response } from 'express';
-import { FirebaseService } from 'src/firebase/firebase.service';
+import { AmazonS3Service } from 'src/amazon-s3/amazon-s3.service';
 export declare class EventController {
     private readonly eventService;
-    private readonly firebaseService;
-    constructor(eventService: EventService, firebaseService: FirebaseService);
+    private readonly amazon3SService;
+    constructor(eventService: EventService, amazon3SService: AmazonS3Service);
     logger: Logger;
     create(createEventDto: CreateEventDto, user: User, res: Response): Promise<Response<any, Record<string, any>>>;
     findAll(res: Response, page?: number, limit?: number): Promise<Response<any, Record<string, any>>>;

@@ -19,12 +19,12 @@ const localities_service_1 = require("./localities.service");
 const create_locality_dto_1 = require("./dto/create-locality.dto");
 const update_locality_dto_1 = require("./dto/update-locality.dto");
 const swagger_1 = require("@nestjs/swagger");
-const firebase_service_1 = require("../firebase/firebase.service");
 const event_service_1 = require("../event/event.service");
+const amazon_s3_service_1 = require("../amazon-s3/amazon-s3.service");
 let LocalitiesController = LocalitiesController_1 = class LocalitiesController {
-    constructor(localitiesService, firebaseService, eventService) {
+    constructor(localitiesService, amazonS3Service, eventService) {
         this.localitiesService = localitiesService;
-        this.firebaseService = firebaseService;
+        this.amazonS3Service = amazonS3Service;
         this.eventService = eventService;
         this.logger = new common_1.Logger(LocalitiesController_1.name);
     }
@@ -38,7 +38,7 @@ let LocalitiesController = LocalitiesController_1 = class LocalitiesController {
                 image: createLocalityDto.photo,
                 route: `${event.user.id} - ${event.user.name}/${event.name}/localities/${createLocalityDto.name}`,
             };
-            createLocalityDto.photo = (await this.firebaseService.uploadBase64(uploadImg)).imageUrl;
+            createLocalityDto.photo = (await this.amazonS3Service.uploadBase64(uploadImg)).imageUrl;
         }
         const data = await this.localitiesService.create(createLocalityDto);
         return res.status(common_1.HttpStatus.OK).json(data);
@@ -68,10 +68,10 @@ let LocalitiesController = LocalitiesController_1 = class LocalitiesController {
                 image: updateLocalityDto.photo,
                 route: `${event.user.id} - ${event.user.name}/${event.name}/localities/${locality.name}`,
             };
-            updateLocalityDto.photo = (await this.firebaseService.uploadBase64(uploadImg)).imageUrl;
+            updateLocalityDto.photo = (await this.amazonS3Service.uploadBase64(uploadImg)).imageUrl;
         }
         if (locality.photo)
-            await this.firebaseService.deleteImageByUrl(locality.photo);
+            await this.amazonS3Service.deleteImageByUrl(locality.photo);
         const data = await this.localitiesService.update(+id, updateLocalityDto);
         return res.status(common_1.HttpStatus.OK).json(data);
     }
@@ -133,7 +133,7 @@ LocalitiesController = LocalitiesController_1 = __decorate([
     (0, swagger_1.ApiTags)('Localities'),
     (0, common_1.Controller)('localities'),
     __metadata("design:paramtypes", [localities_service_1.LocalitiesService,
-        firebase_service_1.FirebaseService,
+        amazon_s3_service_1.AmazonS3Service,
         event_service_1.EventService])
 ], LocalitiesController);
 exports.LocalitiesController = LocalitiesController;

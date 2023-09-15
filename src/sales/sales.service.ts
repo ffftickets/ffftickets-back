@@ -16,7 +16,7 @@ import { customError } from 'src/common/helpers/custom-error.helper';
 import { LocalitiesService } from 'src/localities/localities.service';
 import { SaleStatus } from './enum/sale-status.enum';
 import { User } from 'src/user/entities/user.entity';
-import { FirebaseService } from 'src/firebase/firebase.service';
+
 import { UploadPhotoDto } from './dto/uploadPhoto.dto';
 import { EncryptionService } from 'src/encryption/encryption.service';
 import { PayTypes } from './enum/pay-types.enum';
@@ -28,6 +28,7 @@ import { CreateLogSaleDto } from 'src/log-sale/dto/create-log-sale.dto';
 import { LogSaleService } from 'src/log-sale/log-sale.service';
 import { ActionSale } from 'src/log-sale/enum/sale-action.enum';
 import { OrderCompletedDto } from 'src/mail/dto/order-completed';
+import { AmazonS3Service } from 'src/amazon-s3/amazon-s3.service';
 //Cola de espera
 
 @Injectable()
@@ -41,11 +42,11 @@ export class SalesService {
     private readonly userService: UserService,
     private readonly ticketService: TicketsService,
     private readonly localitiesService: LocalitiesService,
-    private readonly firebaseService: FirebaseService,
     private readonly encryptionService: EncryptionService,
     private readonly logPayCardService: LogPayCardService,
     private readonly mailService: MailService,
     private readonly logSaleService: LogSaleService,
+    private readonly amazon3SService: AmazonS3Service,
   ) {}
   async create(createSaleDto: CreateSaleDto, logSale: CreateLogSaleDto) {
     try {
@@ -610,14 +611,14 @@ export class SalesService {
   async uploadVoucher(id: number, user: User, uploadPhoto: UploadPhotoDto) {
     try {
       const event = await this.eventService.findOne(uploadPhoto.event);
-      let img = await this.firebaseService.uploadBase64({
+      let img = await this.amazon3SService.uploadBase64({
         route: `${user.id} - ${user.name}/voucher/${event.name}`,
         image: uploadPhoto.photo,
       });
 
       const sale = await this.findOne(id);
       if (sale.transfer_photo)
-        await this.firebaseService.deleteImageByUrl(sale.transfer_photo);
+        await this.amazon3SService.deleteImageByUrl(sale.transfer_photo);
 
       sale.transfer_photo = img.imageUrl;
       return await this.saleRepository.save(sale);

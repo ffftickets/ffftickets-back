@@ -14,7 +14,6 @@ const typeorm_1 = require("@nestjs/typeorm");
 const passport_1 = require("@nestjs/passport");
 const localities_entity_1 = require("./entities/localities.entity");
 const event_module_1 = require("../event/event.module");
-const firebase_module_1 = require("../firebase/firebase.module");
 let LocalitiesModule = class LocalitiesModule {
 };
 LocalitiesModule = __decorate([
@@ -23,7 +22,6 @@ LocalitiesModule = __decorate([
             typeorm_1.TypeOrmModule.forFeature([localities_entity_1.Localities]),
             passport_1.PassportModule.register({ defaultStrategy: 'jwt' }),
             event_module_1.EventModule,
-            firebase_module_1.FirebaseModule
         ],
         controllers: [localities_controller_1.LocalitiesController],
         providers: [localities_service_1.LocalitiesService],

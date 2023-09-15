@@ -5,13 +5,13 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { PassportModule } from '@nestjs/passport';
 import { Event } from '../event/entities/event.entity';
 import { EventTypeModule } from 'src/event-type/event-type.module';
-import { FirebaseModule } from 'src/firebase/firebase.module';
+import { AmazonS3Module } from 'src/amazon-s3/amazon-s3.module';
 @Module({
   imports: [
     TypeOrmModule.forFeature([Event]),
     PassportModule.register({ defaultStrategy: 'jwt' }),
     EventTypeModule,
-    FirebaseModule
+    AmazonS3Module
   ],
   controllers: [EventController],
   providers: [EventService],

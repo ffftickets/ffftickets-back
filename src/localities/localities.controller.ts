@@ -16,15 +16,17 @@ import { UpdateLocalityDto } from './dto/update-locality.dto';
 import { ApiTags } from '@nestjs/swagger';
 import { Response } from 'express';
 
-import { FirebaseService } from 'src/firebase/firebase.service';
+
 import { EventService } from 'src/event/event.service';
-import { UploadBase64ImageDto } from 'src/firebase/dto';
+import { AmazonS3Service } from 'src/amazon-s3/amazon-s3.service';
+import { UploadBase64ImageDto } from 'src/amazon-s3/dto/upload-base64-image.dto';
+
 @ApiTags('Localities')
 @Controller('localities')
 export class LocalitiesController {
   constructor(
     private readonly localitiesService: LocalitiesService,
-    private readonly firebaseService: FirebaseService,
+    private readonly amazonS3Service: AmazonS3Service,
     private readonly eventService: EventService,
   ) {}
   logger = new Logger(LocalitiesController.name);
@@ -50,7 +52,7 @@ export class LocalitiesController {
         route: `${event.user.id} - ${event.user.name}/${event.name}/localities/${createLocalityDto.name}`,
       };
       createLocalityDto.photo = (
-        await this.firebaseService.uploadBase64(uploadImg)
+        await this.amazonS3Service.uploadBase64(uploadImg)
       ).imageUrl; 
     }
   
@@ -99,11 +101,11 @@ export class LocalitiesController {
         route: `${event.user.id} - ${event.user.name}/${event.name}/localities/${locality.name}`,
       };
       updateLocalityDto.photo = (
-        await this.firebaseService.uploadBase64(uploadImg)
+        await this.amazonS3Service.uploadBase64(uploadImg)
       ).imageUrl;
     }
     if (locality.photo)
-    await this.firebaseService.deleteImageByUrl(locality.photo);
+    await this.amazonS3Service.deleteImageByUrl(locality.photo);
     const data = await this.localitiesService.update(+id, updateLocalityDto);
     return res.status(HttpStatus.OK).json(data);
   }

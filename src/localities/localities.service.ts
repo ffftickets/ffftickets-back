@@ -11,8 +11,8 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Localities } from './entities/localities.entity';
 import { Repository } from 'typeorm';
 import { EventService } from 'src/event/event.service';
-import { FirebaseService } from 'src/firebase/firebase.service';
-import { UploadBase64ImageDto } from 'src/firebase/dto';
+import { AmazonS3Service } from 'src/amazon-s3/amazon-s3.service';
+
 
 @Injectable()
 export class LocalitiesService {
@@ -21,7 +21,7 @@ export class LocalitiesService {
     @InjectRepository(Localities)
     private readonly localitiesRepository: Repository<Localities>,
     private readonly eventService: EventService,
-    private readonly firebaseService: FirebaseService,
+
   ) {}
   async create(createLocalityDto: CreateLocalityDto) {
     try {

@@ -35,25 +35,25 @@ const tickets_service_1 = require("../tickets/tickets.service");
 const custom_error_helper_1 = require("../common/helpers/custom-error.helper");
 const localities_service_1 = require("../localities/localities.service");
 const sale_status_enum_1 = require("./enum/sale-status.enum");
-const firebase_service_1 = require("../firebase/firebase.service");
 const encryption_service_1 = require("../encryption/encryption.service");
 const pay_types_enum_1 = require("./enum/pay-types.enum");
 const log_pay_card_service_1 = require("../log-pay-card/log-pay-card.service");
 const mail_service_1 = require("../mail/mail.service");
 const log_sale_service_1 = require("../log-sale/log-sale.service");
 const sale_action_enum_1 = require("../log-sale/enum/sale-action.enum");
+const amazon_s3_service_1 = require("../amazon-s3/amazon-s3.service");
 let SalesService = SalesService_1 = class SalesService {
-    constructor(saleRepository, eventService, userService, ticketService, localitiesService, firebaseService, encryptionService, logPayCardService, mailService, logSaleService) {
+    constructor(saleRepository, eventService, userService, ticketService, localitiesService, encryptionService, logPayCardService, mailService, logSaleService, amazon3SService) {
         this.saleRepository = saleRepository;
         this.eventService = eventService;
         this.userService = userService;
         this.ticketService = ticketService;
         this.localitiesService = localitiesService;
-        this.firebaseService = firebaseService;
         this.encryptionService = encryptionService;
         this.logPayCardService = logPayCardService;
         this.mailService = mailService;
         this.logSaleService = logSaleService;
+        this.amazon3SService = amazon3SService;
         this.logger = new common_1.Logger(SalesService_1.name);
     }
     async create(createSaleDto, logSale) {
@@ -489,13 +489,13 @@ let SalesService = SalesService_1 = class SalesService {
     async uploadVoucher(id, user, uploadPhoto) {
         try {
             const event = await this.eventService.findOne(uploadPhoto.event);
-            let img = await this.firebaseService.uploadBase64({
+            let img = await this.amazon3SService.uploadBase64({
                 route: `${user.id} - ${user.name}/voucher/${event.name}`,
                 image: uploadPhoto.photo,
             });
             const sale = await this.findOne(id);
             if (sale.transfer_photo)
-                await this.firebaseService.deleteImageByUrl(sale.transfer_photo);
+                await this.amazon3SService.deleteImageByUrl(sale.transfer_photo);
             sale.transfer_photo = img.imageUrl;
             return await this.saleRepository.save(sale);
         }
@@ -624,11 +624,11 @@ SalesService = SalesService_1 = __decorate([
         user_service_1.UserService,
         tickets_service_1.TicketsService,
         localities_service_1.LocalitiesService,
-        firebase_service_1.FirebaseService,
         encryption_service_1.EncryptionService,
         log_pay_card_service_1.LogPayCardService,
         mail_service_1.MailService,
-        log_sale_service_1.LogSaleService])
+        log_sale_service_1.LogSaleService,
+        amazon_s3_service_1.AmazonS3Service])
 ], SalesService);
 exports.SalesService = SalesService;
 //# sourceMappingURL=sales.service.js.map

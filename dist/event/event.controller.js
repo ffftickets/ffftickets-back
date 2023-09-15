@@ -21,11 +21,11 @@ const update_event_dto_1 = require("./dto/update-event.dto");
 const swagger_1 = require("@nestjs/swagger");
 const decorators_1 = require("../common/helpers/decorators");
 const user_entity_1 = require("../user/entities/user.entity");
-const firebase_service_1 = require("../firebase/firebase.service");
+const amazon_s3_service_1 = require("../amazon-s3/amazon-s3.service");
 let EventController = EventController_1 = class EventController {
-    constructor(eventService, firebaseService) {
+    constructor(eventService, amazon3SService) {
         this.eventService = eventService;
-        this.firebaseService = firebaseService;
+        this.amazon3SService = amazon3SService;
         this.logger = new common_1.Logger(EventController_1.name);
     }
     async create(createEventDto, user, res) {
@@ -65,27 +65,29 @@ let EventController = EventController_1 = class EventController {
         this.logger.log('Verificando tickets.');
         this.logger.log('Verificando pases de cortesía.');
         if (updateEventDto.courtesy_ticket) {
-            let img = await this.firebaseService.uploadBase64({
+            let img = await this.amazon3SService.uploadBase64({
                 route: `${user.id} - ${user.name}/${event.name}`,
                 image: updateEventDto.courtesy_ticket,
             });
             if (event.courtesy_ticket)
-                this.firebaseService.deleteImageByUrl(event.courtesy_ticket);
+                this.amazon3SService.deleteImageByUrl(event.courtesy_ticket);
             updateEventDto.courtesy_ticket = img.imageUrl;
         }
         this.logger.log('Verificando poster.');
         if (updateEventDto.poster) {
-            let img = await this.firebaseService.uploadBase64({
+            let img = await this.amazon3SService.uploadBase64({
                 route: `${user.id} - ${user.name}/${event.name}`,
                 image: updateEventDto.poster,
             });
+            if (event.poster)
+                this.amazon3SService.deleteImageByUrl(event.poster);
             updateEventDto.poster = img.imageUrl;
         }
         this.logger.log('Verificando galería de eventos.');
         if (updateEventDto.event_gallery) {
             const updatedImages = [];
             for (const image of updateEventDto.event_gallery) {
-                const img = await this.firebaseService.uploadBase64({
+                const img = await this.amazon3SService.uploadBase64({
                     route: `${user.id} - ${user.name}/${event.name}/event-gallery`,
                     image: image,
                 });
@@ -105,7 +107,7 @@ let EventController = EventController_1 = class EventController {
         if (updateEventDto.informative_gallery) {
             const updatedImages = [];
             for (const image of updateEventDto.informative_gallery) {
-                const img = await this.firebaseService.uploadBase64({
+                const img = await this.amazon3SService.uploadBase64({
                     route: `${user.id} - ${user.name}/${event.name}/informative-gallery`,
                     image: image,
                 });
@@ -228,7 +230,7 @@ EventController = EventController_1 = __decorate([
     (0, swagger_1.ApiTags)('Event'),
     (0, common_1.Controller)('event'),
     __metadata("design:paramtypes", [event_service_1.EventService,
-        firebase_service_1.FirebaseService])
+        amazon_s3_service_1.AmazonS3Service])
 ], EventController);
 exports.EventController = EventController;
 //# sourceMappingURL=event.controller.js.map

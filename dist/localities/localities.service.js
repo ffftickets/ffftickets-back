@@ -20,12 +20,10 @@ const typeorm_1 = require("@nestjs/typeorm");
 const localities_entity_1 = require("./entities/localities.entity");
 const typeorm_2 = require("typeorm");
 const event_service_1 = require("../event/event.service");
-const firebase_service_1 = require("../firebase/firebase.service");
 let LocalitiesService = LocalitiesService_1 = class LocalitiesService {
-    constructor(localitiesRepository, eventService, firebaseService) {
+    constructor(localitiesRepository, eventService) {
         this.localitiesRepository = localitiesRepository;
         this.eventService = eventService;
-        this.firebaseService = firebaseService;
         this.logger = new common_1.Logger(LocalitiesService_1.name);
     }
     async create(createLocalityDto) {
@@ -149,8 +147,7 @@ LocalitiesService = LocalitiesService_1 = __decorate([
     (0, common_1.Injectable)(),
     __param(0, (0, typeorm_1.InjectRepository)(localities_entity_1.Localities)),
     __metadata("design:paramtypes", [typeorm_2.Repository,
-        event_service_1.EventService,
-        firebase_service_1.FirebaseService])
+        event_service_1.EventService])
 ], LocalitiesService);
 exports.LocalitiesService = LocalitiesService;
 //# sourceMappingURL=localities.service.js.map

@@ -13,7 +13,7 @@ const mailer_1 = require("@nestjs-modules/mailer");
 const config_1 = require("@nestjs/config");
 const config_env_1 = require("../config/config.env");
 const mail_logs_module_1 = require("../mail-logs/mail-logs.module");
-const firebase_module_1 = require("../firebase/firebase.module");
+const amazon_s3_module_1 = require("../amazon-s3/amazon-s3.module");
 let MailModule = class MailModule {
 };
 MailModule = __decorate([
@@ -38,7 +38,7 @@ MailModule = __decorate([
                 }),
             }),
             mail_logs_module_1.MailLogsModule,
-            firebase_module_1.FirebaseModule
+            amazon_s3_module_1.AmazonS3Module
         ],
         providers: [mail_service_1.MailService,],
         exports: [mail_service_1.MailService]

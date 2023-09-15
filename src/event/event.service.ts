@@ -6,8 +6,8 @@ import { Event } from './entities/event.entity';
 import { Repository } from 'typeorm';
 import { EventTypeService } from 'src/event-type/event-type.service';
 import { customError } from 'src/common/helpers/custom-error.helper';
-import { FirebaseService } from 'src/firebase/firebase.service';
 import { EncryptionService } from 'src/encryption/encryption.service';
+import { AmazonS3Service } from 'src/amazon-s3/amazon-s3.service';
 
 @Injectable()
 export class EventService {
@@ -15,7 +15,7 @@ export class EventService {
     @InjectRepository(Event)
     private readonly eventRepository: Repository<Event>,
     private readonly eventTypeService: EventTypeService,
-    private readonly firebaseService: FirebaseService,
+    private readonly amazon3SService: AmazonS3Service,
     private readonly encryptionService: EncryptionService,
   ) {}
   logger = new Logger(EventService.name);
@@ -243,7 +243,7 @@ export class EventService {
         );
       }
 
-      await this.firebaseService.deleteImageByUrl(url);
+      await this.amazon3SService.deleteImageByUrl(url);
       return this.eventRepository.save(event);
     } catch (error) {
       this.logger.error(error);

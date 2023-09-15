@@ -6,8 +6,7 @@ import { MAIL_HOST, MAIL_PASS, MAIL_PORT, MAIL_SECURE, MAIL_USER } from 'src/con
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { MailLog } from 'src/mail-logs/entities/mail-log.entity';
 import { MailLogsModule } from 'src/mail-logs/mail-logs.module';
-import { FirebaseService } from 'src/firebase/firebase.service';
-import { FirebaseModule } from 'src/firebase/firebase.module';
+import { AmazonS3Module } from 'src/amazon-s3/amazon-s3.module';
 @Global()
 @Module({
   imports:[
@@ -31,7 +30,7 @@ import { FirebaseModule } from 'src/firebase/firebase.module';
      
     }),
     MailLogsModule,
-    FirebaseModule
+    AmazonS3Module
   ],
   providers: [MailService,],
   exports:[MailService]

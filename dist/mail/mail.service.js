@@ -16,15 +16,15 @@ const dist_1 = require("@nestjs-modules/mailer/dist");
 const templates_1 = require("./templates");
 const mail_logs_service_1 = require("../mail-logs/mail-logs.service");
 const sendTickets_1 = require("./templates/sendTickets");
-const firebase_service_1 = require("../firebase/firebase.service");
 const qrcode = require("qrcode");
 const generate_order_1 = require("./templates/generate_order");
 const order_completed_1 = require("./templates/order_completed");
+const amazon_s3_service_1 = require("../amazon-s3/amazon-s3.service");
 let MailService = MailService_1 = class MailService {
-    constructor(mailerService, mailLogsService, firebaseService) {
+    constructor(mailerService, mailLogsService, amazon3SService) {
         this.mailerService = mailerService;
         this.mailLogsService = mailLogsService;
-        this.firebaseService = firebaseService;
+        this.amazon3SService = amazon3SService;
         this.logger = new common_1.Logger(MailService_1.name);
     }
     async sendEmail(dataEmail, dto) {
@@ -139,7 +139,7 @@ let MailService = MailService_1 = class MailService {
         try {
             const qrCodeImageBuffer = await qrcode.toBuffer(qrCodeData);
             const qrCodeBase64 = qrCodeImageBuffer.toString('base64');
-            let img = await this.firebaseService.uploadBase64({
+            let img = await this.amazon3SService.uploadBase64({
                 route: `FFFQRS`,
                 image: qrCodeBase64,
             });
@@ -155,7 +155,7 @@ MailService = MailService_1 = __decorate([
     (0, common_1.Injectable)(),
     __metadata("design:paramtypes", [dist_1.MailerService,
         mail_logs_service_1.MailLogsService,
-        firebase_service_1.FirebaseService])
+        amazon_s3_service_1.AmazonS3Service])
 ], MailService);
 exports.MailService = MailService;
 //# sourceMappingURL=mail.service.js.map

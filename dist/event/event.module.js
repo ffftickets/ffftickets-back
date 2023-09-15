@@ -14,7 +14,7 @@ const typeorm_1 = require("@nestjs/typeorm");
 const passport_1 = require("@nestjs/passport");
 const event_entity_1 = require("../event/entities/event.entity");
 const event_type_module_1 = require("../event-type/event-type.module");
-const firebase_module_1 = require("../firebase/firebase.module");
+const amazon_s3_module_1 = require("../amazon-s3/amazon-s3.module");
 let EventModule = class EventModule {
 };
 EventModule = __decorate([
@@ -23,7 +23,7 @@ EventModule = __decorate([
             typeorm_1.TypeOrmModule.forFeature([event_entity_1.Event]),
             passport_1.PassportModule.register({ defaultStrategy: 'jwt' }),
             event_type_module_1.EventTypeModule,
-            firebase_module_1.FirebaseModule
+            amazon_s3_module_1.AmazonS3Module
         ],
         controllers: [event_controller_1.EventController],
         providers: [event_service_1.EventService],

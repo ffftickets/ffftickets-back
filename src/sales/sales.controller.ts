@@ -21,7 +21,6 @@ import { ApiTags } from '@nestjs/swagger';
 import { Response,Request } from 'express';
 import { Auth, GetUser } from 'src/common/helpers/decorators';
 import { User } from 'src/user/entities/user.entity';
-import { FirebaseService } from 'src/firebase/firebase.service';
 import { EventService } from 'src/event/event.service';
 import { UploadPhotoDto } from './dto/uploadPhoto.dto';
 import { PayTypes } from './enum/pay-types.enum';

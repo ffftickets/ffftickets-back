@@ -23,7 +23,6 @@ const localities_module_1 = require("./localities/localities.module");
 const auth_module_1 = require("./auth/auth.module");
 const login_logs_module_1 = require("./login-logs/login-logs.module");
 const role_module_1 = require("./role/role.module");
-const firebase_module_1 = require("./firebase/firebase.module");
 const invitation_module_1 = require("./invitation/invitation.module");
 const sales_module_1 = require("./sales/sales.module");
 const tickets_module_1 = require("./tickets/tickets.module");
@@ -73,7 +72,6 @@ AppModule = __decorate([
             auth_module_1.AuthModule,
             login_logs_module_1.LoginLogsModule,
             role_module_1.RoleModule,
-            firebase_module_1.FirebaseModule,
             invitation_module_1.InvitationModule,
             sales_module_1.SalesModule,
             tickets_module_1.TicketsModule,

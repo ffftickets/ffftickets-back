@@ -21,7 +21,6 @@ import { LocalitiesModule } from './localities/localities.module';
 import { AuthModule } from './auth/auth.module';
 import { LoginLogsModule } from './login-logs/login-logs.module';
 import { RoleModule } from './role/role.module';
-import { FirebaseModule } from './firebase/firebase.module';
 import { InvitationModule } from './invitation/invitation.module';
 import { SalesModule } from './sales/sales.module';
 import { TicketsModule } from './tickets/tickets.module';
@@ -80,7 +79,6 @@ import { AmazonS3Module } from './amazon-s3/amazon-s3.module';
 
     RoleModule,
 
-    FirebaseModule,
 
     InvitationModule,
 

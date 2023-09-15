@@ -14,17 +14,21 @@ exports.AmazonS3Service = void 0;
 const common_1 = require("@nestjs/common");
 const config_1 = require("@nestjs/config");
 const uuid_1 = require("uuid");
-const AWS = require("aws-sdk");
+const client_s3_1 = require("@aws-sdk/client-s3");
 const custom_error_helper_1 = require("../common/helpers/custom-error.helper");
 let AmazonS3Service = AmazonS3Service_1 = class AmazonS3Service {
     constructor(configService) {
         this.configService = configService;
         this.logger = new common_1.Logger(AmazonS3Service_1.name);
-        this.s3 = new AWS.S3({ region: this.configService.get('AWS_S3_BUCKET_REGION'), credentials: {
+        this.s3 = new client_s3_1.S3Client({
+            region: this.configService.get('AWS_S3_BUCKET_REGION'),
+            credentials: {
                 accessKeyId: this.configService.get('AWS_ACCESS_KEY_ID'),
                 secretAccessKey: this.configService.get('AWS_SECRET_ACCESS_KEY'),
-            } });
+            },
+        });
         this.bucketName = this.configService.get('AWS_S3_BUCKET_NAME');
+        this.regionName = this.configService.get('AWS_S3_BUCKET_REGION');
     }
     async uploadBase64(body) {
         try {
@@ -38,8 +42,11 @@ let AmazonS3Service = AmazonS3Service_1 = class AmazonS3Service {
                 Body: Buffer.from(imageData, 'base64'),
                 ContentType: 'image/jpeg',
             };
-            const result = await this.s3.upload(params).promise();
-            const imageUrl = result.Location;
+            const uploadCommand = new client_s3_1.PutObjectCommand(params);
+            const result = await this.s3.send(uploadCommand);
+            console.log(result);
+            let imageUrl = `https://${this.bucketName}.s3.${this.regionName}.amazonaws.com/${params.Key}`;
+            imageUrl = imageUrl.replace(/\s+/g, '+');
             return { imageUrl };
         }
         catch (error) {
@@ -49,17 +56,12 @@ let AmazonS3Service = AmazonS3Service_1 = class AmazonS3Service {
     }
     async deleteImageByUrl(imageUrl) {
         try {
-            const decodedUrl = decodeURIComponent(imageUrl);
-            const startIndex = decodedUrl.indexOf(`/${this.bucketName}/`);
-            if (startIndex === -1) {
-                throw new common_1.BadRequestException('El enlace proporcionado no es válido.');
-            }
-            const imagePath = decodedUrl.substring(startIndex + this.bucketName.length + 2, decodedUrl.indexOf('?'));
             const params = {
                 Bucket: this.bucketName,
-                Key: imagePath,
+                Key: imageUrl,
             };
-            await this.s3.deleteObject(params).promise();
+            const deleteCommand = new client_s3_1.DeleteObjectCommand(params);
+            await this.s3.send(deleteCommand);
             this.logger.log('Imagen eliminada correctamente.');
             return true;
         }

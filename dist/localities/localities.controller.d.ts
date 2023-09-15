@@ -3,13 +3,13 @@ import { LocalitiesService } from './localities.service';
 import { CreateLocalityDto } from './dto/create-locality.dto';
 import { UpdateLocalityDto } from './dto/update-locality.dto';
 import { Response } from 'express';
-import { FirebaseService } from 'src/firebase/firebase.service';
 import { EventService } from 'src/event/event.service';
+import { AmazonS3Service } from 'src/amazon-s3/amazon-s3.service';
 export declare class LocalitiesController {
     private readonly localitiesService;
-    private readonly firebaseService;
+    private readonly amazonS3Service;
     private readonly eventService;
-    constructor(localitiesService: LocalitiesService, firebaseService: FirebaseService, eventService: EventService);
+    constructor(localitiesService: LocalitiesService, amazonS3Service: AmazonS3Service, eventService: EventService);
     logger: Logger;
     create(createLocalityDto: CreateLocalityDto, res: Response): Promise<Response<any, Record<string, any>>>;
     findAll(res: Response): Promise<Response<any, Record<string, any>>>;

@@ -4,14 +4,14 @@ import { UpdateEventDto } from './dto/update-event.dto';
 import { Event } from './entities/event.entity';
 import { Repository } from 'typeorm';
 import { EventTypeService } from 'src/event-type/event-type.service';
-import { FirebaseService } from 'src/firebase/firebase.service';
 import { EncryptionService } from 'src/encryption/encryption.service';
+import { AmazonS3Service } from 'src/amazon-s3/amazon-s3.service';
 export declare class EventService {
     private readonly eventRepository;
     private readonly eventTypeService;
-    private readonly firebaseService;
+    private readonly amazon3SService;
     private readonly encryptionService;
-    constructor(eventRepository: Repository<Event>, eventTypeService: EventTypeService, firebaseService: FirebaseService, encryptionService: EncryptionService);
+    constructor(eventRepository: Repository<Event>, eventTypeService: EventTypeService, amazon3SService: AmazonS3Service, encryptionService: EncryptionService);
     logger: Logger;
     create(createEventDto: CreateEventDto): Promise<Event>;
     findAll(page?: number, limit?: number): Promise<{

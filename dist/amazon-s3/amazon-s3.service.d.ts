@@ -4,6 +4,7 @@ export declare class AmazonS3Service {
     private readonly configService;
     private s3;
     private bucketName;
+    private regionName;
     private logger;
     constructor(configService: ConfigService);
     uploadBase64(body: UploadBase64ImageDto): Promise<{
