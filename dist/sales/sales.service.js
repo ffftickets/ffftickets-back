@@ -678,7 +678,7 @@ let SalesService = SalesService_1 = class SalesService {
                 .leftJoinAndSelect('sale.tickets', 'ticket')
                 .leftJoinAndSelect('ticket.locality', 'locality')
                 .where('sale.updatedAt < :cutoffTime', {
-                cutoffTime: fechaActualEcuador.toISOString(),
+                cutoffTime: fechaRestada.toISOString(),
             })
                 .andWhere('(sale.status = :incompleteStatus OR sale.status = :rejectedStatus)', {
                 incompleteStatus: sale_status_enum_1.SaleStatus.INCOMPLETE,

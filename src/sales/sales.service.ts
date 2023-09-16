@@ -839,7 +839,7 @@ console.log(error)
       .leftJoinAndSelect('sale.tickets', 'ticket')
       .leftJoinAndSelect('ticket.locality', 'locality')
       .where('sale.updatedAt < :cutoffTime', {
-        cutoffTime: fechaActualEcuador.toISOString(),
+        cutoffTime: fechaRestada.toISOString(),
       })
       .andWhere('(sale.status = :incompleteStatus OR sale.status = :rejectedStatus)', {
         incompleteStatus: SaleStatus.INCOMPLETE,
