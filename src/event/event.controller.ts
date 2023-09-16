@@ -49,7 +49,7 @@ export class EventController {
   async findAll(
     @Res() res: Response,
     @Query('page') page: number = 1,
-    @Query('limit') limit: number = 10,
+    @Query('limit') limit: number = 40,
   ) {
     this.logger.log('Buscando todos los eventos');
     const data = await this.eventService.findAll(page, limit);

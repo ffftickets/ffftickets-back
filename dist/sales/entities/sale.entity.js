@@ -16,6 +16,7 @@ const sale_status_enum_1 = require("../enum/sale-status.enum");
 const event_entity_1 = require("../../event/entities/event.entity");
 const user_entity_1 = require("../../user/entities/user.entity");
 const ticket_entity_1 = require("../../tickets/entities/ticket.entity");
+const bills_fff_entity_1 = require("../../bills_fff/entities/bills_fff.entity");
 let Sale = class Sale {
 };
 __decorate([
@@ -91,6 +92,10 @@ __decorate([
     (0, typeorm_1.UpdateDateColumn)({ name: 'updated_at', type: 'timestamp' }),
     __metadata("design:type", Date)
 ], Sale.prototype, "updatedAt", void 0);
+__decorate([
+    (0, typeorm_1.OneToMany)((_) => bills_fff_entity_1.BillsFff, (bill) => bill.sale),
+    __metadata("design:type", bills_fff_entity_1.BillsFff)
+], Sale.prototype, "bill", void 0);
 Sale = __decorate([
     (0, typeorm_1.Entity)('sales')
 ], Sale);

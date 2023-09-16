@@ -29,6 +29,9 @@ import { LogSaleService } from 'src/log-sale/log-sale.service';
 import { ActionSale } from 'src/log-sale/enum/sale-action.enum';
 import { OrderCompletedDto } from 'src/mail/dto/order-completed';
 import { AmazonS3Service } from 'src/amazon-s3/amazon-s3.service';
+import { BillsFffService } from 'src/bills_fff/bills_fff.service';
+import { CreateBillsFffDto } from 'src/bills_fff/dto/create-bills_fff.dto';
+import { StatusBill } from 'src/bills_fff/enums/status-bill.dto';
 //Cola de espera
 
 @Injectable()
@@ -47,10 +50,11 @@ export class SalesService {
     private readonly mailService: MailService,
     private readonly logSaleService: LogSaleService,
     private readonly amazon3SService: AmazonS3Service,
+    private readonly billsFffService: BillsFffService,
   ) {}
   async create(createSaleDto: CreateSaleDto, logSale: CreateLogSaleDto) {
     try {
-      const { tickets, ...createSale } = createSaleDto;
+      const { tickets,bill, ...createSale } = createSaleDto;
       //!Obtener el evento
       const event = await this.eventService.findOne(createSaleDto.event);
       createSaleDto.event = event;
@@ -135,8 +139,20 @@ export class SalesService {
         localities: [...localityDataToEmail]
       }
       this.mailService.sendOrderGeneratedEmail(dataOrderGeneratedEmail);
+    } 
+    const { precioSinIVA, ivaPagado } = this.calcularPrecioConIVA(event.iva,totalLocalities);
+     const dataBill:CreateBillsFffDto = {
+      ...bill,
+      sale: sale,
+      total_o: precioSinIVA,
+      iva_o: ivaPagado,
+      total_fff: sale.serviceValue,
+      iva_fff: 0,
+      total: sale.total,
+      status: StatusBill.PENDING
     }
-     
+    this.billsFffService.create(dataBill);
+      
       return {
         message:
           'Compra realizada con éxito y a la espera del pago a espera de pago',
@@ -145,6 +161,17 @@ export class SalesService {
     } catch (error) {
       this.logger.error(error);
       customError(error);
+    }
+  }
+  calcularPrecioConIVA(iva: boolean,valor:number) {
+    if (iva) {
+      const porcentajeIVA = 1.12; // 12% de IVA
+      const porcentaje = valor / porcentajeIVA;
+      const ivaPagado = valor - porcentaje;
+      const precioSinIVA = valor - ivaPagado;
+      return { precioSinIVA, ivaPagado };
+    } else {
+      return { precioSinIVA: valor, ivaPagado: 0 };
     }
   }
   async deleteSaleAndTickets(saleDelete: any) {
@@ -418,6 +445,7 @@ export class SalesService {
 
   async verifyPendingPurchase(customer: number) {
     try {
+    
       const sale: any = await this.saleRepository
         .createQueryBuilder('sale')
         .innerJoin('sale.customer', 'customer')
@@ -488,9 +516,9 @@ export class SalesService {
         .createQueryBuilder('sale')
         .innerJoin('sale.customer', 'customer')
         .innerJoin('sale.event', 'event')
-        .innerJoin('sale.customer', 'user')
         .leftJoinAndSelect('sale.tickets', 'ticket')
         .leftJoinAndSelect('ticket.locality', 'locality')
+        .leftJoinAndSelect('sale.bill', 'bills_fff')
         .where('sale.id=:saleId', { saleId })
         .select([
           'sale',
@@ -500,10 +528,8 @@ export class SalesService {
           'event.name',
           'event.event_date',
           'event.commission',
-          'user.name',
-          'user.email',
-          'user.phone',
-          'user.identification',
+          'customer.email',
+          'bills_fff',
         ])
         .getOne();
       if (!sale) return null;
@@ -692,6 +718,7 @@ export class SalesService {
   
   async generateDataToEmailCompleteOrder(id:number){
     const data:any = await this.verifyInfoSaleWIthLocalities(id);
+   
     let totalLocalidades = 0;
     data.localities.forEach(element => {
       totalLocalidades += parseFloat((element.total * element.ticketCount).toFixed(2));
@@ -723,10 +750,10 @@ export class SalesService {
       total: data.sale.total,
       localities: [...newLocalities],
       customer: {
-        name: this.encryptionService.decryptData(data.sale.customer.name),
-        phone: this.encryptionService.decryptData(data.sale.customer.phone),
-        ci: this.encryptionService.decryptData(data.sale.customer.identification),
-        address: this.encryptionService.decryptData(data.sale.customer.address || '')
+        name: data.sale.bill[0].name,
+        phone: data.sale.bill[0].phone,
+        ci: data.sale.bill[0].identification,
+        address: data.sale.bill[0].address 
       },
       pay:{
         name: PayName,
@@ -734,6 +761,7 @@ export class SalesService {
       }
     }
     this.mailService.sendOrderCompletedEmail(dataEmail);
+    this.billsFffService.update(data.sale.id,StatusBill.PAID);
   }
   async generateDataToEmailTickets(idSale:number){
     const dataSale:any = await this.findOne(idSale);

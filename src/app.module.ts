@@ -35,6 +35,8 @@ import { LogPayCardModule } from './log-pay-card/log-pay-card.module';
 import { LogSaleModule } from './log-sale/log-sale.module';
 import { MongooseModule } from '@nestjs/mongoose';
 import { AmazonS3Module } from './amazon-s3/amazon-s3.module';
+import { BillsFffModule } from './bills_fff/bills_fff.module';
+import { BillLogsModule } from './bill_logs/bill_logs.module';
 
 @Module({
   imports: [
@@ -103,6 +105,10 @@ import { AmazonS3Module } from './amazon-s3/amazon-s3.module';
     LogSaleModule,
 
     AmazonS3Module,
+
+    BillsFffModule,
+
+    BillLogsModule,
 
 
 

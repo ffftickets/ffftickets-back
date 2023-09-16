@@ -13,6 +13,7 @@ import {
   CreateTicketDto,
   DetailTicket,
 } from 'src/tickets/dto/create-ticket.dto';
+import { CreateBillsFffDto } from 'src/bills_fff/dto/create-bills_fff.dto';
 
 export class CreateSaleDto {
   @ApiProperty({
@@ -72,7 +73,6 @@ export class CreateSaleDto {
     example: 'http://',
     description: 'Foto de la transferencia',
   })
-
   @IsOptional()
   transfer_photo?: string;
 
@@ -118,4 +118,16 @@ export class CreateSaleDto {
   })
   @IsOptional()
   tickets?: DetailTicket[];
+
+  @ApiProperty({
+    example: {
+      name: 'John Doe',
+      identification: '123456789',
+      address: '123 Main St, City',
+      phone: '555-555-5555',
+      email: 'adbkaus@gmail.com',
+    },
+  })
+  @IsNotEmpty()
+  bill: CreateBillsFffDto;
 }

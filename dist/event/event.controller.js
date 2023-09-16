@@ -34,7 +34,7 @@ let EventController = EventController_1 = class EventController {
         const data = await this.eventService.create(createEventDto);
         return res.status(common_1.HttpStatus.OK).json(data);
     }
-    async findAll(res, page = 1, limit = 10) {
+    async findAll(res, page = 1, limit = 40) {
         this.logger.log('Buscando todos los eventos');
         const data = await this.eventService.findAll(page, limit);
         return res.status(common_1.HttpStatus.OK).json(data);

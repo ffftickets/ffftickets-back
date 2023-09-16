@@ -11,6 +11,8 @@ import { LocalitiesModule } from 'src/localities/localities.module';
 import { LogPayCardModule } from 'src/log-pay-card/log-pay-card.module';
 import { MailModule } from 'src/mail/mail.module';
 import { LogSaleModule } from 'src/log-sale/log-sale.module';
+import { BillsFffModule } from 'src/bills_fff/bills_fff.module';
+
 
 @Module({
   imports: [
@@ -22,7 +24,8 @@ import { LogSaleModule } from 'src/log-sale/log-sale.module';
     LocalitiesModule,
     LogPayCardModule,
     MailModule,
-    LogSaleModule
+    LogSaleModule,
+    BillsFffModule
   ],
   controllers: [SalesController],
   providers: [SalesService],

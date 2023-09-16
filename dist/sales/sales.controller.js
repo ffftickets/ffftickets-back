@@ -122,7 +122,6 @@ let SalesController = SalesController_1 = class SalesController {
     }
 };
 __decorate([
-    (0, decorators_1.Auth)(),
     (0, common_1.UseInterceptors)(interceptors_1.IpDetailsInterceptor),
     (0, common_1.Post)(),
     __param(0, (0, common_1.Body)()),
@@ -134,7 +133,6 @@ __decorate([
     __metadata("design:returntype", Promise)
 ], SalesController.prototype, "create", null);
 __decorate([
-    (0, decorators_1.Auth)(),
     (0, common_1.Get)(),
     __param(0, (0, common_1.Res)()),
     __param(1, (0, common_1.Query)('page')),
@@ -146,7 +144,6 @@ __decorate([
     __metadata("design:returntype", Promise)
 ], SalesController.prototype, "findAll", null);
 __decorate([
-    (0, decorators_1.Auth)(),
     (0, common_1.Get)('find/event'),
     __param(0, (0, common_1.Res)()),
     __param(1, (0, common_1.Query)('id')),
@@ -159,7 +156,6 @@ __decorate([
     __metadata("design:returntype", Promise)
 ], SalesController.prototype, "findAllByEvent", null);
 __decorate([
-    (0, decorators_1.Auth)(),
     (0, common_1.Get)(':id'),
     __param(0, (0, common_1.Param)('id')),
     __param(1, (0, common_1.Res)()),
@@ -168,7 +164,6 @@ __decorate([
     __metadata("design:returntype", Promise)
 ], SalesController.prototype, "findOne", null);
 __decorate([
-    (0, decorators_1.Auth)(),
     (0, common_1.Get)('find/customer'),
     __param(0, (0, common_1.Res)()),
     __param(1, (0, decorators_1.GetUser)()),
@@ -179,7 +174,6 @@ __decorate([
     __metadata("design:returntype", Promise)
 ], SalesController.prototype, "findByCustomer", null);
 __decorate([
-    (0, decorators_1.Auth)(),
     (0, common_1.Get)('promoter/:promoter'),
     __param(0, (0, common_1.Param)('promoter')),
     __param(1, (0, common_1.Res)()),
@@ -190,7 +184,6 @@ __decorate([
     __metadata("design:returntype", Promise)
 ], SalesController.prototype, "findByPromoter", null);
 __decorate([
-    (0, decorators_1.Auth)(),
     (0, common_1.Get)('verify/pending-purchase'),
     __param(0, (0, common_1.Res)()),
     __param(1, (0, decorators_1.GetUser)()),
@@ -199,7 +192,6 @@ __decorate([
     __metadata("design:returntype", Promise)
 ], SalesController.prototype, "verifyPendingPurchase", null);
 __decorate([
-    (0, decorators_1.Auth)(),
     (0, common_1.UseInterceptors)(interceptors_1.IpDetailsInterceptor),
     (0, common_1.Patch)('uploadVoucher/:id'),
     __param(0, (0, common_1.Param)('id')),
@@ -211,7 +203,6 @@ __decorate([
     __metadata("design:returntype", Promise)
 ], SalesController.prototype, "uploadVoucher", null);
 __decorate([
-    (0, decorators_1.Auth)(),
     (0, common_1.UseInterceptors)(interceptors_1.IpDetailsInterceptor),
     (0, common_1.Patch)(':id/validate/admin'),
     __param(0, (0, common_1.Param)('id')),
@@ -223,7 +214,6 @@ __decorate([
     __metadata("design:returntype", Promise)
 ], SalesController.prototype, "validateSaleAdmin", null);
 __decorate([
-    (0, decorators_1.Auth)(),
     (0, common_1.UseInterceptors)(interceptors_1.IpDetailsInterceptor),
     (0, common_1.Patch)(':id/validate/user'),
     __param(0, (0, common_1.Param)('id')),
@@ -236,6 +226,7 @@ __decorate([
     __metadata("design:returntype", Promise)
 ], SalesController.prototype, "validateSaleUser", null);
 SalesController = SalesController_1 = __decorate([
+    (0, decorators_1.Auth)(),
     (0, swagger_1.ApiTags)('Ventas'),
     (0, common_1.Controller)('sales'),
     __metadata("design:paramtypes", [sales_service_1.SalesService,

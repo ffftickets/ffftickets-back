@@ -42,8 +42,10 @@ const mail_service_1 = require("../mail/mail.service");
 const log_sale_service_1 = require("../log-sale/log-sale.service");
 const sale_action_enum_1 = require("../log-sale/enum/sale-action.enum");
 const amazon_s3_service_1 = require("../amazon-s3/amazon-s3.service");
+const bills_fff_service_1 = require("../bills_fff/bills_fff.service");
+const status_bill_dto_1 = require("../bills_fff/enums/status-bill.dto");
 let SalesService = SalesService_1 = class SalesService {
-    constructor(saleRepository, eventService, userService, ticketService, localitiesService, encryptionService, logPayCardService, mailService, logSaleService, amazon3SService) {
+    constructor(saleRepository, eventService, userService, ticketService, localitiesService, encryptionService, logPayCardService, mailService, logSaleService, amazon3SService, billsFffService) {
         this.saleRepository = saleRepository;
         this.eventService = eventService;
         this.userService = userService;
@@ -54,11 +56,12 @@ let SalesService = SalesService_1 = class SalesService {
         this.mailService = mailService;
         this.logSaleService = logSaleService;
         this.amazon3SService = amazon3SService;
+        this.billsFffService = billsFffService;
         this.logger = new common_1.Logger(SalesService_1.name);
     }
     async create(createSaleDto, logSale) {
         try {
-            const { tickets } = createSaleDto, createSale = __rest(createSaleDto, ["tickets"]);
+            const { tickets, bill } = createSaleDto, createSale = __rest(createSaleDto, ["tickets", "bill"]);
             const event = await this.eventService.findOne(createSaleDto.event);
             createSaleDto.event = event;
             createSale.serviceValue = this.calculateServiceValue(tickets, event.commission);
@@ -117,6 +120,9 @@ let SalesService = SalesService_1 = class SalesService {
                 };
                 this.mailService.sendOrderGeneratedEmail(dataOrderGeneratedEmail);
             }
+            const { precioSinIVA, ivaPagado } = this.calcularPrecioConIVA(event.iva, totalLocalities);
+            const dataBill = Object.assign(Object.assign({}, bill), { sale: sale, total_o: precioSinIVA, iva_o: ivaPagado, total_fff: sale.serviceValue, iva_fff: 0, total: sale.total, status: status_bill_dto_1.StatusBill.PENDING });
+            this.billsFffService.create(dataBill);
             return {
                 message: 'Compra realizada con éxito y a la espera del pago a espera de pago',
                 saleId: sale.id,
@@ -125,6 +131,18 @@ let SalesService = SalesService_1 = class SalesService {
         catch (error) {
             this.logger.error(error);
             (0, custom_error_helper_1.customError)(error);
+        }
+    }
+    calcularPrecioConIVA(iva, valor) {
+        if (iva) {
+            const porcentajeIVA = 1.12;
+            const porcentaje = valor / porcentajeIVA;
+            const ivaPagado = valor - porcentaje;
+            const precioSinIVA = valor - ivaPagado;
+            return { precioSinIVA, ivaPagado };
+        }
+        else {
+            return { precioSinIVA: valor, ivaPagado: 0 };
         }
     }
     async deleteSaleAndTickets(saleDelete) {
@@ -390,9 +408,9 @@ let SalesService = SalesService_1 = class SalesService {
                 .createQueryBuilder('sale')
                 .innerJoin('sale.customer', 'customer')
                 .innerJoin('sale.event', 'event')
-                .innerJoin('sale.customer', 'user')
                 .leftJoinAndSelect('sale.tickets', 'ticket')
                 .leftJoinAndSelect('ticket.locality', 'locality')
+                .leftJoinAndSelect('sale.bill', 'bills_fff')
                 .where('sale.id=:saleId', { saleId })
                 .select([
                 'sale',
@@ -402,10 +420,8 @@ let SalesService = SalesService_1 = class SalesService {
                 'event.name',
                 'event.event_date',
                 'event.commission',
-                'user.name',
-                'user.email',
-                'user.phone',
-                'user.identification',
+                'customer.email',
+                'bills_fff',
             ])
                 .getOne();
             if (!sale)
@@ -591,10 +607,10 @@ let SalesService = SalesService_1 = class SalesService {
             total: data.sale.total,
             localities: [...newLocalities],
             customer: {
-                name: this.encryptionService.decryptData(data.sale.customer.name),
-                phone: this.encryptionService.decryptData(data.sale.customer.phone),
-                ci: this.encryptionService.decryptData(data.sale.customer.identification),
-                address: this.encryptionService.decryptData(data.sale.customer.address || '')
+                name: data.sale.bill[0].name,
+                phone: data.sale.bill[0].phone,
+                ci: data.sale.bill[0].identification,
+                address: data.sale.bill[0].address
             },
             pay: {
                 name: PayName,
@@ -602,6 +618,7 @@ let SalesService = SalesService_1 = class SalesService {
             }
         };
         this.mailService.sendOrderCompletedEmail(dataEmail);
+        this.billsFffService.update(data.sale.id, status_bill_dto_1.StatusBill.PAID);
     }
     async generateDataToEmailTickets(idSale) {
         const dataSale = await this.findOne(idSale);
@@ -636,7 +653,8 @@ SalesService = SalesService_1 = __decorate([
         log_pay_card_service_1.LogPayCardService,
         mail_service_1.MailService,
         log_sale_service_1.LogSaleService,
-        amazon_s3_service_1.AmazonS3Service])
+        amazon_s3_service_1.AmazonS3Service,
+        bills_fff_service_1.BillsFffService])
 ], SalesService);
 exports.SalesService = SalesService;
 //# sourceMappingURL=sales.service.js.map

@@ -36,6 +36,8 @@ const log_pay_card_module_1 = require("./log-pay-card/log-pay-card.module");
 const log_sale_module_1 = require("./log-sale/log-sale.module");
 const mongoose_1 = require("@nestjs/mongoose");
 const amazon_s3_module_1 = require("./amazon-s3/amazon-s3.module");
+const bills_fff_module_1 = require("./bills_fff/bills_fff.module");
+const bill_logs_module_1 = require("./bill_logs/bill_logs.module");
 let AppModule = class AppModule {
 };
 AppModule = __decorate([
@@ -84,6 +86,8 @@ AppModule = __decorate([
             log_pay_card_module_1.LogPayCardModule,
             log_sale_module_1.LogSaleModule,
             amazon_s3_module_1.AmazonS3Module,
+            bills_fff_module_1.BillsFffModule,
+            bill_logs_module_1.BillLogsModule,
         ],
         controllers: [app_controller_1.AppController],
         providers: [app_service_1.AppService],

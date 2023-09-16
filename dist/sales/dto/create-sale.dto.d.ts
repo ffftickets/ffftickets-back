@@ -1,4 +1,5 @@
 import { DetailTicket } from 'src/tickets/dto/create-ticket.dto';
+import { CreateBillsFffDto } from 'src/bills_fff/dto/create-bills_fff.dto';
 export declare class CreateSaleDto {
     event: any;
     promoter?: any;
@@ -13,4 +14,5 @@ export declare class CreateSaleDto {
     catwalkCommission?: number;
     total?: number;
     tickets?: DetailTicket[];
+    bill: CreateBillsFffDto;
 }

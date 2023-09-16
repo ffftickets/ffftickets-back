@@ -33,6 +33,7 @@ import { LogSaleService } from 'src/log-sale/log-sale.service';
 import { ActionSale } from 'src/log-sale/enum/sale-action.enum';
 
 import { EncryptionService } from 'src/encryption/encryption.service';
+@Auth()
 @ApiTags('Ventas')
 @Controller('sales')
 export class SalesController {
@@ -43,7 +44,7 @@ export class SalesController {
   ) {}
 
   logger = new Logger(SalesController.name);
-  @Auth()
+  
   @UseInterceptors(IpDetailsInterceptor)
   @Post()
   async create(
@@ -65,7 +66,7 @@ export class SalesController {
     const data = await this.salesService.create(createSaleDto,logSale);
     return res.status(HttpStatus.OK).json(data);
   }
-  @Auth()
+  
   @Get()
   async findAll(
     @Res() res: Response,
@@ -78,7 +79,7 @@ export class SalesController {
     const data = await this.salesService.findAll(page, limit, status, paymentMethod);
     return res.status(HttpStatus.OK).json(data);
   }
-  @Auth()
+  
   @Get('find/event')
   async findAllByEvent(
     @Res() res: Response,
@@ -93,14 +94,14 @@ export class SalesController {
     const data = await this.salesService.findAllByEvent(id,page, limit, status, paymentMethod);
     return res.status(HttpStatus.OK).json(data);
   }
-  @Auth()
+  
   @Get(':id')
   async findOne(@Param('id') id: number, @Res() res: Response) {
     this.logger.log(`Buscando venta: ${id}`);
     const data = await this.salesService.findOne(id);
     return res.status(HttpStatus.OK).json(data);
   }
-  @Auth()
+  
   @Get('find/customer')
   async findByCustomer(
     @Res() res: Response,
@@ -112,7 +113,7 @@ export class SalesController {
     const data = await this.salesService.findByCustomer(user.id,page,limit);
     return res.status(HttpStatus.OK).json(data);
   }
-  @Auth()
+  
   @Get('promoter/:promoter')
   async findByPromoter(
     @Param('promoter') promoter: number,
@@ -125,7 +126,7 @@ export class SalesController {
     return res.status(HttpStatus.OK).json(data);
   }
 
-  @Auth()
+  
   @Get('verify/pending-purchase')
   async verifyPendingPurchase(@Res() res: Response, @GetUser() user: User) {
     this.logger.log(`Buscando venta pendiente de : ${user.email}`);
@@ -135,7 +136,7 @@ export class SalesController {
     return res.status(HttpStatus.OK).json(data);
   }
 
-  @Auth()
+  
   @UseInterceptors(IpDetailsInterceptor)
   @Patch('uploadVoucher/:id')
   async uploadVoucher(
@@ -157,7 +158,7 @@ export class SalesController {
   }
 
 
-  @Auth()
+  
   @UseInterceptors(IpDetailsInterceptor)
   @Patch(':id/validate/admin')
   async validateSaleAdmin(
@@ -184,7 +185,7 @@ export class SalesController {
     
    
   }
-  @Auth()
+  
   @UseInterceptors(IpDetailsInterceptor)
   @Patch(':id/validate/user')
   async validateSaleUser(

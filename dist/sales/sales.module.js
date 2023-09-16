@@ -20,6 +20,7 @@ const localities_module_1 = require("../localities/localities.module");
 const log_pay_card_module_1 = require("../log-pay-card/log-pay-card.module");
 const mail_module_1 = require("../mail/mail.module");
 const log_sale_module_1 = require("../log-sale/log-sale.module");
+const bills_fff_module_1 = require("../bills_fff/bills_fff.module");
 let SalesModule = class SalesModule {
 };
 SalesModule = __decorate([
@@ -33,7 +34,8 @@ SalesModule = __decorate([
             localities_module_1.LocalitiesModule,
             log_pay_card_module_1.LogPayCardModule,
             mail_module_1.MailModule,
-            log_sale_module_1.LogSaleModule
+            log_sale_module_1.LogSaleModule,
+            bills_fff_module_1.BillsFffModule
         ],
         controllers: [sales_controller_1.SalesController],
         providers: [sales_service_1.SalesService],

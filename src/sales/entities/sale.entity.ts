@@ -15,6 +15,7 @@ import { Event } from 'src/event/entities/event.entity';
 import { User } from 'src/user/entities/user.entity';
 import { Ticket } from 'src/tickets/entities/ticket.entity';
 import { CreateLogPayCard } from 'src/log-pay-card/entities/log-pay-card.entity';
+import { BillsFff } from 'src/bills_fff/entities/bills_fff.entity';
 @Entity('sales')
 export class Sale {
   @PrimaryGeneratedColumn()
@@ -73,4 +74,6 @@ export class Sale {
   @UpdateDateColumn({ name: 'updated_at', type: 'timestamp' })
   updatedAt: Date;
   //!Relacion con sales
+  @OneToMany((_) => BillsFff, (bill) => bill.sale)
+  bill: BillsFff;
 }

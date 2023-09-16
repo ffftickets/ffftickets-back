@@ -180,7 +180,7 @@ export class UserService {
         data.email = this.encryptionService.encryptData(data.email);
       if (data.identification)
         data.email = this.encryptionService.encryptData(data.identification);
-      console.log(data)
+
       const user = await this.userRepository
         .createQueryBuilder('user')
         .where(data)

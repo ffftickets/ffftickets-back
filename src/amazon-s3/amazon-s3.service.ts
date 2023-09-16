@@ -34,7 +34,7 @@ export class AmazonS3Service {
 
       const params = {
         Bucket: this.bucketName,
-        Key: `${body.route}/${imageName}`,
+        Key: `${body.route}/${imageName}`.replace(/\s+/g, ''),
         Body: Buffer.from(imageData, 'base64'),
         ContentType: 'image/jpeg',
       };
@@ -42,8 +42,8 @@ export class AmazonS3Service {
       const uploadCommand = new PutObjectCommand(params);
       const result = await this.s3.send(uploadCommand);
 
-      let imageUrl = `https://${this.bucketName}.s3.${this.regionName}.amazonaws.com/${params.Key}`;
-      imageUrl = imageUrl.replace(/\s+/g, '+');
+      let imageUrl = `https://${this.bucketName}.s3.${this.regionName}.amazonaws.com/${params.Key}`.replace(/\s+/g, '');
+ 
 
       return { imageUrl };
     } catch (error) {
@@ -54,7 +54,7 @@ export class AmazonS3Service {
 
   async deleteImageByUrl(imageUrl: string) {
     try {
-      const data = imageUrl.split('/');
+     /*  const data = imageUrl.split('/');
       const imageName = data[data.length - 1];
 
       const params = {
@@ -65,6 +65,7 @@ export class AmazonS3Service {
       await this.s3.send(deleteCommand);
 
       this.logger.log('Imagen eliminada correctamente.');
+      return true; */
       return true;
     } catch (error) {
       this.logger.error('Error al eliminar la imagen:', error);

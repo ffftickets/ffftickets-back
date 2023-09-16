@@ -14,6 +14,7 @@ const swagger_1 = require("@nestjs/swagger");
 const class_validator_1 = require("class-validator");
 const sale_status_enum_1 = require("../enum/sale-status.enum");
 const pay_types_enum_1 = require("../enum/pay-types.enum");
+const create_bills_fff_dto_1 = require("../../bills_fff/dto/create-bills_fff.dto");
 class CreateSaleDto {
 }
 __decorate([
@@ -133,5 +134,18 @@ __decorate([
     (0, class_validator_1.IsOptional)(),
     __metadata("design:type", Array)
 ], CreateSaleDto.prototype, "tickets", void 0);
+__decorate([
+    (0, swagger_1.ApiProperty)({
+        example: {
+            name: 'John Doe',
+            identification: '123456789',
+            address: '123 Main St, City',
+            phone: '555-555-5555',
+            email: 'adbkaus@gmail.com',
+        },
+    }),
+    (0, class_validator_1.IsNotEmpty)(),
+    __metadata("design:type", create_bills_fff_dto_1.CreateBillsFffDto)
+], CreateSaleDto.prototype, "bill", void 0);
 exports.CreateSaleDto = CreateSaleDto;
 //# sourceMappingURL=create-sale.dto.js.map

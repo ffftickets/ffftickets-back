@@ -15,6 +15,7 @@ import { MailService } from 'src/mail/mail.service';
 import { CreateLogSaleDto } from 'src/log-sale/dto/create-log-sale.dto';
 import { LogSaleService } from 'src/log-sale/log-sale.service';
 import { AmazonS3Service } from 'src/amazon-s3/amazon-s3.service';
+import { BillsFffService } from 'src/bills_fff/bills_fff.service';
 export declare class SalesService {
     private readonly saleRepository;
     private readonly eventService;
@@ -26,12 +27,17 @@ export declare class SalesService {
     private readonly mailService;
     private readonly logSaleService;
     private readonly amazon3SService;
+    private readonly billsFffService;
     logger: Logger;
-    constructor(saleRepository: Repository<Sale>, eventService: EventService, userService: UserService, ticketService: TicketsService, localitiesService: LocalitiesService, encryptionService: EncryptionService, logPayCardService: LogPayCardService, mailService: MailService, logSaleService: LogSaleService, amazon3SService: AmazonS3Service);
+    constructor(saleRepository: Repository<Sale>, eventService: EventService, userService: UserService, ticketService: TicketsService, localitiesService: LocalitiesService, encryptionService: EncryptionService, logPayCardService: LogPayCardService, mailService: MailService, logSaleService: LogSaleService, amazon3SService: AmazonS3Service, billsFffService: BillsFffService);
     create(createSaleDto: CreateSaleDto, logSale: CreateLogSaleDto): Promise<{
         message: string;
         saleId: number;
     }>;
+    calcularPrecioConIVA(iva: boolean, valor: number): {
+        precioSinIVA: number;
+        ivaPagado: number;
+    };
     deleteSaleAndTickets(saleDelete: any): Promise<void>;
     calculateServiceValue(tickets: any[], commission: number): any;
     findAll(page: number, limit: number, status: string, paymentMethod: string): Promise<{
@@ -68,6 +74,7 @@ export declare class SalesService {
             authorization_date: Date;
             createdAt: Date;
             updatedAt: Date;
+            bill: import("../bills_fff/entities/bills_fff.entity").BillsFff;
         }[];
         currentPage: number;
         pageSize: number;
