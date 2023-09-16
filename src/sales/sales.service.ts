@@ -4,6 +4,7 @@ import {
   Injectable,
   Logger,
   NotFoundException,
+  OnApplicationBootstrap,
 } from '@nestjs/common';
 import { CreateSaleDto } from './dto/create-sale.dto';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -32,10 +33,16 @@ import { AmazonS3Service } from 'src/amazon-s3/amazon-s3.service';
 import { BillsFffService } from 'src/bills_fff/bills_fff.service';
 import { CreateBillsFffDto } from 'src/bills_fff/dto/create-bills_fff.dto';
 import { StatusBill } from 'src/bills_fff/enums/status-bill.dto';
+import * as cron from 'node-cron';
+import { utcToZonedTime } from 'date-fns-tz';
+import { subHours } from 'date-fns';
+import e from 'express';
+import { Cron, CronExpression } from '@nestjs/schedule';
+const { format } = require('date-fns');
 //Cola de espera
 
 @Injectable()
-export class SalesService {
+export class SalesService implements OnApplicationBootstrap {
   logger = new Logger(SalesService.name);
 
   constructor(
@@ -51,37 +58,49 @@ export class SalesService {
     private readonly logSaleService: LogSaleService,
     private readonly amazon3SService: AmazonS3Service,
     private readonly billsFffService: BillsFffService,
-  ) {}
+  ) {
+    this.findPendingPurchasesTransfersAndCancel();
+    this.findPendingPurchasesCardsAndCancel();
+  }
+  onApplicationBootstrap() {
+    this.findPendingPurchasesTransfersAndCancel();
+    this.findPendingPurchasesCardsAndCancel();
+  }
   async create(createSaleDto: CreateSaleDto, logSale: CreateLogSaleDto) {
     try {
-      const { tickets,bill, ...createSale } = createSaleDto;
+      const { tickets, bill, ...createSale } = createSaleDto;
       //!Obtener el evento
       const event = await this.eventService.findOne(createSaleDto.event);
       createSaleDto.event = event;
       //! Calcular el valor del servicio.
-     
-      createSale.serviceValue = this.calculateServiceValue(tickets,event.commission);
+
+      createSale.serviceValue = this.calculateServiceValue(
+        tickets,
+        event.commission,
+      );
       //? Verificar si el usuario tiene pedidos pendientes de validación
       const verifyExist = await this.verifyPendingPurchase(
         createSale.customer.id,
       );
 
-        console.log("Tiene compras pendientes",verifyExist ? 'Si' : 'No');
+      console.log('Tiene compras pendientes', verifyExist ? 'Si' : 'No');
       //?En caso de que tenga una compra pendiente entra a validación!
       if (verifyExist) {
         //! Si tiene pedidos pendientes de validación con transferencia y no a subido un comprobante se elimina la compra anterior y se crea una nueva.
         //! Si tiene pedidos pendientes de validación con transferencia y ya subió un comprobante se emite el mensaje de que tiene compras pendientes.
-        if (verifyExist.sale.payType === PayTypes.TRANSFER && createSale.payType === PayTypes.TRANSFER) {
-            throw new ConflictException(
-              'Tu pedido no se pudo completar ya que actualmente tienes pedidos pendientes de validación.',
-            );
-        } else if(verifyExist.sale.payType === PayTypes.DEBIT_CARD){
+        if (
+          verifyExist.sale.payType === PayTypes.TRANSFER &&
+          createSale.payType === PayTypes.TRANSFER
+        ) {
+          throw new ConflictException(
+            'Tu pedido no se pudo completar ya que actualmente tienes pedidos pendientes de validación.',
+          );
+        } else if (verifyExist.sale.payType === PayTypes.DEBIT_CARD) {
           //! Si tiene pedidos pendientes de validación con tarjeta se elimina la compra anterior y se crea una nueva.
-          logSale.action = ActionSale.CANCEL; 
+          logSale.action = ActionSale.CANCEL;
           logSale.data = verifyExist;
           this.logSaleService.create(logSale);
           await this.deleteSaleAndTickets(verifyExist);
-
         }
       }
 
@@ -95,8 +114,8 @@ export class SalesService {
           name: element.locality.name,
           quantity: element.quantity,
           price: element.locality.total,
-        })
-        totalLocalities += element.locality.total*element.quantity;
+        });
+        totalLocalities += element.locality.total * element.quantity;
         if (
           element.locality.capacity <
           element.locality.sold + element.quantity
@@ -117,8 +136,6 @@ export class SalesService {
 
       createSale.total = createSale.serviceValue + totalLocalities;
 
-    
-
       const sale = await this.saleRepository.create(createSale);
       const newSale = await this.saleRepository.save(sale);
       const newTickets = await this.ticketService.create({
@@ -126,73 +143,77 @@ export class SalesService {
         detail: tickets,
       });
       logSale.action = ActionSale.CREATE;
-      logSale.data = {newSale,newTickets};
+      logSale.data = { newSale, newTickets };
       this.logSaleService.create(logSale);
-      if(createSale.payType === PayTypes.TRANSFER){
-      const dataOrderGeneratedEmail:GenerateOrderDto = {
-        email: sale.customer.email,
-        event: event.name,
-        subtotal: totalLocalities,
-        serviceValue: sale.serviceValue,
-        total: sale.total,
-        order: sale.id,
-        localities: [...localityDataToEmail]
+      if (createSale.payType === PayTypes.TRANSFER) {
+        const dataOrderGeneratedEmail: GenerateOrderDto = {
+          email: sale.customer.email,
+          event: event.name,
+          subtotal: totalLocalities,
+          serviceValue: sale.serviceValue,
+          total: sale.total,
+          order: sale.id,
+          localities: [...localityDataToEmail],
+        };
+        this.mailService.sendOrderGeneratedEmail(dataOrderGeneratedEmail);
       }
-      this.mailService.sendOrderGeneratedEmail(dataOrderGeneratedEmail);
-    } 
-    const { precioSinIVA, ivaPagado } = this.calcularPrecioConIVA(event.iva,totalLocalities);
-     const dataBill:CreateBillsFffDto = {
-      ...bill,
-      sale: sale,
-      total_o: precioSinIVA,
-      iva_o: ivaPagado,
-      total_fff: sale.serviceValue,
-      iva_fff: 0,
-      total: sale.total,
-      status: StatusBill.PENDING
-    }
-    this.billsFffService.create(dataBill);
-      
+      const { precioSinIVA, ivaPagado } = this.calcularPrecioConIVA(
+        event.iva,
+        totalLocalities,
+      );
+      const dataBill: CreateBillsFffDto = {
+        ...bill,
+        sale: sale,
+        total_o: precioSinIVA,
+        iva_o: ivaPagado,
+        total_fff: sale.serviceValue,
+        iva_fff: 0,
+        total: sale.total,
+        status: StatusBill.PENDING,
+      };
+      this.billsFffService.create(dataBill);
+
       return {
         message:
           'Compra realizada con éxito y a la espera del pago a espera de pago',
-           saleId: sale.id,
+        saleId: sale.id,
       };
     } catch (error) {
       this.logger.error(error);
       customError(error);
     }
   }
-  calcularPrecioConIVA(iva: boolean,valor:number) {
+  calcularPrecioConIVA(iva: boolean, valor: number) {
     if (iva) {
       const porcentajeIVA = 1.12; // 12% de IVA
       const porcentaje = valor / porcentajeIVA;
       const ivaPagado = valor - porcentaje;
       const precioSinIVA = valor - ivaPagado;
       return { precioSinIVA, ivaPagado };
-    } else {
+    } else { 
       return { precioSinIVA: valor, ivaPagado: 0 };
     }
   }
   async deleteSaleAndTickets(saleDelete: any) {
-    
     const { localities, sale } = saleDelete;
-    
-   
-
+    console.log('Cancelando Tickets', sale.id)
     for (const locality of localities) {
-      await this.ticketService.deleteTicketsAndUpdateLocalities(locality,sale.id);
+      await this.ticketService.deleteTicketsAndUpdateLocalities(
+        locality,
+        sale.id,
+      );
     }
-    console.log("Cancelando venta",sale.id)
-    await this.saleRepository.update(sale.id, { status: SaleStatus.CANCELED })
+    console.log('Cancelando venta', sale.id);
+    sale.status = SaleStatus.CANCELED;
+    await this.saleRepository.save(sale);
   }
-  calculateServiceValue(tickets: any[],commission:number): any {
+  calculateServiceValue(tickets: any[], commission: number): any {
     let serviceValue = 0;
     for (const element of tickets) {
       serviceValue += element.quantity;
     }
     serviceValue = serviceValue * commission;
-    return serviceValue + (serviceValue * 0);
+    return serviceValue + serviceValue * 0; 
   }
 
   async findAll(
@@ -445,7 +466,6 @@ export class SalesService {
 
   async verifyPendingPurchase(customer: number) {
     try {
-    
       const sale: any = await this.saleRepository
         .createQueryBuilder('sale')
         .innerJoin('sale.customer', 'customer')
@@ -453,7 +473,10 @@ export class SalesService {
         .leftJoinAndSelect('sale.tickets', 'ticket')
         .leftJoinAndSelect('ticket.locality', 'locality')
         .where('customer.id=:customer', { customer })
-        .andWhere('sale.status=:status', { status: SaleStatus.INCOMPLETE })
+        .andWhere('(sale.status = :incompleteStatus OR sale.status = :rejectedStatus)', {
+          incompleteStatus: SaleStatus.INCOMPLETE,
+          rejectedStatus: SaleStatus.REJECTED,
+        })
         .select([
           'sale',
           'ticket',
@@ -461,7 +484,7 @@ export class SalesService {
           'event.id',
           'event.name',
           'event.event_date',
-          'event.commission'
+          'event.commission',
         ])
         .getOne();
       if (!sale) return null;
@@ -487,7 +510,7 @@ export class SalesService {
             ticketCount: 1,
             price: ticketPrice,
             localityId: localityId,
-            total:total
+            total: total,
           };
         }
       });
@@ -499,7 +522,7 @@ export class SalesService {
           ticketCount: ticketInfo.ticketCount,
           price: ticketInfo.price,
           localityId: ticketInfo.localityId,
-          total: ticketInfo.total
+          total: ticketInfo.total,
         }),
       );
       delete sale.tickets;
@@ -509,8 +532,7 @@ export class SalesService {
     }
   }
 
-  
-  async verifyInfoSaleWIthLocalities(saleId:number) {
+  async verifyInfoSaleWIthLocalities(saleId: number) {
     try {
       const sale: any = await this.saleRepository
         .createQueryBuilder('sale')
@@ -555,7 +577,7 @@ export class SalesService {
             ticketCount: 1,
             price: ticketPrice,
             localityId: localityId,
-            total:total
+            total: total,
           };
         }
       });
@@ -567,7 +589,7 @@ export class SalesService {
           ticketCount: ticketInfo.ticketCount,
           price: ticketInfo.price,
           localityId: ticketInfo.localityId,
-          total: ticketInfo.total
+          total: ticketInfo.total,
         }),
       );
       delete sale.tickets;
@@ -653,40 +675,46 @@ export class SalesService {
       customError(error);
     }
   }
-  async validateSaleAdmin(id: number,body:any) {
+  async validateSaleAdmin(id: number, body: any) {
     try {
-      const {transactionCode} =body;
-      console.log("Código transacción: ", transactionCode)
-      const dateExistWithTransactionCode = await this.saleRepository.findOne({where:{transactionCode}});
-      
-      if(dateExistWithTransactionCode) throw new ConflictException('El código de transacción ya existe en la compra: '+dateExistWithTransactionCode.id);
+      const { transactionCode } = body;
+      console.log('Código transacción: ', transactionCode);
+      const dateExistWithTransactionCode = await this.saleRepository.findOne({
+        where: { transactionCode },
+      });
+
+      if (dateExistWithTransactionCode)
+        throw new ConflictException(
+          'El código de transacción ya existe en la compra: ' +
+            dateExistWithTransactionCode.id,
+        );
       const sale = await this.findOne(id);
       sale.status = SaleStatus.SOLD;
       sale.transactionCode = transactionCode;
-      console.log(sale)
-      const data =  await this.saleRepository.save(sale);
+      console.log(sale);
+      const data = await this.saleRepository.save(sale);
       this.generateDataToEmailCompleteOrder(id);
       this.generateDataToEmailTickets(id);
       return data;
     } catch (error) {
-      console.log('Se fue al error')
+      console.log('Se fue al error');
       this.logger.error(error);
       customError(error);
     }
   }
   //TODO:Cambiar esto en base a la pasarela de pago
-  async updateSaleWIthCard(id:number,updateSaleCard:UpdateSaleCard){
+  async updateSaleWIthCard(id: number, updateSaleCard: UpdateSaleCard) {
     try {
       const sale = await this.findOne(id);
       updateSaleCard.log.sale = sale;
-      const {log, ...updateData} = updateSaleCard;
+      const { log, ...updateData } = updateSaleCard;
       this.logPayCardService.create(log);
       sale.status = SaleStatus.SOLD;
       sale.authorizationNumber = updateData.authorizationNumber;
       sale.transactionCode = updateData.transactionCode;
       sale.catwalkCommission = updateData.catwalkCommission;
-      const dataSale =  await this.saleRepository.save(sale);
-      
+      const dataSale = await this.saleRepository.save(sale);
+
       this.generateDataToEmailCompleteOrder(id);
       this.generateDataToEmailTickets(id);
       return 'Venta actualizada con éxito';
@@ -694,15 +722,14 @@ export class SalesService {
       this.logger.error(error);
       customError(error);
     }
-
   }
-   transformTicketsToLocalities(tickets) {
+  transformTicketsToLocalities(tickets) {
     const localityMap = {};
-  
+
     for (const ticket of tickets) {
       const localityName = ticket.locality.name;
       const qr = this.encryptionService.encryptData(ticket.qr);
-  
+
       if (!localityMap[localityName]) {
         localityMap[localityName] = {
           localityName: localityName,
@@ -712,21 +739,26 @@ export class SalesService {
         localityMap[localityName].qrs.push(qr);
       }
     }
-  
+
     return Object.values(localityMap);
   }
+
+  async generateDataToEmailCompleteOrder(id: number) {
+    try {
+      
   
-  async generateDataToEmailCompleteOrder(id:number){
-    const data:any = await this.verifyInfoSaleWIthLocalities(id);
-   
+    const data: any = await this.verifyInfoSaleWIthLocalities(id);
+
     let totalLocalidades = 0;
-    data.localities.forEach(element => {
-      totalLocalidades += parseFloat((element.total * element.ticketCount).toFixed(2));
-    })
+    data.localities.forEach((element) => {
+      totalLocalidades += parseFloat(
+        (element.total * element.ticketCount).toFixed(2),
+      );
+    });
     const newLocalities = data.localities.map((locality) => ({
       name: locality.localityName,
       price: parseFloat(locality.total), // Convertir a número si es necesario
-      quantity: locality.ticketCount
+      quantity: locality.ticketCount,
     }));
 
     const payTypeToPayNameMap = {
@@ -735,13 +767,12 @@ export class SalesService {
       [PayTypes.DEBIT_CARD]: 'Tarjeta',
       [PayTypes.PAY_PHONE]: 'Pago por celular',
     };
-    
-    const PayName = payTypeToPayNameMap[data.sale.payType] || 'Método no especificado';
-    const payNumber = data.sale.authorizationNumber || null;
-    
-    
 
-    const dataEmail:OrderCompletedDto={
+    const PayName =
+      payTypeToPayNameMap[data.sale.payType] || 'Método no especificado';
+    const payNumber = data.sale.authorizationNumber || null;
+
+    const dataEmail: OrderCompletedDto = {
       order: data.sale.id,
       email: this.encryptionService.decryptData(data.sale.customer.email),
       event: data.sale.event.name,
@@ -753,40 +784,191 @@ export class SalesService {
         name: data.sale.bill[0].name,
         phone: data.sale.bill[0].phone,
         ci: data.sale.bill[0].identification,
-        address: data.sale.bill[0].address 
+        address: data.sale.bill[0].address,
       },
-      pay:{
+      pay: {
         name: PayName,
-        number: payNumber
-      }
-    }
+        number: payNumber,
+      },
+    };
     this.mailService.sendOrderCompletedEmail(dataEmail);
-    this.billsFffService.update(data.sale.id,StatusBill.PAID);
+    this.billsFffService.update(data.sale.id, StatusBill.PAID);
+  } catch (error) {
+console.log(error)
   }
-  async generateDataToEmailTickets(idSale:number){
-    const dataSale:any = await this.findOne(idSale);
-    
+  }
+  async generateDataToEmailTickets(idSale: number) {
+    const dataSale: any = await this.findOne(idSale);
+
     const dataEvent = await this.eventService.findOne(dataSale.event.id);
     const dataLocalities = await this.ticketService.findBySale(dataSale.id);
 
     const localities = this.transformTicketsToLocalities(dataLocalities);
 
-     const dataSendEmail:TicketsEmailDto={
+    const dataSendEmail: TicketsEmailDto = {
       email: dataSale.customer.email,
       name: dataSale.customer.name,
-      event:{
+      event: {
         name: dataEvent.name,
         event_date: dataEvent.event_date,
         place: dataEvent.address,
         poster: dataEvent.poster,
-        user: {name: dataEvent.user.name}
+        user: { name: dataEvent.user.name },
       },
-      sale:{ id: dataSale.id},
-      localities:[...localities]
-      }
+      sale: { id: dataSale.id },
+      localities: [...localities],
+    };
 
     this.mailService.sendTicketsEmail(dataSendEmail);
   }
 
-  
+  @Cron('0 0 */1 * * *')
+  async findPendingPurchasesTransfersAndCancel() {
+    try {
+      this.logger.log('Tarea ejecutada cada 5 horas');
+      this.logger.log('Buscando compras pendientes de pago por transferencia');
+    const zonaHorariaEcuador = 'America/Guayaquil'; 
+    const fechaActualUTC = new Date();
+    const fechaActualEcuador = utcToZonedTime(fechaActualUTC, zonaHorariaEcuador);
+    const fechaRestada = new Date(fechaActualEcuador.getTime() - 48 * 60 * 60 * 1000);
+
+      const expiredPurchases = await this.saleRepository
+      .createQueryBuilder('sale')
+      .innerJoin('sale.customer', 'customer')
+      .innerJoin('sale.event', 'event')
+      .leftJoinAndSelect('sale.tickets', 'ticket')
+      .leftJoinAndSelect('ticket.locality', 'locality')
+      .where('sale.updatedAt < :cutoffTime', {
+        cutoffTime: fechaActualEcuador.toISOString(),
+      })
+      .andWhere('(sale.status = :incompleteStatus OR sale.status = :rejectedStatus)', {
+        incompleteStatus: SaleStatus.INCOMPLETE,
+        rejectedStatus: SaleStatus.REJECTED,
+      })
+      .andWhere('sale.payType = :payType', {
+        payType: PayTypes.TRANSFER, // Ajusta esto a tu modelo
+      })
+      .select([
+        'sale',
+        'ticket',
+        'locality',
+        'event.id',
+        'event.name',
+        'event.event_date',
+        'event.commission',
+      ])
+      .getMany();
+    
+
+        if(expiredPurchases.length > 0){
+          console.log('Cancelando compras pendientes de pago por transferencia');
+         this.CancelSalesForLotes(expiredPurchases,PayTypes.TRANSFER);
+
+        }
+      return expiredPurchases;
+    } catch (error) {
+      console.error(error);
+      throw error;
+    }
+  } 
+  @Cron('0 */30 * * * *')
+  async findPendingPurchasesCardsAndCancel() {
+    try {
+    this.logger.log('Tarea ejecutada cada 30 minutos horas');
+    this.logger.log('Buscando compras pendientes de pago por tarjeta');
+    const zonaHorariaEcuador = 'America/Guayaquil'; 
+    const fechaActualUTC = new Date();
+    const fechaActualEcuador = utcToZonedTime(fechaActualUTC, zonaHorariaEcuador);
+    const fechaRestada = new Date(fechaActualEcuador.getTime() - 30 * 60 * 1000);
+ 
+      const expiredPurchases = await this.saleRepository
+      .createQueryBuilder('sale')
+      .innerJoin('sale.customer', 'customer')
+      .innerJoin('sale.event', 'event')
+      .leftJoinAndSelect('sale.tickets', 'ticket')
+      .leftJoinAndSelect('ticket.locality', 'locality')
+      .where('sale.updatedAt < :cutoffTime', {
+        cutoffTime: fechaRestada.toISOString(),
+      })
+      .andWhere('sale.status = :incompleteStatus', {
+        incompleteStatus: SaleStatus.INCOMPLETE,
+      }) 
+      .andWhere('sale.payType = :payType', {
+        payType: PayTypes.DEBIT_CARD, // Ajusta esto a tu modelo
+      })
+      .select([
+        'sale',
+        'ticket',
+        'locality',
+        'event.id',
+        'event.name',
+        'event.event_date',
+        'event.commission',
+      ])
+      .getMany();
+    
+
+        if(expiredPurchases.length > 0){
+          console.log('Cancelando compras pendientes de pago por tarjeta');
+         this.CancelSalesForLotes(expiredPurchases,PayTypes.DEBIT_CARD);
+
+        }
+      return expiredPurchases;
+    } catch (error) {
+      console.error(error);
+      throw error;
+    } 
+  } 
+  CancelSalesForLotes(expiredPurchases:any[],payType:string){
+    expiredPurchases.forEach(async (sale:any) => {
+
+      const localityTicketInfo: {
+        [localityName: string]: {
+          ticketCount: number;
+          price: number;
+          localityId: number;
+          total: number;
+        };
+      } = {};
+    
+      sale.tickets.forEach((ticket) => {
+        const localityName = ticket.locality.name;
+        const ticketPrice = ticket.locality.price;
+        const localityId = ticket.locality.id;
+        const total = ticket.locality.total;
+        if (localityTicketInfo[localityName]) {
+          localityTicketInfo[localityName].ticketCount++;
+        } else {
+          localityTicketInfo[localityName] = {
+            ticketCount: 1,
+            price: ticketPrice,
+            localityId: localityId,
+            total: total,
+          };
+        }
+      });
+    
+      // Convertir el objeto de resultados en un array de objetos
+      const result = Object.entries(localityTicketInfo).map(
+        ([localityName, ticketInfo]) => ({
+          localityName,
+          ticketCount: ticketInfo.ticketCount,
+          price: ticketInfo.price,
+          localityId: ticketInfo.localityId,
+          total: ticketInfo.total,
+        }),
+      );
+    
+      // Eliminar la propiedad 'tickets' del objeto 'sale'
+      delete sale.tickets;
+      this.deleteSaleAndTickets({sale, localities: result});
+      const logSale: CreateLogSaleDto = {
+        action: `Cancelando compra por ${payType} desde el sistema`,
+        data: { sale, localities: result },
+      }; 
+      this.logSaleService.create(logSale);
+    
+  });
+  }
+
 }

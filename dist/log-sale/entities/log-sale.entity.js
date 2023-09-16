@@ -12,11 +12,11 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.LogSaleSchema = exports.LogSale = void 0;
 const mongoose_1 = require("@nestjs/mongoose");
 const mongoose_2 = require("mongoose");
-const sale_action_enum_1 = require("../enum/sale-action.enum");
+const date_fns_tz_1 = require("date-fns-tz");
 let LogSale = class LogSale extends mongoose_2.Document {
 };
 __decorate([
-    (0, mongoose_1.Prop)({ enum: sale_action_enum_1.ActionSale, required: false }),
+    (0, mongoose_1.Prop)({ type: String, required: false }),
     __metadata("design:type", String)
 ], LogSale.prototype, "action", void 0);
 __decorate([
@@ -36,16 +36,25 @@ __decorate([
     __metadata("design:type", Object)
 ], LogSale.prototype, "userAgent", void 0);
 __decorate([
-    (0, mongoose_1.Prop)({ type: Date, default: Date.now }),
-    __metadata("design:type", Date)
+    (0, mongoose_1.Prop)({ type: String }),
+    __metadata("design:type", String)
 ], LogSale.prototype, "createdAt", void 0);
 __decorate([
-    (0, mongoose_1.Prop)({ type: Date, default: Date.now }),
-    __metadata("design:type", Date)
+    (0, mongoose_1.Prop)({ type: String }),
+    __metadata("design:type", String)
 ], LogSale.prototype, "updatedAt", void 0);
 LogSale = __decorate([
     (0, mongoose_1.Schema)({ collection: 'log_sale' })
 ], LogSale);
 exports.LogSale = LogSale;
 exports.LogSaleSchema = mongoose_1.SchemaFactory.createForClass(LogSale);
+exports.LogSaleSchema.pre('save', async function (next) {
+    const zonaHorariaEcuador = 'America/Guayaquil';
+    const fechaActualUTC = new Date();
+    const fechaActualEcuador = (0, date_fns_tz_1.utcToZonedTime)(fechaActualUTC, zonaHorariaEcuador);
+    const formatoFechaHora = 'yyyy-MM-dd HH:mm:ss';
+    this.createdAt = (0, date_fns_tz_1.format)(fechaActualEcuador, formatoFechaHora);
+    this.updatedAt = (0, date_fns_tz_1.format)(fechaActualEcuador, formatoFechaHora);
+    next();
+});
 //# sourceMappingURL=log-sale.entity.js.map

@@ -37,6 +37,7 @@ import { MongooseModule } from '@nestjs/mongoose';
 import { AmazonS3Module } from './amazon-s3/amazon-s3.module';
 import { BillsFffModule } from './bills_fff/bills_fff.module';
 import { BillLogsModule } from './bill_logs/bill_logs.module';
+import { ScheduleModule } from '@nestjs/schedule';
 
 @Module({
   imports: [
@@ -109,8 +110,8 @@ import { BillLogsModule } from './bill_logs/bill_logs.module';
     BillsFffModule,
 
     BillLogsModule,
-
-
+  
+    ScheduleModule.forRoot()
 
   ],
   controllers: [AppController],

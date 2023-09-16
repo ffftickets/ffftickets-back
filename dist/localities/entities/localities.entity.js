@@ -15,7 +15,21 @@ const typeorm_1 = require("typeorm");
 const localite_status_enum_1 = require("../enum/localite-status.enum");
 const ticket_entity_1 = require("../../tickets/entities/ticket.entity");
 const free_ticket_entity_1 = require("../../free-tickets/entities/free-ticket.entity");
+const date_fns_tz_1 = require("date-fns-tz");
 let Localities = class Localities {
+    setCreatedAt() {
+        const zonaHorariaEcuador = 'America/Guayaquil';
+        const fechaActualUTC = new Date();
+        const fechaActualEcuador = (0, date_fns_tz_1.utcToZonedTime)(fechaActualUTC, zonaHorariaEcuador);
+        this.createdAt = fechaActualEcuador;
+        this.updatedAt = fechaActualEcuador;
+    }
+    setUpdatedAt() {
+        const zonaHorariaEcuador = 'America/Guayaquil';
+        const fechaActualUTC = new Date();
+        const fechaActualEcuador = (0, date_fns_tz_1.utcToZonedTime)(fechaActualUTC, zonaHorariaEcuador);
+        this.updatedAt = fechaActualEcuador;
+    }
 };
 __decorate([
     (0, typeorm_1.PrimaryGeneratedColumn)(),
@@ -81,6 +95,18 @@ __decorate([
     (0, typeorm_1.Column)({ type: 'decimal', precision: 5, scale: 2, nullable: false }),
     __metadata("design:type", Number)
 ], Localities.prototype, "total", void 0);
+__decorate([
+    (0, typeorm_1.BeforeInsert)(),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", []),
+    __metadata("design:returntype", void 0)
+], Localities.prototype, "setCreatedAt", null);
+__decorate([
+    (0, typeorm_1.BeforeUpdate)(),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", []),
+    __metadata("design:returntype", void 0)
+], Localities.prototype, "setUpdatedAt", null);
 Localities = __decorate([
     (0, typeorm_1.Entity)('localities')
 ], Localities);

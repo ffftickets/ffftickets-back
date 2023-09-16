@@ -17,7 +17,7 @@ export declare class TicketsService {
     deleteTicketsAndUpdateLocalities(ventaData: any, saleId: number): Promise<string>;
     findAll(): Promise<Ticket[]>;
     findOne(id: number): Promise<Ticket>;
-    findOneByQR(qr: string): Promise<Ticket | import("../free-tickets/entities/free-ticket.entity").FreeTicket>;
+    findOneByQR(qr: string): Promise<import("../free-tickets/entities/free-ticket.entity").FreeTicket | Ticket>;
     findBySale(id: number): Promise<{
         qr: string;
         length: any;

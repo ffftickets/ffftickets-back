@@ -8,4 +8,6 @@ export declare class FreeTicket {
     qr: string;
     createdAt: Date;
     updatedAt: Date;
+    setCreatedAt(): void;
+    setUpdatedAt(): void;
 }

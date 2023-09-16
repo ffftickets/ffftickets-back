@@ -11,4 +11,6 @@ export declare class Ticket {
     createdAt: Date;
     updatedAt: Date;
     map: any;
+    setCreatedAt(): void;
+    setUpdatedAt(): void;
 }

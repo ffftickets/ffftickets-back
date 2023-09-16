@@ -21,4 +21,6 @@ export declare class Sale {
     createdAt: Date;
     updatedAt: Date;
     bill: BillsFff;
+    setCreatedAt(): void;
+    setUpdatedAt(): void;
 }

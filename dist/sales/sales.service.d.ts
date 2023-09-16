@@ -1,4 +1,4 @@
-import { Logger } from '@nestjs/common';
+import { Logger, OnApplicationBootstrap } from '@nestjs/common';
 import { CreateSaleDto } from './dto/create-sale.dto';
 import { Sale } from './entities/sale.entity';
 import { Repository } from 'typeorm';
@@ -16,7 +16,7 @@ import { CreateLogSaleDto } from 'src/log-sale/dto/create-log-sale.dto';
 import { LogSaleService } from 'src/log-sale/log-sale.service';
 import { AmazonS3Service } from 'src/amazon-s3/amazon-s3.service';
 import { BillsFffService } from 'src/bills_fff/bills_fff.service';
-export declare class SalesService {
+export declare class SalesService implements OnApplicationBootstrap {
     private readonly saleRepository;
     private readonly eventService;
     private readonly userService;
@@ -30,6 +30,7 @@ export declare class SalesService {
     private readonly billsFffService;
     logger: Logger;
     constructor(saleRepository: Repository<Sale>, eventService: EventService, userService: UserService, ticketService: TicketsService, localitiesService: LocalitiesService, encryptionService: EncryptionService, logPayCardService: LogPayCardService, mailService: MailService, logSaleService: LogSaleService, amazon3SService: AmazonS3Service, billsFffService: BillsFffService);
+    onApplicationBootstrap(): void;
     create(createSaleDto: CreateSaleDto, logSale: CreateLogSaleDto): Promise<{
         message: string;
         saleId: number;
@@ -114,4 +115,7 @@ export declare class SalesService {
     transformTicketsToLocalities(tickets: any): unknown[];
     generateDataToEmailCompleteOrder(id: number): Promise<void>;
     generateDataToEmailTickets(idSale: number): Promise<void>;
+    findPendingPurchasesTransfersAndCancel(): Promise<Sale[]>;
+    findPendingPurchasesCardsAndCancel(): Promise<Sale[]>;
+    CancelSalesForLotes(expiredPurchases: any[], payType: string): void;
 }

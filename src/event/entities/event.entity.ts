@@ -18,6 +18,7 @@ import { Localities } from 'src/localities/entities/localities.entity';
 import { Sale } from 'src/sales/entities/sale.entity';
 import { EventPromoter } from 'src/event-promoter/entities/event-promoter.entity';
 import { PaymentMethod } from '../emun/payment-method.enum';
+import { utcToZonedTime } from 'date-fns-tz';
 
 @Entity('event')
 export class Event extends BaseEntity {
@@ -107,4 +108,21 @@ export class Event extends BaseEntity {
   
   @Column({ type: 'bool', nullable: false, default: true })
   iva: boolean;
+  @BeforeInsert()
+  setCreatedAt() {
+    const zonaHorariaEcuador = 'America/Guayaquil';
+    const fechaActualUTC = new Date();
+    const fechaActualEcuador = utcToZonedTime(fechaActualUTC, zonaHorariaEcuador);
+    this.createdAt = fechaActualEcuador;
+    this.updatedAt = fechaActualEcuador;
+  }
+
+  // Esta función se ejecuta antes de actualizar un registro
+  @BeforeUpdate()
+  setUpdatedAt() {
+    const zonaHorariaEcuador = 'America/Guayaquil';
+    const fechaActualUTC = new Date();
+    const fechaActualEcuador = utcToZonedTime(fechaActualUTC, zonaHorariaEcuador);
+    this.updatedAt = fechaActualEcuador;
+  }
 }

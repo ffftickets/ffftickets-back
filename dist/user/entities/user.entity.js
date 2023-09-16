@@ -21,6 +21,7 @@ const sale_entity_1 = require("../../sales/entities/sale.entity");
 const event_promoter_entity_1 = require("../../event-promoter/entities/event-promoter.entity");
 const identification_type_enum_1 = require("../emun/identification-type.enum");
 const free_ticket_entity_1 = require("../../free-tickets/entities/free-ticket.entity");
+const date_fns_tz_1 = require("date-fns-tz");
 let User = User_1 = class User extends typeorm_1.BaseEntity {
     updateTimeCreated() {
         const currentTimestamp = new Date().toLocaleString('en-US', {
@@ -52,6 +53,19 @@ let User = User_1 = class User extends typeorm_1.BaseEntity {
         if (emailExist) {
             throw new common_1.ConflictException('El correo ya se encuentra registrado');
         }
+    }
+    setCreatedAt() {
+        const zonaHorariaEcuador = 'America/Guayaquil';
+        const fechaActualUTC = new Date();
+        const fechaActualEcuador = (0, date_fns_tz_1.utcToZonedTime)(fechaActualUTC, zonaHorariaEcuador);
+        this.createdAt = fechaActualEcuador;
+        this.updatedAt = fechaActualEcuador;
+    }
+    setUpdatedAt() {
+        const zonaHorariaEcuador = 'America/Guayaquil';
+        const fechaActualUTC = new Date();
+        const fechaActualEcuador = (0, date_fns_tz_1.utcToZonedTime)(fechaActualUTC, zonaHorariaEcuador);
+        this.updatedAt = fechaActualEcuador;
     }
 };
 __decorate([
@@ -199,6 +213,18 @@ __decorate([
     __metadata("design:paramtypes", []),
     __metadata("design:returntype", Promise)
 ], User.prototype, "ValidateEmail", null);
+__decorate([
+    (0, typeorm_1.BeforeInsert)(),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", []),
+    __metadata("design:returntype", void 0)
+], User.prototype, "setCreatedAt", null);
+__decorate([
+    (0, typeorm_1.BeforeUpdate)(),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", []),
+    __metadata("design:returntype", void 0)
+], User.prototype, "setUpdatedAt", null);
 User = User_1 = __decorate([
     (0, typeorm_1.Entity)('user')
 ], User);

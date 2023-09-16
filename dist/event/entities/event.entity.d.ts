@@ -35,4 +35,6 @@ export declare class Event extends BaseEntity {
     commission: number;
     payment_methods: PaymentMethod[];
     iva: boolean;
+    setCreatedAt(): void;
+    setUpdatedAt(): void;
 }

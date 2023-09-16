@@ -37,4 +37,6 @@ export declare class User extends BaseEntity {
     hashPassword(): Promise<void>;
     convertEmailToLowerCase(): void;
     ValidateEmail(): Promise<void>;
+    setCreatedAt(): void;
+    setUpdatedAt(): void;
 }

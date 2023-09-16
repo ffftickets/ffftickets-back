@@ -11,6 +11,7 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.CreateLogPayCardSchema = exports.CreateLogPayCard = void 0;
 const mongoose_1 = require("@nestjs/mongoose");
+const date_fns_tz_1 = require("date-fns-tz");
 const mongoose_2 = require("mongoose");
 let CreateLogPayCard = class CreateLogPayCard extends mongoose_2.Document {
 };
@@ -103,12 +104,12 @@ __decorate([
     __metadata("design:type", Object)
 ], CreateLogPayCard.prototype, "userAgent", void 0);
 __decorate([
-    (0, mongoose_1.Prop)({ type: Date, default: Date.now }),
-    __metadata("design:type", Date)
+    (0, mongoose_1.Prop)({ type: String }),
+    __metadata("design:type", String)
 ], CreateLogPayCard.prototype, "createdAt", void 0);
 __decorate([
-    (0, mongoose_1.Prop)({ type: Date, default: Date.now }),
-    __metadata("design:type", Date)
+    (0, mongoose_1.Prop)({ type: String }),
+    __metadata("design:type", String)
 ], CreateLogPayCard.prototype, "updatedAt", void 0);
 __decorate([
     (0, mongoose_1.Prop)({ type: Object }),
@@ -119,4 +120,13 @@ CreateLogPayCard = __decorate([
 ], CreateLogPayCard);
 exports.CreateLogPayCard = CreateLogPayCard;
 exports.CreateLogPayCardSchema = mongoose_1.SchemaFactory.createForClass(CreateLogPayCard);
+exports.CreateLogPayCardSchema.pre('save', async function (next) {
+    const zonaHorariaEcuador = 'America/Guayaquil';
+    const fechaActualUTC = new Date();
+    const fechaActualEcuador = (0, date_fns_tz_1.utcToZonedTime)(fechaActualUTC, zonaHorariaEcuador);
+    const formatoFechaHora = 'yyyy-MM-dd HH:mm:ss';
+    this.createdAt = (0, date_fns_tz_1.format)(fechaActualEcuador, formatoFechaHora);
+    this.updatedAt = (0, date_fns_tz_1.format)(fechaActualEcuador, formatoFechaHora);
+    next();
+});
 //# sourceMappingURL=log-pay-card.entity.js.map

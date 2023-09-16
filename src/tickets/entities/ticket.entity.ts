@@ -1,6 +1,8 @@
 import { Localities } from 'src/localities/entities/localities.entity';
 import { Sale } from 'src/sales/entities/sale.entity';
 import {
+  BeforeInsert,
+  BeforeUpdate,
   Column,
   CreateDateColumn,
   Entity,
@@ -9,6 +11,7 @@ import {
   UpdateDateColumn,
 } from 'typeorm';
 import { TicketStatus } from '../enum/ticket-status.enum';
+import { utcToZonedTime } from 'date-fns-tz';
 
 @Entity('ticket')
 export class Ticket {
@@ -42,4 +45,22 @@ export class Ticket {
   @UpdateDateColumn({ name: 'updated_at', type: 'timestamp' })
   updatedAt: Date;
   map: any;
+
+  @BeforeInsert()
+  setCreatedAt() {
+    const zonaHorariaEcuador = 'America/Guayaquil';
+    const fechaActualUTC = new Date();
+    const fechaActualEcuador = utcToZonedTime(fechaActualUTC, zonaHorariaEcuador);
+    this.createdAt = fechaActualEcuador;
+    this.updatedAt = fechaActualEcuador;
+  }
+
+  // Esta función se ejecuta antes de actualizar un registro
+  @BeforeUpdate()
+  setUpdatedAt() {
+    const zonaHorariaEcuador = 'America/Guayaquil';
+    const fechaActualUTC = new Date();
+    const fechaActualEcuador = utcToZonedTime(fechaActualUTC, zonaHorariaEcuador);
+    this.updatedAt = fechaActualEcuador;
+  } 
 }

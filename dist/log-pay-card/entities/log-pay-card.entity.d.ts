@@ -46,8 +46,8 @@ export declare class CreateLogPayCard extends Document {
     tipoPago: string;
     ipDetail: any;
     userAgent: any;
-    createdAt: Date;
-    updatedAt: Date;
+    createdAt: String;
+    updatedAt: String;
     sale: any;
 }
 export declare const CreateLogPayCardSchema: import("mongoose").Schema<CreateLogPayCard, import("mongoose").Model<CreateLogPayCard, any, any, any, Document<unknown, any, CreateLogPayCard> & CreateLogPayCard & {

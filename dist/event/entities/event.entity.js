@@ -17,7 +17,21 @@ const status_event_enum_1 = require("../emun/status-event.enum");
 const localities_entity_1 = require("../../localities/entities/localities.entity");
 const sale_entity_1 = require("../../sales/entities/sale.entity");
 const event_promoter_entity_1 = require("../../event-promoter/entities/event-promoter.entity");
+const date_fns_tz_1 = require("date-fns-tz");
 let Event = class Event extends typeorm_1.BaseEntity {
+    setCreatedAt() {
+        const zonaHorariaEcuador = 'America/Guayaquil';
+        const fechaActualUTC = new Date();
+        const fechaActualEcuador = (0, date_fns_tz_1.utcToZonedTime)(fechaActualUTC, zonaHorariaEcuador);
+        this.createdAt = fechaActualEcuador;
+        this.updatedAt = fechaActualEcuador;
+    }
+    setUpdatedAt() {
+        const zonaHorariaEcuador = 'America/Guayaquil';
+        const fechaActualUTC = new Date();
+        const fechaActualEcuador = (0, date_fns_tz_1.utcToZonedTime)(fechaActualUTC, zonaHorariaEcuador);
+        this.updatedAt = fechaActualEcuador;
+    }
 };
 __decorate([
     (0, typeorm_1.PrimaryGeneratedColumn)(),
@@ -135,6 +149,18 @@ __decorate([
     (0, typeorm_1.Column)({ type: 'bool', nullable: false, default: true }),
     __metadata("design:type", Boolean)
 ], Event.prototype, "iva", void 0);
+__decorate([
+    (0, typeorm_1.BeforeInsert)(),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", []),
+    __metadata("design:returntype", void 0)
+], Event.prototype, "setCreatedAt", null);
+__decorate([
+    (0, typeorm_1.BeforeUpdate)(),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", []),
+    __metadata("design:returntype", void 0)
+], Event.prototype, "setUpdatedAt", null);
 Event = __decorate([
     (0, typeorm_1.Entity)('event')
 ], Event);

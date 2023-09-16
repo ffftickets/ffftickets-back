@@ -44,6 +44,9 @@ const sale_action_enum_1 = require("../log-sale/enum/sale-action.enum");
 const amazon_s3_service_1 = require("../amazon-s3/amazon-s3.service");
 const bills_fff_service_1 = require("../bills_fff/bills_fff.service");
 const status_bill_dto_1 = require("../bills_fff/enums/status-bill.dto");
+const date_fns_tz_1 = require("date-fns-tz");
+const schedule_1 = require("@nestjs/schedule");
+const { format } = require('date-fns');
 let SalesService = SalesService_1 = class SalesService {
     constructor(saleRepository, eventService, userService, ticketService, localitiesService, encryptionService, logPayCardService, mailService, logSaleService, amazon3SService, billsFffService) {
         this.saleRepository = saleRepository;
@@ -58,6 +61,12 @@ let SalesService = SalesService_1 = class SalesService {
         this.amazon3SService = amazon3SService;
         this.billsFffService = billsFffService;
         this.logger = new common_1.Logger(SalesService_1.name);
+        this.findPendingPurchasesTransfersAndCancel();
+        this.findPendingPurchasesCardsAndCancel();
+    }
+    onApplicationBootstrap() {
+        this.findPendingPurchasesTransfersAndCancel();
+        this.findPendingPurchasesCardsAndCancel();
     }
     async create(createSaleDto, logSale) {
         try {
@@ -66,9 +75,10 @@ let SalesService = SalesService_1 = class SalesService {
             createSaleDto.event = event;
             createSale.serviceValue = this.calculateServiceValue(tickets, event.commission);
             const verifyExist = await this.verifyPendingPurchase(createSale.customer.id);
-            console.log("Tiene compras pendientes", verifyExist ? 'Si' : 'No');
+            console.log('Tiene compras pendientes', verifyExist ? 'Si' : 'No');
             if (verifyExist) {
-                if (verifyExist.sale.payType === pay_types_enum_1.PayTypes.TRANSFER && createSale.payType === pay_types_enum_1.PayTypes.TRANSFER) {
+                if (verifyExist.sale.payType === pay_types_enum_1.PayTypes.TRANSFER &&
+                    createSale.payType === pay_types_enum_1.PayTypes.TRANSFER) {
                     throw new common_1.ConflictException('Tu pedido no se pudo completar ya que actualmente tienes pedidos pendientes de validación.');
                 }
                 else if (verifyExist.sale.payType === pay_types_enum_1.PayTypes.DEBIT_CARD) {
@@ -116,7 +126,7 @@ let SalesService = SalesService_1 = class SalesService {
                     serviceValue: sale.serviceValue,
                     total: sale.total,
                     order: sale.id,
-                    localities: [...localityDataToEmail]
+                    localities: [...localityDataToEmail],
                 };
                 this.mailService.sendOrderGeneratedEmail(dataOrderGeneratedEmail);
             }
@@ -147,11 +157,13 @@ let SalesService = SalesService_1 = class SalesService {
     }
     async deleteSaleAndTickets(saleDelete) {
         const { localities, sale } = saleDelete;
+        console.log('Cancelando Tickets', sale.id);
         for (const locality of localities) {
             await this.ticketService.deleteTicketsAndUpdateLocalities(locality, sale.id);
         }
-        console.log("Cancelando venta", sale.id);
-        await this.saleRepository.update(sale.id, { status: sale_status_enum_1.SaleStatus.CANCELED });
+        console.log('Cancelando venta', sale.id);
+        sale.status = sale_status_enum_1.SaleStatus.CANCELED;
+        await this.saleRepository.save(sale);
     }
     calculateServiceValue(tickets, commission) {
         let serviceValue = 0;
@@ -159,7 +171,7 @@ let SalesService = SalesService_1 = class SalesService {
             serviceValue += element.quantity;
         }
         serviceValue = serviceValue * commission;
-        return serviceValue + (serviceValue * 0);
+        return serviceValue + serviceValue * 0;
     }
     async findAll(page = 1, limit = 10, status, paymentMethod) {
         try {
@@ -357,7 +369,10 @@ let SalesService = SalesService_1 = class SalesService {
                 .leftJoinAndSelect('sale.tickets', 'ticket')
                 .leftJoinAndSelect('ticket.locality', 'locality')
                 .where('customer.id=:customer', { customer })
-                .andWhere('sale.status=:status', { status: sale_status_enum_1.SaleStatus.INCOMPLETE })
+                .andWhere('(sale.status = :incompleteStatus OR sale.status = :rejectedStatus)', {
+                incompleteStatus: sale_status_enum_1.SaleStatus.INCOMPLETE,
+                rejectedStatus: sale_status_enum_1.SaleStatus.REJECTED,
+            })
                 .select([
                 'sale',
                 'ticket',
@@ -365,7 +380,7 @@ let SalesService = SalesService_1 = class SalesService {
                 'event.id',
                 'event.name',
                 'event.event_date',
-                'event.commission'
+                'event.commission',
             ])
                 .getOne();
             if (!sale)
@@ -384,7 +399,7 @@ let SalesService = SalesService_1 = class SalesService {
                         ticketCount: 1,
                         price: ticketPrice,
                         localityId: localityId,
-                        total: total
+                        total: total,
                     };
                 }
             });
@@ -393,7 +408,7 @@ let SalesService = SalesService_1 = class SalesService {
                 ticketCount: ticketInfo.ticketCount,
                 price: ticketInfo.price,
                 localityId: ticketInfo.localityId,
-                total: ticketInfo.total
+                total: ticketInfo.total,
             }));
             delete sale.tickets;
             return { sale, localities: result };
@@ -440,7 +455,7 @@ let SalesService = SalesService_1 = class SalesService {
                         ticketCount: 1,
                         price: ticketPrice,
                         localityId: localityId,
-                        total: total
+                        total: total,
                     };
                 }
             });
@@ -449,7 +464,7 @@ let SalesService = SalesService_1 = class SalesService {
                 ticketCount: ticketInfo.ticketCount,
                 price: ticketInfo.price,
                 localityId: ticketInfo.localityId,
-                total: ticketInfo.total
+                total: ticketInfo.total,
             }));
             delete sale.tickets;
             return { sale, localities: result };
@@ -523,10 +538,13 @@ let SalesService = SalesService_1 = class SalesService {
     async validateSaleAdmin(id, body) {
         try {
             const { transactionCode } = body;
-            console.log("Código transacción: ", transactionCode);
-            const dateExistWithTransactionCode = await this.saleRepository.findOne({ where: { transactionCode } });
+            console.log('Código transacción: ', transactionCode);
+            const dateExistWithTransactionCode = await this.saleRepository.findOne({
+                where: { transactionCode },
+            });
             if (dateExistWithTransactionCode)
-                throw new common_1.ConflictException('El código de transacción ya existe en la compra: ' + dateExistWithTransactionCode.id);
+                throw new common_1.ConflictException('El código de transacción ya existe en la compra: ' +
+                    dateExistWithTransactionCode.id);
             const sale = await this.findOne(id);
             sale.status = sale_status_enum_1.SaleStatus.SOLD;
             sale.transactionCode = transactionCode;
@@ -580,45 +598,50 @@ let SalesService = SalesService_1 = class SalesService {
         return Object.values(localityMap);
     }
     async generateDataToEmailCompleteOrder(id) {
-        const data = await this.verifyInfoSaleWIthLocalities(id);
-        let totalLocalidades = 0;
-        data.localities.forEach(element => {
-            totalLocalidades += parseFloat((element.total * element.ticketCount).toFixed(2));
-        });
-        const newLocalities = data.localities.map((locality) => ({
-            name: locality.localityName,
-            price: parseFloat(locality.total),
-            quantity: locality.ticketCount
-        }));
-        const payTypeToPayNameMap = {
-            [pay_types_enum_1.PayTypes.TRANSFER]: 'Transferencia',
-            [pay_types_enum_1.PayTypes.CREDIT_CARD]: 'Tarjeta',
-            [pay_types_enum_1.PayTypes.DEBIT_CARD]: 'Tarjeta',
-            [pay_types_enum_1.PayTypes.PAY_PHONE]: 'Pago por celular',
-        };
-        const PayName = payTypeToPayNameMap[data.sale.payType] || 'Método no especificado';
-        const payNumber = data.sale.authorizationNumber || null;
-        const dataEmail = {
-            order: data.sale.id,
-            email: this.encryptionService.decryptData(data.sale.customer.email),
-            event: data.sale.event.name,
-            subtotal: totalLocalidades,
-            serviceValue: data.sale.serviceValue,
-            total: data.sale.total,
-            localities: [...newLocalities],
-            customer: {
-                name: data.sale.bill[0].name,
-                phone: data.sale.bill[0].phone,
-                ci: data.sale.bill[0].identification,
-                address: data.sale.bill[0].address
-            },
-            pay: {
-                name: PayName,
-                number: payNumber
-            }
-        };
-        this.mailService.sendOrderCompletedEmail(dataEmail);
-        this.billsFffService.update(data.sale.id, status_bill_dto_1.StatusBill.PAID);
+        try {
+            const data = await this.verifyInfoSaleWIthLocalities(id);
+            let totalLocalidades = 0;
+            data.localities.forEach((element) => {
+                totalLocalidades += parseFloat((element.total * element.ticketCount).toFixed(2));
+            });
+            const newLocalities = data.localities.map((locality) => ({
+                name: locality.localityName,
+                price: parseFloat(locality.total),
+                quantity: locality.ticketCount,
+            }));
+            const payTypeToPayNameMap = {
+                [pay_types_enum_1.PayTypes.TRANSFER]: 'Transferencia',
+                [pay_types_enum_1.PayTypes.CREDIT_CARD]: 'Tarjeta',
+                [pay_types_enum_1.PayTypes.DEBIT_CARD]: 'Tarjeta',
+                [pay_types_enum_1.PayTypes.PAY_PHONE]: 'Pago por celular',
+            };
+            const PayName = payTypeToPayNameMap[data.sale.payType] || 'Método no especificado';
+            const payNumber = data.sale.authorizationNumber || null;
+            const dataEmail = {
+                order: data.sale.id,
+                email: this.encryptionService.decryptData(data.sale.customer.email),
+                event: data.sale.event.name,
+                subtotal: totalLocalidades,
+                serviceValue: data.sale.serviceValue,
+                total: data.sale.total,
+                localities: [...newLocalities],
+                customer: {
+                    name: data.sale.bill[0].name,
+                    phone: data.sale.bill[0].phone,
+                    ci: data.sale.bill[0].identification,
+                    address: data.sale.bill[0].address,
+                },
+                pay: {
+                    name: PayName,
+                    number: payNumber,
+                },
+            };
+            this.mailService.sendOrderCompletedEmail(dataEmail);
+            this.billsFffService.update(data.sale.id, status_bill_dto_1.StatusBill.PAID);
+        }
+        catch (error) {
+            console.log(error);
+        }
     }
     async generateDataToEmailTickets(idSale) {
         const dataSale = await this.findOne(idSale);
@@ -633,14 +656,151 @@ let SalesService = SalesService_1 = class SalesService {
                 event_date: dataEvent.event_date,
                 place: dataEvent.address,
                 poster: dataEvent.poster,
-                user: { name: dataEvent.user.name }
+                user: { name: dataEvent.user.name },
             },
             sale: { id: dataSale.id },
-            localities: [...localities]
+            localities: [...localities],
         };
         this.mailService.sendTicketsEmail(dataSendEmail);
     }
+    async findPendingPurchasesTransfersAndCancel() {
+        try {
+            this.logger.log('Tarea ejecutada cada 5 horas');
+            this.logger.log('Buscando compras pendientes de pago por transferencia');
+            const zonaHorariaEcuador = 'America/Guayaquil';
+            const fechaActualUTC = new Date();
+            const fechaActualEcuador = (0, date_fns_tz_1.utcToZonedTime)(fechaActualUTC, zonaHorariaEcuador);
+            const fechaRestada = new Date(fechaActualEcuador.getTime() - 48 * 60 * 60 * 1000);
+            const expiredPurchases = await this.saleRepository
+                .createQueryBuilder('sale')
+                .innerJoin('sale.customer', 'customer')
+                .innerJoin('sale.event', 'event')
+                .leftJoinAndSelect('sale.tickets', 'ticket')
+                .leftJoinAndSelect('ticket.locality', 'locality')
+                .where('sale.updatedAt < :cutoffTime', {
+                cutoffTime: fechaActualEcuador.toISOString(),
+            })
+                .andWhere('(sale.status = :incompleteStatus OR sale.status = :rejectedStatus)', {
+                incompleteStatus: sale_status_enum_1.SaleStatus.INCOMPLETE,
+                rejectedStatus: sale_status_enum_1.SaleStatus.REJECTED,
+            })
+                .andWhere('sale.payType = :payType', {
+                payType: pay_types_enum_1.PayTypes.TRANSFER,
+            })
+                .select([
+                'sale',
+                'ticket',
+                'locality',
+                'event.id',
+                'event.name',
+                'event.event_date',
+                'event.commission',
+            ])
+                .getMany();
+            if (expiredPurchases.length > 0) {
+                console.log('Cancelando compras pendientes de pago por transferencia');
+                this.CancelSalesForLotes(expiredPurchases, pay_types_enum_1.PayTypes.TRANSFER);
+            }
+            return expiredPurchases;
+        }
+        catch (error) {
+            console.error(error);
+            throw error;
+        }
+    }
+    async findPendingPurchasesCardsAndCancel() {
+        try {
+            this.logger.log('Tarea ejecutada cada 30 minutos horas');
+            this.logger.log('Buscando compras pendientes de pago por tarjeta');
+            const zonaHorariaEcuador = 'America/Guayaquil';
+            const fechaActualUTC = new Date();
+            const fechaActualEcuador = (0, date_fns_tz_1.utcToZonedTime)(fechaActualUTC, zonaHorariaEcuador);
+            const fechaRestada = new Date(fechaActualEcuador.getTime() - 30 * 60 * 1000);
+            const expiredPurchases = await this.saleRepository
+                .createQueryBuilder('sale')
+                .innerJoin('sale.customer', 'customer')
+                .innerJoin('sale.event', 'event')
+                .leftJoinAndSelect('sale.tickets', 'ticket')
+                .leftJoinAndSelect('ticket.locality', 'locality')
+                .where('sale.updatedAt < :cutoffTime', {
+                cutoffTime: fechaRestada.toISOString(),
+            })
+                .andWhere('sale.status = :incompleteStatus', {
+                incompleteStatus: sale_status_enum_1.SaleStatus.INCOMPLETE,
+            })
+                .andWhere('sale.payType = :payType', {
+                payType: pay_types_enum_1.PayTypes.DEBIT_CARD,
+            })
+                .select([
+                'sale',
+                'ticket',
+                'locality',
+                'event.id',
+                'event.name',
+                'event.event_date',
+                'event.commission',
+            ])
+                .getMany();
+            if (expiredPurchases.length > 0) {
+                console.log('Cancelando compras pendientes de pago por tarjeta');
+                this.CancelSalesForLotes(expiredPurchases, pay_types_enum_1.PayTypes.DEBIT_CARD);
+            }
+            return expiredPurchases;
+        }
+        catch (error) {
+            console.error(error);
+            throw error;
+        }
+    }
+    CancelSalesForLotes(expiredPurchases, payType) {
+        expiredPurchases.forEach(async (sale) => {
+            const localityTicketInfo = {};
+            sale.tickets.forEach((ticket) => {
+                const localityName = ticket.locality.name;
+                const ticketPrice = ticket.locality.price;
+                const localityId = ticket.locality.id;
+                const total = ticket.locality.total;
+                if (localityTicketInfo[localityName]) {
+                    localityTicketInfo[localityName].ticketCount++;
+                }
+                else {
+                    localityTicketInfo[localityName] = {
+                        ticketCount: 1,
+                        price: ticketPrice,
+                        localityId: localityId,
+                        total: total,
+                    };
+                }
+            });
+            const result = Object.entries(localityTicketInfo).map(([localityName, ticketInfo]) => ({
+                localityName,
+                ticketCount: ticketInfo.ticketCount,
+                price: ticketInfo.price,
+                localityId: ticketInfo.localityId,
+                total: ticketInfo.total,
+            }));
+            delete sale.tickets;
+            this.deleteSaleAndTickets({ sale, localities: result });
+            const logSale = {
+                action: `Cancelando compra por ${payType} desde el sistema`,
+                data: { sale, localities: result },
+            };
+            this.logSaleService.create(logSale);
+        });
+    }
 };
+__decorate([
+    (0, schedule_1.Cron)('0 0 */1 * * *'),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", []),
+    __metadata("design:returntype", Promise)
+], SalesService.prototype, "findPendingPurchasesTransfersAndCancel", null);
+__decorate([
+    (0, schedule_1.Cron)('0 */30 * * * *'),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", []),
+    __metadata("design:returntype", Promise)
+], SalesService.prototype, "findPendingPurchasesCardsAndCancel", null);
 SalesService = SalesService_1 = __decorate([
     (0, common_1.Injectable)(),
     __param(0, (0, typeorm_1.InjectRepository)(sale_entity_1.Sale)),

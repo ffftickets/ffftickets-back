@@ -1,5 +1,7 @@
 import { Event } from 'src/event/entities/event.entity';
 import {
+  BeforeInsert,
+  BeforeUpdate,
   Column,
   CreateDateColumn,
   Entity,
@@ -13,6 +15,7 @@ import { LocaliteStatus } from '../enum/localite-status.enum';
 import { Ticket } from 'src/tickets/entities/ticket.entity';
 import { FreeTicket } from 'src/free-tickets/entities/free-ticket.entity';
 import { CreateLogPayCard } from 'src/log-pay-card/entities/log-pay-card.entity';
+import { utcToZonedTime } from 'date-fns-tz';
 
 @Entity('localities')
 export class Localities {
@@ -64,6 +67,22 @@ export class Localities {
   @Column({type: 'decimal', precision: 5, scale: 2, nullable: false})
   total: number;
 
+  @BeforeInsert()
+  setCreatedAt() {
+    const zonaHorariaEcuador = 'America/Guayaquil';
+    const fechaActualUTC = new Date();
+    const fechaActualEcuador = utcToZonedTime(fechaActualUTC, zonaHorariaEcuador);
+    this.createdAt = fechaActualEcuador;
+    this.updatedAt = fechaActualEcuador;
+  }
 
+  // Esta función se ejecuta antes de actualizar un registro
+  @BeforeUpdate()
+  setUpdatedAt() {
+    const zonaHorariaEcuador = 'America/Guayaquil';
+    const fechaActualUTC = new Date();
+    const fechaActualEcuador = utcToZonedTime(fechaActualUTC, zonaHorariaEcuador);
+    this.updatedAt = fechaActualEcuador;
+  }
 
 }

@@ -17,7 +17,21 @@ const event_entity_1 = require("../../event/entities/event.entity");
 const user_entity_1 = require("../../user/entities/user.entity");
 const ticket_entity_1 = require("../../tickets/entities/ticket.entity");
 const bills_fff_entity_1 = require("../../bills_fff/entities/bills_fff.entity");
+const date_fns_tz_1 = require("date-fns-tz");
 let Sale = class Sale {
+    setCreatedAt() {
+        const zonaHorariaEcuador = 'America/Guayaquil';
+        const fechaActualUTC = new Date();
+        const fechaActualEcuador = (0, date_fns_tz_1.utcToZonedTime)(fechaActualUTC, zonaHorariaEcuador);
+        this.createdAt = fechaActualEcuador;
+        this.updatedAt = fechaActualEcuador;
+    }
+    setUpdatedAt() {
+        const zonaHorariaEcuador = 'America/Guayaquil';
+        const fechaActualUTC = new Date();
+        const fechaActualEcuador = (0, date_fns_tz_1.utcToZonedTime)(fechaActualUTC, zonaHorariaEcuador);
+        this.updatedAt = fechaActualEcuador;
+    }
 };
 __decorate([
     (0, typeorm_1.PrimaryGeneratedColumn)(),
@@ -96,6 +110,18 @@ __decorate([
     (0, typeorm_1.OneToMany)((_) => bills_fff_entity_1.BillsFff, (bill) => bill.sale),
     __metadata("design:type", bills_fff_entity_1.BillsFff)
 ], Sale.prototype, "bill", void 0);
+__decorate([
+    (0, typeorm_1.BeforeInsert)(),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", []),
+    __metadata("design:returntype", void 0)
+], Sale.prototype, "setCreatedAt", null);
+__decorate([
+    (0, typeorm_1.BeforeUpdate)(),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", []),
+    __metadata("design:returntype", void 0)
+], Sale.prototype, "setUpdatedAt", null);
 Sale = __decorate([
     (0, typeorm_1.Entity)('sales')
 ], Sale);

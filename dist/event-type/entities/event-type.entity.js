@@ -14,6 +14,7 @@ exports.EventType = void 0;
 const typeorm_1 = require("typeorm");
 const common_1 = require("@nestjs/common");
 const event_entity_1 = require("../../event/entities/event.entity");
+const date_fns_tz_1 = require("date-fns-tz");
 let EventType = EventType_1 = class EventType extends typeorm_1.BaseEntity {
     async eventTypeExist() {
         const eventTypeExist = await EventType_1.findOne({
@@ -22,6 +23,19 @@ let EventType = EventType_1 = class EventType extends typeorm_1.BaseEntity {
         if (eventTypeExist) {
             throw new common_1.ConflictException('Ya existe el tipo de evento');
         }
+    }
+    setCreatedAt() {
+        const zonaHorariaEcuador = 'America/Guayaquil';
+        const fechaActualUTC = new Date();
+        const fechaActualEcuador = (0, date_fns_tz_1.utcToZonedTime)(fechaActualUTC, zonaHorariaEcuador);
+        this.createdAt = fechaActualEcuador;
+        this.updatedAt = fechaActualEcuador;
+    }
+    setUpdatedAt() {
+        const zonaHorariaEcuador = 'America/Guayaquil';
+        const fechaActualUTC = new Date();
+        const fechaActualEcuador = (0, date_fns_tz_1.utcToZonedTime)(fechaActualUTC, zonaHorariaEcuador);
+        this.updatedAt = fechaActualEcuador;
     }
 };
 __decorate([
@@ -54,6 +68,18 @@ __decorate([
     __metadata("design:paramtypes", []),
     __metadata("design:returntype", Promise)
 ], EventType.prototype, "eventTypeExist", null);
+__decorate([
+    (0, typeorm_1.BeforeInsert)(),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", []),
+    __metadata("design:returntype", void 0)
+], EventType.prototype, "setCreatedAt", null);
+__decorate([
+    (0, typeorm_1.BeforeUpdate)(),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", []),
+    __metadata("design:returntype", void 0)
+], EventType.prototype, "setUpdatedAt", null);
 EventType = EventType_1 = __decorate([
     (0, typeorm_1.Entity)('event-type')
 ], EventType);

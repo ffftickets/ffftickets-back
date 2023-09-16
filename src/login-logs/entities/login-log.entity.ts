@@ -1,5 +1,7 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
+import { format, utcToZonedTime } from 'date-fns-tz';
 import { Document } from 'mongoose';
+import { BeforeInsert, BeforeUpdate } from 'typeorm';
 
 @Schema({ collection: 'log_login' })
 export class LoginLog extends Document {
@@ -18,15 +20,28 @@ export class LoginLog extends Document {
   @Prop({ required: true })
   isCorrect: boolean;
 
-  @Prop({ default: Date.now })
-  createdAt: Date;
+  @Prop({ type:String })
+  createdAt: String;
 
-  @Prop({ default: Date.now })
-  updatedAt: Date;
+  @Prop({ type:String })
+  updatedAt: String;
+
+
 }
 
 export const LoginLogSchema = SchemaFactory.createForClass(LoginLog);
-
+LoginLogSchema.pre<LoginLog>('save', async function (next) {
+ 
+    const zonaHorariaEcuador = 'America/Guayaquil';
+    const fechaActualUTC = new Date();
+    const fechaActualEcuador = utcToZonedTime(fechaActualUTC, zonaHorariaEcuador);
+  
+    const formatoFechaHora = 'yyyy-MM-dd HH:mm:ss'; // Formato deseado (por ejemplo, "2023-09-16 15:48:00")
+    this.createdAt = format(fechaActualEcuador, formatoFechaHora);
+    this.updatedAt = format(fechaActualEcuador, formatoFechaHora);
+  
+    next();
+});
 
 
 export interface Browser {

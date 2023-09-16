@@ -11,6 +11,7 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.MailLogSchema = exports.MailLog = void 0;
 const mongoose_1 = require("@nestjs/mongoose");
+const date_fns_tz_1 = require("date-fns-tz");
 const mongoose_2 = require("mongoose");
 let MailLog = class MailLog extends mongoose_2.Document {
 };
@@ -35,16 +36,26 @@ __decorate([
     __metadata("design:type", Object)
 ], MailLog.prototype, "content", void 0);
 __decorate([
-    (0, mongoose_1.Prop)({ type: Date, default: Date.now }),
-    __metadata("design:type", Date)
+    (0, mongoose_1.Prop)({ type: String }),
+    __metadata("design:type", String)
 ], MailLog.prototype, "createdAt", void 0);
 __decorate([
-    (0, mongoose_1.Prop)({ type: Date, default: Date.now }),
-    __metadata("design:type", Date)
+    (0, mongoose_1.Prop)({ type: String }),
+    __metadata("design:type", String)
 ], MailLog.prototype, "updatedAt", void 0);
 MailLog = __decorate([
     (0, mongoose_1.Schema)({ collection: 'log_mail' })
 ], MailLog);
 exports.MailLog = MailLog;
 exports.MailLogSchema = mongoose_1.SchemaFactory.createForClass(MailLog);
+exports.MailLogSchema.pre('save', async function (next) {
+    const zonaHorariaEcuador = 'America/Guayaquil';
+    const fechaActualUTC = new Date();
+    const fechaActualEcuador = (0, date_fns_tz_1.utcToZonedTime)(fechaActualUTC, zonaHorariaEcuador);
+    const formatoFechaHora = 'yyyy-MM-dd HH:mm:ss';
+    this.createdAt = (0, date_fns_tz_1.format)(fechaActualEcuador, formatoFechaHora);
+    this.updatedAt = (0, date_fns_tz_1.format)(fechaActualEcuador, formatoFechaHora);
+    next();
+    next();
+});
 //# sourceMappingURL=mail-log.entity.js.map

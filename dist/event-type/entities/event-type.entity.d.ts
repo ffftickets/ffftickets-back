@@ -8,4 +8,6 @@ export declare class EventType extends BaseEntity {
     createdAt: Date;
     updatedAt: Date;
     eventTypeExist(): Promise<void>;
+    setCreatedAt(): void;
+    setUpdatedAt(): void;
 }

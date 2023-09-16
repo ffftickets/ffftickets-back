@@ -29,8 +29,8 @@ export declare class MailLog extends Document {
     subject: string;
     details: object;
     content: object;
-    createdAt: Date;
-    updatedAt: Date;
+    createdAt: String;
+    updatedAt: String;
 }
 export declare const MailLogSchema: import("mongoose").Schema<MailLog, import("mongoose").Model<MailLog, any, any, any, Document<unknown, any, MailLog> & MailLog & {
     _id: import("mongoose").Types.ObjectId;

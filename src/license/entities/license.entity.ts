@@ -1,3 +1,4 @@
+import { utcToZonedTime } from 'date-fns-tz';
 import { User } from 'src/user/entities/user.entity';
 import {
   PrimaryGeneratedColumn,
@@ -7,6 +8,8 @@ import {
   UpdateDateColumn,
   BaseEntity,
   ManyToOne,
+  BeforeInsert,
+  BeforeUpdate,
 } from 'typeorm';
 
 @Entity('license')
@@ -47,5 +50,21 @@ export class License extends BaseEntity {
 
   @UpdateDateColumn({ name: 'updated_at', type: 'timestamp' })
   updatedAt: Date;
+  @BeforeInsert()
+  setCreatedAt() {
+    const zonaHorariaEcuador = 'America/Guayaquil';
+    const fechaActualUTC = new Date();
+    const fechaActualEcuador = utcToZonedTime(fechaActualUTC, zonaHorariaEcuador);
+    this.createdAt = fechaActualEcuador;
+    this.updatedAt = fechaActualEcuador;
+  }
 
+  // Esta función se ejecuta antes de actualizar un registro
+  @BeforeUpdate()
+  setUpdatedAt() {
+    const zonaHorariaEcuador = 'America/Guayaquil';
+    const fechaActualUTC = new Date();
+    const fechaActualEcuador = utcToZonedTime(fechaActualUTC, zonaHorariaEcuador);
+    this.updatedAt = fechaActualEcuador;
+  }
 }

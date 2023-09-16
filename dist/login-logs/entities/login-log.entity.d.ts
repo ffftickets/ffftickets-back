@@ -29,8 +29,8 @@ export declare class LoginLog extends Document {
     ipDetail: IpDetails;
     userAgent: UserAgent;
     isCorrect: boolean;
-    createdAt: Date;
-    updatedAt: Date;
+    createdAt: String;
+    updatedAt: String;
 }
 export declare const LoginLogSchema: import("mongoose").Schema<LoginLog, import("mongoose").Model<LoginLog, any, any, any, Document<unknown, any, LoginLog> & LoginLog & {
     _id: import("mongoose").Types.ObjectId;

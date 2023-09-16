@@ -16,4 +16,6 @@ export declare class BillsFff {
     status: StatusBill;
     createdAt: Date;
     updatedAt: Date;
+    setCreatedAt(): void;
+    setUpdatedAt(): void;
 }

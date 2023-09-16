@@ -16,6 +16,7 @@ import {
   import { ConflictException } from '@nestjs/common';
   import { Gender, UserStatus } from 'src/core/enums';
   import { Event } from 'src/event/entities/event.entity';
+import { utcToZonedTime } from 'date-fns-tz';
   @Entity('event-type')
   export class EventType extends BaseEntity {
      
@@ -53,5 +54,22 @@ import {
     }
   
    
+    @BeforeInsert()
+    setCreatedAt() {
+      const zonaHorariaEcuador = 'America/Guayaquil';
+      const fechaActualUTC = new Date();
+      const fechaActualEcuador = utcToZonedTime(fechaActualUTC, zonaHorariaEcuador);
+      this.createdAt = fechaActualEcuador;
+      this.updatedAt = fechaActualEcuador;
+    }
+  
+    // Esta función se ejecuta antes de actualizar un registro
+    @BeforeUpdate()
+    setUpdatedAt() {
+      const zonaHorariaEcuador = 'America/Guayaquil';
+      const fechaActualUTC = new Date();
+      const fechaActualEcuador = utcToZonedTime(fechaActualUTC, zonaHorariaEcuador);
+      this.updatedAt = fechaActualEcuador;
+    }
   }
   

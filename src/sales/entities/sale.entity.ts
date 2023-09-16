@@ -1,4 +1,6 @@
 import {
+  BeforeInsert,
+  BeforeUpdate,
   Column,
   CreateDateColumn,
   Entity,
@@ -16,6 +18,7 @@ import { User } from 'src/user/entities/user.entity';
 import { Ticket } from 'src/tickets/entities/ticket.entity';
 import { CreateLogPayCard } from 'src/log-pay-card/entities/log-pay-card.entity';
 import { BillsFff } from 'src/bills_fff/entities/bills_fff.entity';
+import { utcToZonedTime } from 'date-fns-tz';
 @Entity('sales')
 export class Sale {
   @PrimaryGeneratedColumn()
@@ -76,4 +79,22 @@ export class Sale {
   //!Relacion con sales
   @OneToMany((_) => BillsFff, (bill) => bill.sale)
   bill: BillsFff;
+  
+  @BeforeInsert()
+  setCreatedAt() {
+    const zonaHorariaEcuador = 'America/Guayaquil';
+    const fechaActualUTC = new Date();
+    const fechaActualEcuador = utcToZonedTime(fechaActualUTC, zonaHorariaEcuador);
+    this.createdAt = fechaActualEcuador;
+    this.updatedAt = fechaActualEcuador;
+  }
+
+  // Esta función se ejecuta antes de actualizar un registro
+  @BeforeUpdate()
+  setUpdatedAt() {
+    const zonaHorariaEcuador = 'America/Guayaquil';
+    const fechaActualUTC = new Date();
+    const fechaActualEcuador = utcToZonedTime(fechaActualUTC, zonaHorariaEcuador);
+    this.updatedAt = fechaActualEcuador;
+  }
 }

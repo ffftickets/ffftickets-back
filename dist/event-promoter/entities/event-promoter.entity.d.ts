@@ -9,4 +9,6 @@ export declare class EventPromoter {
     status: string;
     createdAt: Date;
     updatedAt: Date;
+    setCreatedAt(): void;
+    setUpdatedAt(): void;
 }

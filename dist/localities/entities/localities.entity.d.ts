@@ -17,4 +17,6 @@ export declare class Localities {
     ticket: Ticket;
     iva: number;
     total: number;
+    setCreatedAt(): void;
+    setUpdatedAt(): void;
 }

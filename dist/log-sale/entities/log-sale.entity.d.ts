@@ -29,8 +29,8 @@ export declare class LogSale extends Document {
     data: any;
     ipDetail?: any;
     userAgent?: any;
-    createdAt: Date;
-    updatedAt: Date;
+    createdAt: String;
+    updatedAt: String;
 }
 export declare const LogSaleSchema: import("mongoose").Schema<LogSale, import("mongoose").Model<LogSale, any, any, any, Document<unknown, any, LogSale> & LogSale & {
     _id: import("mongoose").Types.ObjectId;

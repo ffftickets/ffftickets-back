@@ -13,4 +13,6 @@ export declare class License extends BaseEntity {
     isActive: boolean;
     createdAt: Date;
     updatedAt: Date;
+    setCreatedAt(): void;
+    setUpdatedAt(): void;
 }

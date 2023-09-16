@@ -20,6 +20,7 @@ import { Sale } from 'src/sales/entities/sale.entity';
 import { EventPromoter } from 'src/event-promoter/entities/event-promoter.entity';
 import { IdentificationType } from '../emun/identification-type.enum';
 import { FreeTicket } from 'src/free-tickets/entities/free-ticket.entity';
+import { utcToZonedTime } from 'date-fns-tz';
 
 @Entity('user')
 export class User extends BaseEntity {
@@ -164,5 +165,22 @@ export class User extends BaseEntity {
         'El numero de identificación ya se encuentra registrado',
       );
     } */
+  }
+  @BeforeInsert()
+  setCreatedAt() {
+    const zonaHorariaEcuador = 'America/Guayaquil';
+    const fechaActualUTC = new Date();
+    const fechaActualEcuador = utcToZonedTime(fechaActualUTC, zonaHorariaEcuador);
+    this.createdAt = fechaActualEcuador;
+    this.updatedAt = fechaActualEcuador;
+  }
+
+  // Esta función se ejecuta antes de actualizar un registro
+  @BeforeUpdate()
+  setUpdatedAt() {
+    const zonaHorariaEcuador = 'America/Guayaquil';
+    const fechaActualUTC = new Date();
+    const fechaActualEcuador = utcToZonedTime(fechaActualUTC, zonaHorariaEcuador);
+    this.updatedAt = fechaActualEcuador;
   }
 }
