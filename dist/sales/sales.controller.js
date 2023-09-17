@@ -27,6 +27,7 @@ const interceptors_1 = require("../common/interceptors");
 const log_sale_service_1 = require("../log-sale/log-sale.service");
 const sale_action_enum_1 = require("../log-sale/enum/sale-action.enum");
 const encryption_service_1 = require("../encryption/encryption.service");
+const custom_error_helper_1 = require("../common/helpers/custom-error.helper");
 let SalesController = SalesController_1 = class SalesController {
     constructor(salesService, logSaleService, encryptionService) {
         this.salesService = salesService;
@@ -73,11 +74,23 @@ let SalesController = SalesController_1 = class SalesController {
         return res.status(common_1.HttpStatus.OK).json(data);
     }
     async verifyPendingPurchase(res, user) {
-        this.logger.log(`Buscando venta pendiente de : ${user.email}`);
-        const data = await this.salesService.verifyPendingPurchase(user.id);
-        if (data === null || data.sale.payType !== pay_types_enum_1.PayTypes.TRANSFER)
-            throw new common_1.BadRequestException('No se encontraron ordenes pendientes');
-        return res.status(common_1.HttpStatus.OK).json(data);
+        try {
+            this.logger.log(`Buscando ventas pendientes de: ${user.email}`);
+            const data = await this.salesService.verifyPendingPurchases(user.id);
+            if (!data || data.length === 0) {
+                throw new common_1.NotFoundException('No se encontraron órdenes pendientes');
+            }
+            const transferSale = data.find(sale => sale.sale.payType === pay_types_enum_1.PayTypes.TRANSFER);
+            if (!transferSale) {
+                throw new common_1.NotFoundException('No se encontraron órdenes pendientes de tipo transferencia');
+            }
+            console.log(transferSale);
+            return res.status(common_1.HttpStatus.OK).json(transferSale);
+        }
+        catch (error) {
+            this.logger.error(error);
+            (0, custom_error_helper_1.customError)(error);
+        }
     }
     async uploadVoucher(id, uploadPhoto, req, user) {
         this.logger.log('Subiendo comprobante de venta');

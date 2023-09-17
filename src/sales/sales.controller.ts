@@ -13,6 +13,7 @@ import {
   Query,
   UseInterceptors,
   Req,
+  NotFoundException,
 } from '@nestjs/common';
 import { SalesService } from './sales.service';
 import { CreateSaleDto } from './dto/create-sale.dto';
@@ -33,6 +34,8 @@ import { LogSaleService } from 'src/log-sale/log-sale.service';
 import { ActionSale } from 'src/log-sale/enum/sale-action.enum';
 
 import { EncryptionService } from 'src/encryption/encryption.service';
+import { Not } from 'typeorm';
+import { customError } from 'src/common/helpers/custom-error.helper';
 @Auth()
 @ApiTags('Ventas')
 @Controller('sales')
@@ -129,12 +132,31 @@ export class SalesController {
   
   @Get('verify/pending-purchase')
   async verifyPendingPurchase(@Res() res: Response, @GetUser() user: User) {
-    this.logger.log(`Buscando venta pendiente de : ${user.email}`);
-    const data = await this.salesService.verifyPendingPurchase(user.id);
-    if (data === null || data.sale.payType!==PayTypes.TRANSFER)
-      throw new BadRequestException('No se encontraron ordenes pendientes');
-    return res.status(HttpStatus.OK).json(data);
+    try {
+      
+   
+    this.logger.log(`Buscando ventas pendientes de: ${user.email}`);
+    const data = await this.salesService.verifyPendingPurchases(user.id);
+
+    if (!data || data.length === 0) {
+      // No se encontraron ventas pendientes
+      throw new NotFoundException('No se encontraron órdenes pendientes');
+    }
+  
+    const transferSale = data.find(sale => sale.sale.payType===PayTypes.TRANSFER);
+
+    if (!transferSale) {
+      throw new NotFoundException('No se encontraron órdenes pendientes de tipo transferencia');
+    }
+    console.log(transferSale)
+    // Devuelve la primera venta pendiente de tipo transferencia en formato JSON
+    return res.status(HttpStatus.OK).json(transferSale);
+  } catch (error) {
+    this.logger.error(error);
+    customError(error);
   }
+  }
+  
 
   
   @UseInterceptors(IpDetailsInterceptor)

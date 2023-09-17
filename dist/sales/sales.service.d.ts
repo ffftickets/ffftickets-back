@@ -82,7 +82,7 @@ export declare class SalesService implements OnApplicationBootstrap {
         totalPages: number;
         totalCount: number;
     }>;
-    verifyPendingPurchase(customer: number): Promise<{
+    verifyPendingPurchases(customer: number): Promise<{
         sale: any;
         localities: {
             localityName: string;
@@ -91,7 +91,7 @@ export declare class SalesService implements OnApplicationBootstrap {
             localityId: number;
             total: number;
         }[];
-    }>;
+    }[]>;
     verifyInfoSaleWIthLocalities(saleId: number): Promise<{
         sale: any;
         localities: {

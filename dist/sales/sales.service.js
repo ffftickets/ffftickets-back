@@ -74,18 +74,19 @@ let SalesService = SalesService_1 = class SalesService {
             const event = await this.eventService.findOne(createSaleDto.event);
             createSaleDto.event = event;
             createSale.serviceValue = this.calculateServiceValue(tickets, event.commission);
-            const verifyExist = await this.verifyPendingPurchase(createSale.customer.id);
+            const verifyExist = await this.verifyPendingPurchases(createSale.customer.id);
             console.log('Tiene compras pendientes', verifyExist ? 'Si' : 'No');
-            if (verifyExist) {
-                if (verifyExist.sale.payType === pay_types_enum_1.PayTypes.TRANSFER &&
-                    createSale.payType === pay_types_enum_1.PayTypes.TRANSFER) {
-                    throw new common_1.ConflictException('Tu pedido no se pudo completar ya que actualmente tienes pedidos pendientes de validación.');
-                }
-                else if (verifyExist.sale.payType === pay_types_enum_1.PayTypes.DEBIT_CARD) {
-                    logSale.action = sale_action_enum_1.ActionSale.CANCEL;
-                    logSale.data = verifyExist;
-                    this.logSaleService.create(logSale);
-                    await this.deleteSaleAndTickets(verifyExist);
+            if (verifyExist.length > 0) {
+                for (const existingSale of verifyExist) {
+                    if (existingSale.sale.payType === pay_types_enum_1.PayTypes.TRANSFER && createSale.payType === pay_types_enum_1.PayTypes.TRANSFER) {
+                        throw new common_1.ConflictException('Tu pedido no se pudo completar ya que actualmente tienes pedidos pendientes de validación.');
+                    }
+                    else if (existingSale.sale.payType === pay_types_enum_1.PayTypes.DEBIT_CARD) {
+                        logSale.action = sale_action_enum_1.ActionSale.CANCEL;
+                        logSale.data = existingSale;
+                        this.logSaleService.create(logSale);
+                        await this.deleteSaleAndTickets(existingSale);
+                    }
                 }
             }
             let localityDataToEmail = [];
@@ -360,15 +361,15 @@ let SalesService = SalesService_1 = class SalesService {
             (0, custom_error_helper_1.customError)(error);
         }
     }
-    async verifyPendingPurchase(customer) {
+    async verifyPendingPurchases(customer) {
         try {
-            const sale = await this.saleRepository
+            const sales = await this.saleRepository
                 .createQueryBuilder('sale')
                 .innerJoin('sale.customer', 'customer')
                 .innerJoin('sale.event', 'event')
                 .leftJoinAndSelect('sale.tickets', 'ticket')
                 .leftJoinAndSelect('ticket.locality', 'locality')
-                .where('customer.id=:customer', { customer })
+                .where('customer.id = :customer', { customer })
                 .andWhere('(sale.status = :incompleteStatus OR sale.status = :rejectedStatus)', {
                 incompleteStatus: sale_status_enum_1.SaleStatus.INCOMPLETE,
                 rejectedStatus: sale_status_enum_1.SaleStatus.REJECTED,
@@ -382,36 +383,39 @@ let SalesService = SalesService_1 = class SalesService {
                 'event.event_date',
                 'event.commission',
             ])
-                .getOne();
-            if (!sale)
+                .getMany();
+            if (!sales || sales.length === 0)
                 return null;
-            const localityTicketInfo = {};
-            sale.tickets.forEach((ticket) => {
-                const localityName = ticket.locality.name;
-                const ticketPrice = ticket.locality.price;
-                const localityId = ticket.locality.id;
-                const total = ticket.locality.total;
-                if (localityTicketInfo[localityName]) {
-                    localityTicketInfo[localityName].ticketCount++;
-                }
-                else {
-                    localityTicketInfo[localityName] = {
-                        ticketCount: 1,
-                        price: ticketPrice,
-                        localityId: localityId,
-                        total: total,
-                    };
-                }
+            const salesWithLocalities = sales.map((sale) => {
+                const localityTicketInfo = {};
+                sale.tickets.forEach((ticket) => {
+                    const localityName = ticket.locality.name;
+                    const ticketPrice = ticket.locality.price;
+                    const localityId = ticket.locality.id;
+                    const total = ticket.locality.total;
+                    if (localityTicketInfo[localityName]) {
+                        localityTicketInfo[localityName].ticketCount++;
+                    }
+                    else {
+                        localityTicketInfo[localityName] = {
+                            ticketCount: 1,
+                            price: ticketPrice,
+                            localityId: localityId,
+                            total: total,
+                        };
+                    }
+                });
+                const localities = Object.entries(localityTicketInfo).map(([localityName, ticketInfo]) => ({
+                    localityName,
+                    ticketCount: ticketInfo.ticketCount,
+                    price: ticketInfo.price,
+                    localityId: ticketInfo.localityId,
+                    total: ticketInfo.total,
+                }));
+                delete sale.tickets;
+                return { sale, localities };
             });
-            const result = Object.entries(localityTicketInfo).map(([localityName, ticketInfo]) => ({
-                localityName,
-                ticketCount: ticketInfo.ticketCount,
-                price: ticketInfo.price,
-                localityId: ticketInfo.localityId,
-                total: ticketInfo.total,
-            }));
-            delete sale.tickets;
-            return { sale, localities: result };
+            return salesWithLocalities;
         }
         catch (error) {
             (0, custom_error_helper_1.customError)(error);
@@ -671,7 +675,7 @@ let SalesService = SalesService_1 = class SalesService {
             const fechaActualUTC = new Date();
             const fechaActualEcuador = (0, date_fns_tz_1.utcToZonedTime)(fechaActualUTC, zonaHorariaEcuador);
             const fechaRestada = new Date(fechaActualEcuador.getTime() - 48 * 60 * 60 * 1000);
-            const expiredPurchases = await this.saleRepository
+            let expiredPurchases = await this.saleRepository
                 .createQueryBuilder('sale')
                 .innerJoin('sale.customer', 'customer')
                 .innerJoin('sale.event', 'event')
@@ -697,6 +701,7 @@ let SalesService = SalesService_1 = class SalesService {
                 'event.commission',
             ])
                 .getMany();
+            expiredPurchases = expiredPurchases.filter((sale) => !(sale.transfer_photo !== null && sale.status === sale_status_enum_1.SaleStatus.INCOMPLETE));
             if (expiredPurchases.length > 0) {
                 console.log('Cancelando compras pendientes de pago por transferencia');
                 this.CancelSalesForLotes(expiredPurchases, pay_types_enum_1.PayTypes.TRANSFER);

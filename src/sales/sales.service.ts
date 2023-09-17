@@ -79,30 +79,31 @@ export class SalesService implements OnApplicationBootstrap {
         event.commission,
       );
       //? Verificar si el usuario tiene pedidos pendientes de validación
-      const verifyExist = await this.verifyPendingPurchase(
+      const verifyExist = await this.verifyPendingPurchases(
         createSale.customer.id,
       );
 
       console.log('Tiene compras pendientes', verifyExist ? 'Si' : 'No');
       //?En caso de que tenga una compra pendiente entra a validación!
-      if (verifyExist) {
-        //! Si tiene pedidos pendientes de validación con transferencia y no a subido un comprobante se elimina la compra anterior y se crea una nueva.
-        //! Si tiene pedidos pendientes de validación con transferencia y ya subió un comprobante se emite el mensaje de que tiene compras pendientes.
-        if (
-          verifyExist.sale.payType === PayTypes.TRANSFER &&
-          createSale.payType === PayTypes.TRANSFER
-        ) {
-          throw new ConflictException(
-            'Tu pedido no se pudo completar ya que actualmente tienes pedidos pendientes de validación.',
-          );
-        } else if (verifyExist.sale.payType === PayTypes.DEBIT_CARD) {
-          //! Si tiene pedidos pendientes de validación con tarjeta se elimina la compra anterior y se crea una nueva.
-          logSale.action = ActionSale.CANCEL;
-          logSale.data = verifyExist;
-          this.logSaleService.create(logSale);
-          await this.deleteSaleAndTickets(verifyExist);
+      if (verifyExist.length > 0) {
+        // Si hay ventas pendientes, itera sobre ellas
+        for (const existingSale of verifyExist) {
+          if (existingSale.sale.payType === PayTypes.TRANSFER && createSale.payType === PayTypes.TRANSFER) {
+            // Si tiene pedidos pendientes de validación con transferencia y quiere crear otro con transferencia
+            throw new ConflictException(
+              'Tu pedido no se pudo completar ya que actualmente tienes pedidos pendientes de validación.'
+            );
+          } else if (existingSale.sale.payType === PayTypes.DEBIT_CARD) {
+            // Si tiene pedidos pendientes de validación con tarjeta, elimina la compra anterior y crea una nueva
+          
+            logSale.action = ActionSale.CANCEL;
+            logSale.data = existingSale;
+            this.logSaleService.create(logSale);
+            await this.deleteSaleAndTickets(existingSale);
+          }
         }
       }
+      
 
       let localityDataToEmail = [];
       let totalLocalities = 0;
@@ -464,15 +465,15 @@ export class SalesService implements OnApplicationBootstrap {
     }
   }
 
-  async verifyPendingPurchase(customer: number) {
+  async verifyPendingPurchases(customer: number) {
     try {
-      const sale: any = await this.saleRepository
+      const sales: any[] = await this.saleRepository
         .createQueryBuilder('sale')
         .innerJoin('sale.customer', 'customer')
         .innerJoin('sale.event', 'event')
         .leftJoinAndSelect('sale.tickets', 'ticket')
         .leftJoinAndSelect('ticket.locality', 'locality')
-        .where('customer.id=:customer', { customer })
+        .where('customer.id = :customer', { customer })
         .andWhere('(sale.status = :incompleteStatus OR sale.status = :rejectedStatus)', {
           incompleteStatus: SaleStatus.INCOMPLETE,
           rejectedStatus: SaleStatus.REJECTED,
@@ -486,51 +487,58 @@ export class SalesService implements OnApplicationBootstrap {
           'event.event_date',
           'event.commission',
         ])
-        .getOne();
-      if (!sale) return null;
-
-      const localityTicketInfo: {
-        [localityName: string]: {
-          ticketCount: number;
-          price: number;
-          localityId: number;
-          total: number;
-        };
-      } = {};
-
-      sale.tickets.forEach((ticket) => {
-        const localityName = ticket.locality.name;
-        const ticketPrice = ticket.locality.price;
-        const localityId = ticket.locality.id;
-        const total = ticket.locality.total;
-        if (localityTicketInfo[localityName]) {
-          localityTicketInfo[localityName].ticketCount++;
-        } else {
-          localityTicketInfo[localityName] = {
-            ticketCount: 1,
-            price: ticketPrice,
-            localityId: localityId,
-            total: total,
+        .getMany();
+  
+      if (!sales || sales.length === 0) return null;
+  
+      const salesWithLocalities = sales.map((sale) => {
+        const localityTicketInfo: {
+          [localityName: string]: {
+            ticketCount: number;
+            price: number;
+            localityId: number;
+            total: number;
           };
-        }
+        } = {};
+  
+        sale.tickets.forEach((ticket) => {
+          const localityName = ticket.locality.name;
+          const ticketPrice = ticket.locality.price;
+          const localityId = ticket.locality.id;
+          const total = ticket.locality.total;
+          if (localityTicketInfo[localityName]) {
+            localityTicketInfo[localityName].ticketCount++;
+          } else {
+            localityTicketInfo[localityName] = {
+              ticketCount: 1,
+              price: ticketPrice,
+              localityId: localityId,
+              total: total,
+            };
+          }
+        });
+  
+        // Convertir el objeto de resultados en un array de objetos
+        const localities = Object.entries(localityTicketInfo).map(
+          ([localityName, ticketInfo]) => ({
+            localityName,
+            ticketCount: ticketInfo.ticketCount,
+            price: ticketInfo.price,
+            localityId: ticketInfo.localityId,
+            total: ticketInfo.total,
+          }),
+        );
+  
+        delete sale.tickets;
+        return { sale, localities };
       });
-
-      // Convertir el objeto de resultados en un array de objetos
-      const result = Object.entries(localityTicketInfo).map(
-        ([localityName, ticketInfo]) => ({
-          localityName,
-          ticketCount: ticketInfo.ticketCount,
-          price: ticketInfo.price,
-          localityId: ticketInfo.localityId,
-          total: ticketInfo.total,
-        }),
-      );
-      delete sale.tickets;
-      return { sale, localities: result };
+  
+      return salesWithLocalities;
     } catch (error) {
       customError(error);
     }
   }
+  
 
   async verifyInfoSaleWIthLocalities(saleId: number) {
     try {
@@ -832,7 +840,7 @@ console.log(error)
     const fechaActualEcuador = utcToZonedTime(fechaActualUTC, zonaHorariaEcuador);
     const fechaRestada = new Date(fechaActualEcuador.getTime() - 48 * 60 * 60 * 1000);
 
-      const expiredPurchases = await this.saleRepository
+      let expiredPurchases = await this.saleRepository
       .createQueryBuilder('sale')
       .innerJoin('sale.customer', 'customer')
       .innerJoin('sale.event', 'event')
@@ -845,6 +853,7 @@ console.log(error)
         incompleteStatus: SaleStatus.INCOMPLETE,
         rejectedStatus: SaleStatus.REJECTED,
       })
+    
       .andWhere('sale.payType = :payType', {
         payType: PayTypes.TRANSFER, // Ajusta esto a tu modelo
       })
@@ -858,8 +867,10 @@ console.log(error)
         'event.commission',
       ])
       .getMany();
-    
 
+      expiredPurchases = expiredPurchases.filter((sale) => 
+        !(sale.transfer_photo !== null && sale.status === SaleStatus.INCOMPLETE)
+      );
         if(expiredPurchases.length > 0){
           console.log('Cancelando compras pendientes de pago por transferencia');
          this.CancelSalesForLotes(expiredPurchases,PayTypes.TRANSFER);
