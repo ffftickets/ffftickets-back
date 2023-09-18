@@ -68,6 +68,7 @@ export class SalesService implements OnApplicationBootstrap {
   }
   async create(createSaleDto: CreateSaleDto, logSale: CreateLogSaleDto) {
     try {
+     
       const { tickets, bill, ...createSale } = createSaleDto;
       //!Obtener el evento
       const event = await this.eventService.findOne(createSaleDto.event);
@@ -84,8 +85,9 @@ export class SalesService implements OnApplicationBootstrap {
       );
 
       console.log('Tiene compras pendientes', verifyExist ? 'Si' : 'No');
+
       //?En caso de que tenga una compra pendiente entra a validación!
-      if (verifyExist.length > 0) {
+      if (verifyExist) {
         // Si hay ventas pendientes, itera sobre ellas
         for (const existingSale of verifyExist) {
           if (existingSale.sale.payType === PayTypes.TRANSFER && createSale.payType === PayTypes.TRANSFER) {

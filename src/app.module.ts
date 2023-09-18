@@ -38,6 +38,8 @@ import { AmazonS3Module } from './amazon-s3/amazon-s3.module';
 import { BillsFffModule } from './bills_fff/bills_fff.module';
 import { BillLogsModule } from './bill_logs/bill_logs.module';
 import { ScheduleModule } from '@nestjs/schedule';
+import { APP_INTERCEPTOR } from '@nestjs/core';
+import { EncryptionInterceptor } from './core/interceptors/encryption-interceptor';
 
 @Module({
   imports: [
@@ -115,6 +117,7 @@ import { ScheduleModule } from '@nestjs/schedule';
 
   ],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [AppService,
+    ],
 })
 export class AppModule {}

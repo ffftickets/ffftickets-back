@@ -92,7 +92,8 @@ AppModule = __decorate([
             schedule_1.ScheduleModule.forRoot()
         ],
         controllers: [app_controller_1.AppController],
-        providers: [app_service_1.AppService],
+        providers: [app_service_1.AppService,
+        ],
     })
 ], AppModule);
 exports.AppModule = AppModule;
