@@ -100,7 +100,6 @@ let LocalitiesService = LocalitiesService_1 = class LocalitiesService {
     }
     async updateSold(id, sold) {
         try {
-            console.log(id, sold);
             this.logger.log('Actualizando venta: ' + id);
             await this.localitiesRepository.update(id, {
                 sold: sold,

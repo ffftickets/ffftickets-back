@@ -70,14 +70,12 @@ let SalesService = SalesService_1 = class SalesService {
     }
     async create(createSaleDto, logSale) {
         try {
-            console.log(createSaleDto);
             const { tickets, bill } = createSaleDto, createSale = __rest(createSaleDto, ["tickets", "bill"]);
             const event = await this.eventService.findOne(createSaleDto.event);
             createSaleDto.event = event;
             createSale.serviceValue = this.calculateServiceValue(tickets, event.commission);
             const verifyExist = await this.verifyPendingPurchases(createSale.customer.id);
             console.log('Tiene compras pendientes', verifyExist ? 'Si' : 'No');
-            console.log(verifyExist);
             if (verifyExist) {
                 for (const existingSale of verifyExist) {
                     if (existingSale.sale.payType === pay_types_enum_1.PayTypes.TRANSFER && createSale.payType === pay_types_enum_1.PayTypes.TRANSFER) {
